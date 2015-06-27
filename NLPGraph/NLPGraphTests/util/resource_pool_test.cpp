@@ -1,3 +1,5 @@
+#define BOOST_LOG_DYN_LINK
+#include <util/resource_pool.h>
 #include <nlpgraph.h>
 #include <boost/test/unit_test.hpp>
 

@@ -93,6 +93,8 @@ install() {
     untar install "boost_1_58_0"
     make_install_boost "boost_1_58_0"
     
+    untar install "compute-0.4"
+    
     do_configure "libpqxx-4.0.1"
     do_make "libpqxx-4.0.1"
     chkerr "Unable to make $_TARGET"

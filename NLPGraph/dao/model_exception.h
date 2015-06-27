@@ -10,7 +10,6 @@
 #define NLPGraph_Exception_h
 
 #include <boost/exception/all.hpp>
-#include "../nlpgraph.h"
 
 namespace NLPGraph {
 namespace Dao {

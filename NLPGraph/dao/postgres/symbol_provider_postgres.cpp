@@ -6,9 +6,8 @@
 //  Copyright (c) 2015 Jonathan Schang. All rights reserved.
 //
 
-#include "../../nlpgraph.h"
-
-using namespace NLPGraph::Util;
+#define BOOST_LOG_DYN_LINK
+#include "symbol_provider_postgres.h"
 
 namespace NLPGraph {
 namespace Dao {

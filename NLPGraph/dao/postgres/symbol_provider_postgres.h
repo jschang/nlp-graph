@@ -10,6 +10,7 @@
 #define __NLPGraph__symbol_provider_postgres__
 
 #include "../../nlpgraph.h"
+#include "../symbol_provider.h"
 
 namespace NLPGraph {
 namespace Dao {

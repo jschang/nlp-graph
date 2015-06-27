@@ -9,6 +9,7 @@
 #ifndef __NLPGraph__symbol__
 #define __NLPGraph__symbol__
 
+#include <vector>
 #include "../nlpgraph.h"
 
 namespace NLPGraph { 

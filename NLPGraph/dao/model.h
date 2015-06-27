@@ -9,7 +9,11 @@
 #ifndef __NLPGraph__model__
 #define __NLPGraph__model__
 
-#include "../nlpgraph.h"
+#include "model_exception.h"
+#include "../dto/symbol.h"
+#include "../dto/recollection.h"
+#include "../dto/recollection_exception.h"
+#include "../dto/input_channel.h"
 
 namespace NLPGraph {
 namespace Dao {
@@ -35,6 +39,13 @@ public:
     }
     virtual long getSymbolMemberCount(Dto::SymbolPtr symbol) { 
         return 0L; 
+    }
+    virtual void toBinary(Dto::SymbolPtr s, uint64_t** ret) {
+        unsigned long count = s->memberCount();
+        (*ret) = new uint64_t[count];
+        for(unsigned long i=0; i<count; i++) {
+            (*ret)[i] = s->getMember(i)->getId();
+        }
     }
     
     virtual Dto::RecollectionPtr newRecollection(Dto::SymbolPtr symbol) { 

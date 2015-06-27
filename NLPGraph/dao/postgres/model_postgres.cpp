@@ -6,8 +6,10 @@
 //  Copyright (c) 2015 Jonathan Schang. All rights reserved.
 //
 
+#define BOOST_LOG_DYN_LINK
+#include "model_postgres.h"
 #include <cstdio>
-#include "../../nlpgraph.h"
+#include <pqxx/pqxx>
 
 #define NEW_INPUT_CHANNEL "new_input_channel"
 #define NEW_SYMBOL "new_symbol"
@@ -16,10 +18,12 @@
 #define NEW_RECOLLECTION "new_recollection"
 #define NEW_RECOLLECTION_EXCEPTION "new_recollection_exception"
 
-#define LOG(sev) BOOST_LOG_SEV(m_logger,sev) << __PRETTY_FUNCTION__ << " line:" << __LINE__ << " "
+#define LOG(sev) BOOST_LOG_SEV(logger,sev) << __PRETTY_FUNCTION__ << " line:" << __LINE__ << " "
 
 namespace NLPGraph {
 namespace Dao {
+
+NLPGraph::Util::LoggerType logger((boost::log::keywords::channel="NLPGraph::Dao::ModelPostgres"));
 
 using namespace pqxx;
 using namespace NLPGraph::Util;
@@ -113,8 +117,7 @@ std::string createSql[5] = {
     };
 const int modelTableCount = 5;
 
-ModelPostgres::ModelPostgres(ResourcePoolPtr<connection*> pool, std::string schema) 
-    : m_logger((keywords::channel="NLPGraph::Dao::ModelPostgres")) {
+ModelPostgres::ModelPostgres(ResourcePoolPtr<connection*> pool, std::string schema) {
     m_dbPool = pool;
     m_schema = schema;
 }

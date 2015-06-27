@@ -6,11 +6,12 @@
 //  Copyright (c) 2015 Jonathan Schang. All rights reserved.
 //
 
-#ifndef NLPGraph_logger_h
-#define NLPGraph_logger_h
-
+#include <boost/log/common.hpp>
 #include <boost/log/sources/global_logger_storage.hpp>
 #include <boost/log/sources/severity_channel_logger.hpp>
+
+#ifndef NLPGraph_logger_h
+#define NLPGraph_logger_h
 
 namespace NLPGraph {
 namespace Util {

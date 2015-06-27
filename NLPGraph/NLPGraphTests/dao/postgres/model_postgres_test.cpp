@@ -1,3 +1,6 @@
+#define BOOST_LOG_DYN_LINK
+#include <util/resource_pool.h>
+#include <dao/postgres/model_postgres.h>
 #include <nlpgraph.h>
 #include <boost/test/unit_test.hpp>
 #include "../../nlpgraph_tests.h"
@@ -55,6 +58,7 @@ BOOST_AUTO_TEST_CASE( test_new_stuff )
     model->addRecollectionException(r, RecExceptOpsEnum::RecExceptOpInsert, 0, SymbolPtr(nullptr));
     
     pqxx::connection* conn = connPool->obtain();
+    
     pqxx::work w(*conn);
     pqxx::result res;
     try {

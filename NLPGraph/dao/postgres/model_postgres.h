@@ -10,6 +10,9 @@
 #define __NLPGraph__model_postgres__
 
 #include "../../nlpgraph.h"
+#include "../../util/resource_pool.h"
+#include "../model.h"
+#include <pqxx/pqxx>
 
 namespace NLPGraph {
 namespace Dao {
@@ -18,7 +21,6 @@ class ModelPostgres : NLPGraph::Dao::Model {
 private:
     Util::ResourcePoolPtr<pqxx::connection*> m_dbPool;
     std::string m_schema;
-    Util::LoggerType m_logger;
 public:
     ModelPostgres(Util::ResourcePoolPtr<pqxx::connection*> pool, std::string schema);
     ~ModelPostgres();

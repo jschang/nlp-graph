@@ -10,6 +10,7 @@
 #define __NLPGraph__symbol_provider__
 
 #include "../nlpgraph.h"
+#include "model.h"
 
 namespace NLPGraph {
 namespace Dao {

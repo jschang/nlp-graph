@@ -9,6 +9,7 @@
 #ifndef __NLPGraph__resource_pool__
 #define __NLPGraph__resource_pool__
 
+#include "logger.h"
 #include <vector>
 #include <map>
 #include <boost/thread.hpp> 
