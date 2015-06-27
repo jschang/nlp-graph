@@ -60,6 +60,6 @@ BOOST_AUTO_TEST_CASE( test_calc )
     
     // fire up the calculator
     LevensteinDamerau alg(bContext);
-}s
+}
 
 BOOST_AUTO_TEST_SUITE_END()
