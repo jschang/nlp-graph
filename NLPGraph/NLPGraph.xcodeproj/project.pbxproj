@@ -45,7 +45,6 @@
 		92FDD91D1B3CDE4400B95B98 /* libboost_thread.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 92EEE8871B33C28F008601B3 /* libboost_thread.a */; };
 		92FDD91E1B3CDE4400B95B98 /* libpq.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 923AF2F81B31D9DA00CF8B5C /* libpq.dylib */; };
 		92FDD91F1B3CDE4400B95B98 /* libpqxx.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 923A9C8E1B30962E00CF8B5C /* libpqxx.a */; };
-		92FDD9221B3DA97A00B95B98 /* levenstein_damerau.cl in CopyFiles */ = {isa = PBXBuildFile; fileRef = 92FDD9201B3DA96800B95B98 /* levenstein_damerau.cl */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -65,7 +64,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 16;
 			files = (
-				92FDD9221B3DA97A00B95B98 /* levenstein_damerau.cl in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,7 +110,6 @@
 		92FDD9151B3CC78000B95B98 /* opencl_test.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = opencl_test.cpp; sourceTree = "<group>"; };
 		92FDD9171B3CC79100B95B98 /* opencl.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = opencl.cpp; path = util/opencl.cpp; sourceTree = "<group>"; };
 		92FDD9181B3CC79100B95B98 /* opencl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = opencl.h; path = util/opencl.h; sourceTree = "<group>"; };
-		92FDD9201B3DA96800B95B98 /* levenstein_damerau.cl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.opencl; name = levenstein_damerau.cl; path = calc/levenstein_damerau.cl; sourceTree = "<group>"; };
 		92FDD9251B3DAA5400B95B98 /* file.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = file.cpp; path = util/file.cpp; sourceTree = "<group>"; };
 		92FDD9261B3DAA5400B95B98 /* file.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = file.h; path = util/file.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -283,7 +280,6 @@
 			children = (
 				92FDD9091B3C92B700B95B98 /* levenstein_damerau.cpp */,
 				92FDD90A1B3C92B700B95B98 /* levenstein_damerau.h */,
-				92FDD9201B3DA96800B95B98 /* levenstein_damerau.cl */,
 			);
 			name = calc;
 			sourceTree = "<group>";

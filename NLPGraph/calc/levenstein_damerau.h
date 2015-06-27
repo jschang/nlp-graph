@@ -31,7 +31,7 @@ private:
 public:
     LevensteinDamerau(boost::compute::context &context);
     ~LevensteinDamerau();
-    std::vector<boost::compute::ulong8_> calculate(uint16_t width, uint64_t* needle, uint64_t** haystack, uint16_t haystackSize);
+    std::vector<boost::compute::ulong8_> calculate(uint16_t width, uint16_t haystackSize, uint64_t* needle, uint64_t** haystack);
 };
 
 }}

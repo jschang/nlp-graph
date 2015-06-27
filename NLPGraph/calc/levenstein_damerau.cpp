@@ -20,30 +20,29 @@ using namespace NLPGraph::Util;
 namespace NLPGraph {
 namespace Calc {
 
-const char *kLevensteinDamerauOpenCLSource =         
-        "__kernel void calc_levenstein_damerau("
-        "        __shared const ulong widthIn,  " // needle and each in haystack width 
-        "        __shared const ulong lengthIn, " // length of the haystack 
-        "        __shared ulong *needleIn,      " // needle uint64_t's 
-        "        __shared ulong *haystackIn,    " // haystack uint64_t's 
-        "        __shared ulong *distancesOut   " // results 
-        "    ) { "
-        " "
-        "    int gid = get_global_id(0);"
-        "    distancesOut[gid] = gid;"
-        "}";
-
 LevensteinDamerau::LevensteinDamerau(context &context) 
         : m_logger(boost::log::keywords::channel="NLPGraph::Calc::LevensteinDamerau") {
     m_context = context;
     device dev(m_context.get_device());
     m_commandQueue = command_queue(m_context, dev);
-    m_program = OpenCL::createAndBuildProgram(kLevensteinDamerauOpenCLSource,m_context);
+    m_program = OpenCL::createAndBuildProgram(BOOST_COMPUTE_STRINGIZE_SOURCE(    
+        __kernel void calc_levenstein_damerau(
+                const ulong widthIn,      // needle and each in haystack width
+                const ulong lengthIn,     // length of the haystack 
+                const __local ulong *needleIn,    // needle uint64_t's 
+                const __local ulong *haystackIn,  // haystack uint64_t's 
+                __global ulong *distancesOut      // results 
+        ) { 
+         
+            int gid = get_global_id(0);
+            distancesOut[gid] = gid;
+        }
+    ),m_context);
     m_kernel = kernel(m_program, "calc_levenstein_damerau");
 }
 LevensteinDamerau::~LevensteinDamerau() {
 }
-std::vector<ulong8_> LevensteinDamerau::calculate(uint16_t width, uint64_t* needle, uint64_t** haystack, uint16_t haystackSize) {
+std::vector<ulong8_> LevensteinDamerau::calculate(uint16_t width, uint16_t haystackSize, uint64_t* needle, uint64_t** haystack) {
 
     vector<ulong8_> device_needle(width,m_context);
     std::vector<uint64_t> host_needle(needle,needle+width);
