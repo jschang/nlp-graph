@@ -52,14 +52,38 @@ BOOST_AUTO_TEST_CASE( test_calc )
     bContext = context(OpenCL::contextWithDeviceInfo(deviceInfo));    
     
     // create my random data
+    /*
     struct timeval tv;
     boost::random::mt19937 randGen(tv.tv_usec);
     uniform_int<uint64_t> dist(0, std::numeric_limits<uint64_t>::max());
     boost::variate_generator<boost::random::mt19937&, uniform_int<uint64_t>> getRand(randGen, dist);
     uint64_t test = getRand();
+    */
     
     // fire up the calculator
     LevensteinDamerau alg(bContext);
+    
+    // first simple test
+    {
+        uint16_t width=4;
+        uint16_t haystackSize=1;
+        uint64_t needle[] = {1,2,3,4};
+        uint64_t haystack[] = {1,2,3,4};
+        uint64_t distancesOut[1];
+        uint64_t operationsOut[haystackSize*(2*width)];
+        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
+        BOOST_CHECK(distancesOut[0] == 0);
+    }
+    {
+        uint16_t width=4;
+        uint16_t haystackSize=1;
+        uint64_t needle[] = {1,2,3,4};
+        uint64_t haystack[] = {1,3,2,4};
+        uint64_t distancesOut[1];
+        uint64_t operationsOut[haystackSize*(2*width)];
+        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
+        BOOST_CHECK(distancesOut[0] == 1);
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()
