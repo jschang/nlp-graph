@@ -18,6 +18,7 @@ namespace Util {
     template <class T> class ResourcePool;
     class Logger;
     class File;
+    class TimeHelper;
 };
 namespace Dao {
     class Model;

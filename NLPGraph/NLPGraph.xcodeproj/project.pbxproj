@@ -23,6 +23,8 @@
 		923AF2F91B31D9DA00CF8B5C /* libpq.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 923AF2F81B31D9DA00CF8B5C /* libpq.dylib */; };
 		92403AB21B3E4647008494E8 /* libboost_log_setup.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 92403AB11B3E4646008494E8 /* libboost_log_setup.dylib */; };
 		92403AB31B3E4647008494E8 /* libboost_log_setup.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 92403AB11B3E4646008494E8 /* libboost_log_setup.dylib */; };
+		92403AB61B40E1BA008494E8 /* time_helper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 92403AB41B40E1BA008494E8 /* time_helper.cpp */; };
+		92403AB81B40E1BA008494E8 /* time_helper.h in Headers */ = {isa = PBXBuildFile; fileRef = 92403AB51B40E1BA008494E8 /* time_helper.h */; };
 		92A5A9831B3B8BF400E06BBD /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92A5A9821B3B8BF400E06BBD /* OpenCL.framework */; };
 		92A5A9841B3B8BFB00E06BBD /* OpenCL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92A5A9821B3B8BF400E06BBD /* OpenCL.framework */; };
 		92EEE8831B33C150008601B3 /* model_exception.h in Headers */ = {isa = PBXBuildFile; fileRef = 92EEE8821B33C150008601B3 /* model_exception.h */; };
@@ -89,6 +91,8 @@
 		923AF2F31B31C99300CF8B5C /* context.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = context.h; sourceTree = "<group>"; };
 		923AF2F81B31D9DA00CF8B5C /* libpq.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libpq.dylib; path = ../../../../../../../../../Applications/Postgres.app/Contents/Versions/9.4/lib/libpq.dylib; sourceTree = "<group>"; };
 		92403AB11B3E4646008494E8 /* libboost_log_setup.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libboost_log_setup.dylib; path = ../install/3rdparty/boost_1_58_0/stage/lib/libboost_log_setup.dylib; sourceTree = "<group>"; };
+		92403AB41B40E1BA008494E8 /* time_helper.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = time_helper.cpp; path = util/time_helper.cpp; sourceTree = "<group>"; };
+		92403AB51B40E1BA008494E8 /* time_helper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = time_helper.h; path = util/time_helper.h; sourceTree = "<group>"; };
 		92A5A9811B3B3C9D00E06BBD /* boost */ = {isa = PBXFileReference; lastKnownFileType = folder; name = boost; path = "../install/3rdparty/compute-0.4/include/boost"; sourceTree = "<group>"; };
 		92A5A9821B3B8BF400E06BBD /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
 		92EEE8821B33C150008601B3 /* model_exception.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = model_exception.h; path = dao/model_exception.h; sourceTree = "<group>"; };
@@ -246,6 +250,8 @@
 				92EEE8B71B37900E008601B3 /* logger.h */,
 				92FDD9251B3DAA5400B95B98 /* file.cpp */,
 				92FDD9261B3DAA5400B95B98 /* file.h */,
+				92403AB41B40E1BA008494E8 /* time_helper.cpp */,
+				92403AB51B40E1BA008494E8 /* time_helper.h */,
 			);
 			name = util;
 			sourceTree = "<group>";
@@ -299,6 +305,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				92403AB81B40E1BA008494E8 /* time_helper.h in Headers */,
 				92EEE8851B33C1D1008601B3 /* nlpgraph.h in Headers */,
 				92FDD90C1B3C92B700B95B98 /* levenstein_damerau.h in Headers */,
 				923A9CAD1B31156800CF8B5C /* symbol_provider.h in Headers */,
@@ -394,6 +401,7 @@
 			files = (
 				92FDD91A1B3CDBEC00B95B98 /* opencl.cpp in Sources */,
 				923A9CBF1B31BB7B00CF8B5C /* model_postgres.cpp in Sources */,
+				92403AB61B40E1BA008494E8 /* time_helper.cpp in Sources */,
 				923AF2F41B31C99300CF8B5C /* context.cpp in Sources */,
 				92FDD90B1B3C92B700B95B98 /* levenstein_damerau.cpp in Sources */,
 				923A9CB61B31209B00CF8B5C /* symbol_provider_postgres.cpp in Sources */,
