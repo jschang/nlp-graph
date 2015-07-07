@@ -1,6 +1,15 @@
 #!/bin/bash
 
+OS=`uname`
+if [ $OS = 'Linux' ]; then
+	sudo apt-get update
+	sudo apt-get install postgresql python-dev build-essential g++ libbz2-dev
+fi;
+if [ $OS = 'Darwin' ]; then
 POSTGRES_HOME=/Applications/Postgres.app/Contents/Versions/9.4
+else
+POSTGRES_HOME=/usr/lib/postgresql/9.1
+fi;
 PROJECT_DIR=$(dirname "`perl -e 'use Cwd "abs_path";print abs_path(shift)' $0`")
 BUILD_DIR="$PROJECT_DIR/build/3rdparty"
 INSTALL_DIR="$PROJECT_DIR/install/3rdparty"
