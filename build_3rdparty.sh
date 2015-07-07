@@ -3,7 +3,7 @@
 OS=`uname`
 if [ $OS = 'Linux' ]; then
 	sudo apt-get update
-	sudo apt-get install postgresql python-dev build-essential g++ libbz2-dev libpq-dev cmake
+	sudo apt-get install postgresql python-dev build-essential g++ libbz2-dev libpq-dev cmake libnuma1
 else
 echo unable to build, unknown os...what does uname return?
 exit 1
