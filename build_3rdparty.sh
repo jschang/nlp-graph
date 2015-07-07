@@ -3,12 +3,18 @@
 OS=`uname`
 if [ $OS = 'Linux' ]; then
 	sudo apt-get update
-	sudo apt-get install postgresql python-dev build-essential g++ libbz2-dev
+	sudo apt-get install postgresql python-dev build-essential g++ libbz2-dev libpq-dev cmake
+else
+echo unable to build, unknown os...what does uname return?
+exit 1
 fi;
 if [ $OS = 'Darwin' ]; then
 POSTGRES_HOME=/Applications/Postgres.app/Contents/Versions/9.4
-else
+elif [ $OS = 'Linux' ]; then
 POSTGRES_HOME=/usr/lib/postgresql/9.1
+else
+echo unable to build, unknown os...what does uname return?
+exit 1
 fi;
 PROJECT_DIR=$(dirname "`perl -e 'use Cwd "abs_path";print abs_path(shift)' $0`")
 BUILD_DIR="$PROJECT_DIR/build/3rdparty"
@@ -111,9 +117,6 @@ install() {
     # this will fail, but only at the archive install...
     # so we'll just copy that manually
     cp "$BUILD_DIR/libpqxx-4.0.1/src/.libs/libpqxx.a" "$INSTALL_DIR/$_TARGET/lib"
-    
-    do_cmake "gtest-1.7.0"
-    do_make "gtest-1.7.0"
 }
 
 clean() {
