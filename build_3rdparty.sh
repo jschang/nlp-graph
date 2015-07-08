@@ -119,13 +119,19 @@ install() {
     mkdir -pv "$PROJECT_DIR" 3rdparty
     chkerr "Unable to create the 3rdparty tar ball folder"
 
-    curl -L -o 3rdparty/boost_1_58_0.tar.gz "http://downloads.sourceforge.net/project/boost/boost/1.58.0/boost_1_58_0.tar.gz?r=&ts=1436336251&use_mirror=iweb"
+    if [ ! -e 3rdparty/boost_1_58_0.tar.gz ]; then
+        curl -L -o 3rdparty/boost_1_58_0.tar.gz "http://downloads.sourceforge.net/project/boost/boost/1.58.0/boost_1_58_0.tar.gz?use_mirror=iweb"
+    fi
     chkmd5 3rdparty/boost_1_58_0.tar.gz 5a5d5614d9a07672e1ab2a250b5defc5
 
-    curl -L -o 3rdparty/compute-0.4.tar.gz https://github.com/boostorg/compute/archive/v0.4.tar.gz
+    if [ ! -e 3rdparty/compute-0.4.tar.gz ]; then
+        curl -L -o 3rdparty/compute-0.4.tar.gz https://github.com/boostorg/compute/archive/v0.4.tar.gz
+    fi;
     chkmd5 3rdparty/compute-0.4.tar.gz 0d881bd8e8c1729559bc9b98d6b25a3c
 
-    curl -L -o 3rdparty/libpqxx-4.0.1.tar.gz http://pqxx.org/download/software/libpqxx/libpqxx-4.0.1.tar.gz
+    if [ ! -e 3rdparty/libpqxx-4.0.1.tar.gz ]; then
+        curl -L -o 3rdparty/libpqxx-4.0.1.tar.gz http://pqxx.org/download/software/libpqxx/libpqxx-4.0.1.tar.gz
+    fi;
     chkmd5 3rdparty/libpqxx-4.0.1.tar.gz 6ea888b9ba85dd7cef1b182dc5f223a2
 
     mkdir -pv "$PROJECT_DIR" build/3rdparty
@@ -149,6 +155,7 @@ install() {
 }
 
 clean() {
+    rm -rf "$PROJECT_DIR/3rdparty"
     rm -rf "$PROJECT_DIR/build/3rdparty"
     rm -rf "$PROJECT_DIR/install/3rdparty"
 }

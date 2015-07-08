@@ -24,7 +24,7 @@ find_library (LIB_PQ
     NAMES pq)
 
 find_library (LIB_PQXX 
-    NAMES pqxx.a
+    NAMES libpqxx.a
     PATHS ${NLPGraph_SOURCE_DIR}/install/3rdparty/libpqxx-4.0.1/lib) 
     
 find_library (LIB_BOOST_LOG
