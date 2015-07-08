@@ -1,20 +1,26 @@
-#subdirs(src)
-
-option (BUILD_NLPGRAPH_TESTS "Build NLPGraphTest" ON)
-
 if (BUILD_NLPGRAPH_TESTS)
 
-    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fexceptions -fpermissive")
-    
-    add_executable (NLPGraphTests calc/levenstein_damerau_test.cpp dao/postgres/model_postgres_test.cpp util/opencl_test.cpp util/resource_pool_test.cpp nlpgraph_tests.cpp)
-    
-    include_directories(${NLPGraph_SOURCE_DIR}/NLPGraph)
+    project(NLPGraphTests)
+
     include_directories(${NLPGraph_SOURCE_DIR}/NLPGraph/NLPGraphTests)
+    link_directories(${NLPGraph_SOURCE_DIR}/NLPGraph)
     
-    include_directories(${NLPGraph_SOURCE_DIR}/install/3rdparty/compute-0.4/include)
-    include_directories(${NLPGraph_SOURCE_DIR}/install/3rdparty/libpqxx-4.0.1/include)
-    include_directories(${NLPGraph_SOURCE_DIR}/install/3rdparty/boost_1_58_0)
-    
-    target_link_libraries (NLPGraphTests NLPGraphLib)
+    add_executable (NLPGraphTests
+        nlpgraph_tests.cpp
+        calc/levenstein_damerau_test.cpp 
+        dao/postgres/model_postgres_test.cpp 
+        util/opencl_test.cpp util/resource_pool_test.cpp 
+        )
+        
+    target_link_libraries (NLPGraphTests 
+        ${LIB_OPENCL} 
+        ${LIB_PQ} 
+        ${LIB_PQXX} 
+        ${LIB_BOOST_LOG} 
+        ${LIB_BOOST_LOG_SETUP} 
+        ${LIB_BOOST_UNITTESTS} 
+        ${LIB_BOOST_SYSTEM} 
+        ${LIB_BOOST_THREAD}
+        NLPGraphLib.a)
     
 endif (BUILD_NLPGRAPH_TESTS)
