@@ -27,7 +27,7 @@ LevensteinDamerau::LevensteinDamerau(context &context)
     m_commandQueue = command_queue(m_context, dev);
     m_program = OpenCL::createAndBuildProgram(BOOST_COMPUTE_STRINGIZE_SOURCE(
     
-        static uint append(__global char *log, uint logPos, __constant char* string) {
+        inline uint append(__global char *log, uint logPos, __constant char* string) {
             return logPos;
             uint idx=0;
             while(string[idx]!=0) {
