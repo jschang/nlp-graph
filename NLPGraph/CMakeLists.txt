@@ -12,9 +12,10 @@ if (BUILD_NLPGRAPH_LIB)
         context.cpp)
         
     target_link_libraries (NLPGraphLib
-        ${LIB_OPENCL} 
-        ${LIB_PQ} 
-        ${LIB_PQXX} 
+        ${LIB_PTHREAD}
+        ${LIB_OPENCL}
+        ${LIB_PQXX}
+        ${LIB_PQ}  
         ${LIB_BOOST_LOG} 
         ${LIB_BOOST_LOG_SETUP} 
         ${LIB_BOOST_UNITTESTS} 

@@ -16,16 +16,19 @@ include_directories (${NLPGraph_SOURCE_DIR}/install/3rdparty/compute-0.4/include
 include_directories (${NLPGraph_SOURCE_DIR}/install/3rdparty/libpqxx-4.0.1/include)
 include_directories (${NLPGraph_SOURCE_DIR}/install/3rdparty/boost_1_58_0)
 
+find_library (LIB_PTHREAD
+    NAMES pthread) 
+
 find_library (LIB_OPENCL 
     NAMES OpenCL 
     PATHS ${OPENCL_LIB_PATH})
 
 find_library (LIB_PQ 
     NAMES pq)
-
+    
 find_library (LIB_PQXX 
-    NAMES pqxx.a
-    PATHS ${NLPGraph_SOURCE_DIR}/install/3rdparty/libpqxx-4.0.1/lib) 
+    NAMES pqxx
+    PATHS ${NLPGraph_SOURCE_DIR}/install/3rdparty/libpqxx-4.0.1/lib)
     
 find_library (LIB_BOOST_LOG
     NAMES boost_log  
@@ -36,13 +39,13 @@ find_library (LIB_BOOST_LOG_SETUP
     PATHS ${NLPGraph_SOURCE_DIR}/install/3rdparty/boost_1_58_0/stage/lib)
     
 find_library (LIB_BOOST_UNITTESTS
-    NAMES libboost_unit_test_framework.a
+    NAMES boost_unit_test_framework
     PATHS ${NLPGraph_SOURCE_DIR}/install/3rdparty/boost_1_58_0/stage/lib)
     
 find_library (LIB_BOOST_SYSTEM
-    NAMES libboost_system.a
+    NAMES boost_system
     PATHS ${NLPGraph_SOURCE_DIR}/install/3rdparty/boost_1_58_0/stage/lib)
     
 find_library (LIB_BOOST_THREAD
-    NAMES libboost_thread.a
+    NAMES boost_thread
     PATHS ${NLPGraph_SOURCE_DIR}/install/3rdparty/boost_1_58_0/stage/lib)

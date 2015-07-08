@@ -13,9 +13,10 @@ if (BUILD_NLPGRAPH_TESTS)
         )
         
     target_link_libraries (NLPGraphTests 
-        ${LIB_OPENCL} 
-        ${LIB_PQ} 
-        ${LIB_PQXX} 
+        ${LIB_PTHREAD}
+        ${LIB_OPENCL}
+        ${LIB_PQXX}
+        ${LIB_PQ}  
         ${LIB_BOOST_LOG} 
         ${LIB_BOOST_LOG_SETUP} 
         ${LIB_BOOST_UNITTESTS} 
