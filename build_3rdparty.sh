@@ -98,10 +98,37 @@ make_install_boost() {
     popd
 }
 
+chkmd5() {
+    if [ $OS = "Darwin" ]; then
+         MD5=`md5 -q $1`
+    elif [ $OS = "Linux" ]; then
+         MD5=`md5sum $1 | awk '{print \$1}'`
+    else
+         echo "Unknown operating system: \"$OS\", do you have uname?" 
+         exit 1
+    fi;
+    if [ "$MD5" != "$2" ]; then
+         echo "The file $1 md5 was $MD5, should have been $2"
+    fi;
+}
+
 install() {
     
+    mkdir -pv "$PROJECT_DIR" 3rdparty
+    chkerr "Unable to create the 3rdparty tar ball folder"
+
+    wget -nc -O 3rdparty/boost_1_58_0.tar.gz "http://downloads.sourceforge.net/project/boost/boost/1.58.0/boost_1_58_0.tar.gz?r=&ts=1436336251&use_mirror=iweb"
+    chkmd5 3rdparty/boost_1_58_0.tar.gz 5a5d5614d9a07672e1ab2a250b5defc5
+
+    wget -nc -O 3rdparty/compute-0.4.tar.gz https://github.com/boostorg/compute/archive/v0.4.tar.gz
+    chkmd5 3rdparty/compute-0.4.tar.gz 0d881bd8e8c1729559bc9b98d6b25a3c
+
+    wget -nc -O 3rdparty/libpqxx-4.0.1.tar.gz http://pqxx.org/download/software/libpqxx/libpqxx-4.0.1.tar.gz
+    chkmd5 3rdparty/libpqxx-4.0.1.tar.gz 6ea888b9ba85dd7cef1b182dc5f223a2
+
     mkdir -pv "$PROJECT_DIR" build/3rdparty
     chkerr "Unable to create build directory";
+
     mkdir -pv "$PROJECT_DIR" install/3rdparty
     chkerr "Unable to create install directory";
     
