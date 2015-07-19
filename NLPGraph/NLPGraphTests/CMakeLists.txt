@@ -6,11 +6,24 @@ if (BUILD_NLPGRAPH_TESTS)
     link_directories(${NLPGraph_SOURCE_DIR}/NLPGraph)
     
     add_executable (NLPGraphTests
-        nlpgraph_tests.cpp
-        calc/levenstein_damerau_test.cpp 
-        dao/postgres/model_postgres_test.cpp 
-        util/opencl_test.cpp util/resource_pool_test.cpp 
-        )
+        ./calc/levenstein_damerau_test.cpp
+        ./dao/postgres/model_postgres_test.cpp
+        ./nlpgraph_tests.cpp
+        ./nlpgraph_tests.h
+        ./util/opencl_test.cpp
+        ./util/resource_pool_test.cpp
+    )
+        
+    source_group(calc FILES 
+        ./calc/levenstein_damerau_test.cpp
+    )
+    source_group(dao\\postgres FILES 
+        ./dao/postgres/model_postgres_test.cpp
+    )
+    source_group(util FILES 
+        ./util/opencl_test.cpp
+        ./util/resource_pool_test.cpp
+    )
         
     target_link_libraries (NLPGraphTests 
         ${LIB_PTHREAD}
@@ -22,6 +35,7 @@ if (BUILD_NLPGRAPH_TESTS)
         ${LIB_BOOST_UNITTESTS} 
         ${LIB_BOOST_SYSTEM} 
         ${LIB_BOOST_THREAD}
-        NLPGraphLib.a)
+        NLPGraphLib.a
+    )
     
 endif (BUILD_NLPGRAPH_TESTS)

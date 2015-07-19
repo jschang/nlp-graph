@@ -3,13 +3,69 @@ if (BUILD_NLPGRAPH_LIB)
     project(NLPGraphLib)
 
     add_library (NLPGraphLib
-        util/time_helper.cpp
-        util/file.cpp
-        util/opencl.cpp
-        calc/levenstein_damerau.cpp 
-        dao/postgres/model_postgres.cpp 
-        dao/postgres/symbol_provider_postgres.cpp
-        context.cpp)
+        ./calc/levenstein_damerau.cpp
+        ./calc/levenstein_damerau.h
+        ./context.cpp
+        ./context.h
+        ./dao/model.h
+        ./dao/model_exception.h
+        ./dao/postgres/model_postgres.cpp
+        ./dao/postgres/model_postgres.h
+        ./dao/postgres/symbol_provider_postgres.cpp
+        ./dao/postgres/symbol_provider_postgres.h
+        ./dao/symbol_provider.h
+        ./dto/input_channel.h
+        ./dto/recollection.h
+        ./dto/recollection_exception.h
+        ./dto/symbol.h
+        ./nlpgraph.h
+        ./NLPGraphTests/calc/levenstein_damerau_test.cpp
+        ./NLPGraphTests/dao/postgres/model_postgres_test.cpp
+        ./NLPGraphTests/nlpgraph_tests.cpp
+        ./NLPGraphTests/nlpgraph_tests.h
+        ./NLPGraphTests/util/opencl_test.cpp
+        ./NLPGraphTests/util/resource_pool_test.cpp
+        ./util/file.cpp
+        ./util/file.h
+        ./util/logger.h
+        ./util/opencl.cpp
+        ./util/opencl.h
+        ./util/resource_pool.h
+        ./util/time_helper.cpp
+        ./util/time_helper.h
+    )
+        
+    source_group(calc FILES 
+        ./calc/levenstein_damerau.cpp
+        ./calc/levenstein_damerau.h
+    )
+    source_group(dao FILES
+        ./dao/model.h
+        ./dao/model_exception.h
+        ./dao/symbol_provider.h
+    )
+    source_group(dao\\postgres FILES
+        ./dao/postgres/model_postgres.cpp
+        ./dao/postgres/model_postgres.h
+        ./dao/postgres/symbol_provider_postgres.cpp
+        ./dao/postgres/symbol_provider_postgres.h
+    )
+    source_group(dto FILES    
+        ./dto/input_channel.h
+        ./dto/recollection.h
+        ./dto/recollection_exception.h
+        ./dto/symbol.h
+    )
+    source_group(util FILES
+        ./util/file.cpp
+        ./util/file.h
+        ./util/logger.h
+        ./util/opencl.cpp
+        ./util/opencl.h
+        ./util/resource_pool.h
+        ./util/time_helper.cpp
+        ./util/time_helper.h
+    )
         
     target_link_libraries (NLPGraphLib
         ${LIB_PTHREAD}
@@ -20,7 +76,8 @@ if (BUILD_NLPGRAPH_LIB)
         ${LIB_BOOST_LOG_SETUP} 
         ${LIB_BOOST_UNITTESTS} 
         ${LIB_BOOST_SYSTEM} 
-        ${LIB_BOOST_THREAD})
+        ${LIB_BOOST_THREAD}
+    )
 
 endif(BUILD_NLPGRAPH_LIB)
 
