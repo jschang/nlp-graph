@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.6)                 
 
 project (NLPGraph CXX)
-subdirs (NLPGraph NLPGraph/NLPGraphTests)
+subdirs (NLPGraph NLPGraphTests)
 
 option (BUILD_NLPGRAPH_LIB "Build NLPGraphLib" ON)
 option (BUILD_NLPGRAPH_TESTS "Build NLPGraphTest" ON)

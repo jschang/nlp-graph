@@ -19,12 +19,6 @@ if (BUILD_NLPGRAPH_LIB)
         ./dto/recollection_exception.h
         ./dto/symbol.h
         ./nlpgraph.h
-        ./NLPGraphTests/calc/levenstein_damerau_test.cpp
-        ./NLPGraphTests/dao/postgres/model_postgres_test.cpp
-        ./NLPGraphTests/nlpgraph_tests.cpp
-        ./NLPGraphTests/nlpgraph_tests.h
-        ./NLPGraphTests/util/opencl_test.cpp
-        ./NLPGraphTests/util/resource_pool_test.cpp
         ./util/file.cpp
         ./util/file.h
         ./util/logger.h

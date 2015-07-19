@@ -2,7 +2,7 @@ if (BUILD_NLPGRAPH_TESTS)
 
     project(NLPGraphTests)
 
-    include_directories(${NLPGraph_SOURCE_DIR}/NLPGraph/NLPGraphTests)
+    include_directories(${NLPGraph_SOURCE_DIR}/NLPGraph)
     link_directories(${NLPGraph_SOURCE_DIR}/NLPGraph)
     
     add_executable (NLPGraphTests
