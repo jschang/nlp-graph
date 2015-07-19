@@ -19,9 +19,9 @@ private:
     String() {}
 public:
     template <class T>
-    static std::string str(const T inArray[], const int len) {
+    static std::string str(const T &inArray, const int len) {
         std::stringstream retStr;
-        for(int i=0; i++; i<len) {
+        for(int i=0; i<len; i++) {
             retStr << inArray[i] << ",";
         }
         return retStr.str();

@@ -223,8 +223,6 @@ int LevensteinDamerau::calculate(uint width, uint haystackSize, uint64_t* needle
     
     copy(device_distances.begin(),device_distances.end(),distancesOut,m_commandQueue);
     copy(device_operations.begin(),device_operations.end(),operationsOut,m_commandQueue);
-    
-    m_kernel.
 
     return result;
 }

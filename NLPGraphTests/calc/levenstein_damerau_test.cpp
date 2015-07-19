@@ -57,7 +57,9 @@ BOOST_AUTO_TEST_CASE( calc_test )
     
     // fire up the calculator
     LevensteinDamerau alg(bContext);
-    alg.clLogOn = true;
+    
+    // flip to on, if you're interested in fixing an issue in the cl code
+    alg.clLogOn = false;
     
     // first simple test
     { // perfect match
@@ -68,8 +70,10 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t haystack[] = {1,2,3,4};
         uint64_t distancesOut[1];
         uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << distancesOut[0];
+        LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
+        LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
+        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 0);
     }
     { // transposition requires 2 edits
@@ -80,8 +84,10 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t haystack[] = {1,3,2,4};
         uint64_t distancesOut[1];
         uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << distancesOut[0];
+        LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
+        LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
+        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 2);
     }
     { // transposition requires 2 edits
@@ -92,8 +98,10 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t haystack[] = {2,1,3,4};
         uint64_t distancesOut[1];
         uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << distancesOut[0];
+        LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
+        LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
+        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 2);
     }
     { // transposition requires 2 edits
@@ -104,8 +112,10 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t haystack[] = {1,2,4,3};
         uint64_t distancesOut[1];
         uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << distancesOut[0];
+        LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
+        LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
+        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 2);
     }
     { // single deletion - middle
@@ -116,8 +126,10 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t haystack[] = {1,2,4};
         uint64_t distancesOut[1];
         uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << distancesOut[0];
+        LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
+        LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
+        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 1);
     }
     { // single deletion - left edge
@@ -128,8 +140,10 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t haystack[] = {2,3,4};
         uint64_t distancesOut[1];
         uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << distancesOut[0];
+        LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
+        LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
+        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 1);
     }
     { // single deletion - right edge
@@ -140,8 +154,10 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t haystack[] = {1,2,3};
         uint64_t distancesOut[1];
         uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << distancesOut[0];
+        LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
+        LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
+        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 1);
     }
     { // single deletion - middle
@@ -152,8 +168,10 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t haystack[] = {1,2,2,4};
         uint64_t distancesOut[1];
         uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << distancesOut[0];
+        LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
+        LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
+        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         // this is actually correct, there is only one operation: "substitution"
         BOOST_CHECK(distancesOut[0] == 1);
     }
@@ -165,8 +183,10 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t haystack[] = {5,2,3,4};
         uint64_t distancesOut[1];
         uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << distancesOut[0];
+        LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
+        LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
+        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 1);
     }
     { // single deletion - right edge
@@ -177,8 +197,10 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t haystack[] = {1,2,3,5};
         uint64_t distancesOut[1];
         uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << distancesOut[0];
+        LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
+        LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
+        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 1);
     }
     { // single deletion - left edge
@@ -189,8 +211,10 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t haystack[] = {2,2,3,4};
         uint64_t distancesOut[1];
         uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << distancesOut[0];
+        LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
+        LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
+        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 2);
     }
     { // single deletion - right edge
@@ -201,8 +225,10 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t haystack[] = {1,2,4,4};
         uint64_t distancesOut[1];
         uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << distancesOut[0];
+        LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
+        LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
+        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 2);
     }
 }
