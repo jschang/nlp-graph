@@ -59,8 +59,8 @@ BOOST_AUTO_TEST_CASE( calc_test )
     // first simple test
     { // perfect match
         LOG << "Testing perfect match";
-        uint16_t width=4;
-        uint16_t haystackSize=1;
+        uint width=4;
+        uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,3,4};
         uint64_t distancesOut[1];
@@ -71,8 +71,8 @@ BOOST_AUTO_TEST_CASE( calc_test )
     }
     { // transposition requires 2 edits
         LOG << "Testing single transposition - middle";
-        uint16_t width=4;
-        uint16_t haystackSize=1;
+        uint width=4;
+        uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,3,2,4};
         uint64_t distancesOut[1];
@@ -83,8 +83,8 @@ BOOST_AUTO_TEST_CASE( calc_test )
     }
     { // transposition requires 2 edits
         LOG << "Testing single transposition - left edge";
-        uint16_t width=4;
-        uint16_t haystackSize=1;
+        uint width=4;
+        uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {2,1,3,4};
         uint64_t distancesOut[1];
@@ -95,8 +95,8 @@ BOOST_AUTO_TEST_CASE( calc_test )
     }
     { // transposition requires 2 edits
         LOG << "Testing single transposition - right edge";
-        uint16_t width=4;
-        uint16_t haystackSize=1;
+        uint width=4;
+        uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,4,3};
         uint64_t distancesOut[1];
@@ -107,8 +107,8 @@ BOOST_AUTO_TEST_CASE( calc_test )
     }
     { // single deletion - middle
         LOG << "Testing single deletion - middle";
-        uint16_t width=4;
-        uint16_t haystackSize=1;
+        uint width=4;
+        uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,4};
         uint64_t distancesOut[1];
@@ -119,8 +119,8 @@ BOOST_AUTO_TEST_CASE( calc_test )
     }
     { // single deletion - left edge
         LOG << "Testing single deletion - left edge";
-        uint16_t width=4;
-        uint16_t haystackSize=1;
+        uint width=4;
+        uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {2,3,4};
         uint64_t distancesOut[1];
@@ -131,8 +131,8 @@ BOOST_AUTO_TEST_CASE( calc_test )
     }
     { // single deletion - right edge
         LOG << "Testing single deletion - right edge";
-        uint16_t width=4;
-        uint16_t haystackSize=1;
+        uint width=4;
+        uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,3};
         uint64_t distancesOut[1];
@@ -143,8 +143,8 @@ BOOST_AUTO_TEST_CASE( calc_test )
     }
     { // single deletion - middle
         LOG << "Testing single deletion, insertion - middle";
-        uint16_t width=4;
-        uint16_t haystackSize=1;
+        uint width=4;
+        uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,2,4};
         uint64_t distancesOut[1];
@@ -156,8 +156,8 @@ BOOST_AUTO_TEST_CASE( calc_test )
     }
     { // single deletion - left edge
         LOG << "Testing single deletion, insertion - left edge";
-        uint16_t width=4;
-        uint16_t haystackSize=1;
+        uint width=4;
+        uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {2,2,3,4};
         uint64_t distancesOut[1];
@@ -168,8 +168,8 @@ BOOST_AUTO_TEST_CASE( calc_test )
     }
     { // single deletion - right edge
         LOG << "Testing single deletion, insertion - right edge";
-        uint16_t width=4;
-        uint16_t haystackSize=1;
+        uint width=4;
+        uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,3,3};
         uint64_t distancesOut[1];
@@ -201,8 +201,8 @@ BOOST_AUTO_TEST_CASE( perf_test ) {
     uniform_int<uint64_t> dist(0, std::numeric_limits<uint64_t>::max());
     boost::variate_generator<boost::random::mt19937&, uniform_int<uint64_t>> getRand(randGen, dist);
     
-    uint16_t testSize = 50000;
-    uint16_t testWidth = 35;
+    uint testSize = 50000;
+    uint testWidth = 35;
     
     uint64_t *needle = new uint64_t[testSize];
     for(int i=0; i<(testWidth); i++) {

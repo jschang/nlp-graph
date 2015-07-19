@@ -13,14 +13,21 @@ if (BUILD_NLPGRAPH_TESTS)
         ./util/opencl_test.cpp
         ./util/resource_pool_test.cpp
     )
-        
-    source_group(calc FILES 
+    
+    source_group(src FILES 
+        ./nlpgraph_tests.cpp
+        ./nlpgraph_tests.h
+    )
+    source_group(src\\calc FILES 
         ./calc/levenstein_damerau_test.cpp
     )
-    source_group(dao\\postgres FILES 
+    source_group(src\\calc FILES 
+        ./calc/levenstein_damerau_test.cpp
+    )
+    source_group(src\\dao\\postgres FILES 
         ./dao/postgres/model_postgres_test.cpp
     )
-    source_group(util FILES 
+    source_group(src\\util FILES 
         ./util/opencl_test.cpp
         ./util/resource_pool_test.cpp
     )

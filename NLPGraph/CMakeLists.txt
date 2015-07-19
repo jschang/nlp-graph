@@ -28,29 +28,34 @@ if (BUILD_NLPGRAPH_LIB)
         ./util/time_helper.cpp
         ./util/time_helper.h
     )
-        
-    source_group(calc FILES 
+    
+    source_group(src FILES 
+        ./context.cpp
+        ./context.h
+        ./nlpgraph.h
+    )
+    source_group(src\\calc FILES 
         ./calc/levenstein_damerau.cpp
         ./calc/levenstein_damerau.h
     )
-    source_group(dao FILES
+    source_group(src\\dao FILES
         ./dao/model.h
         ./dao/model_exception.h
         ./dao/symbol_provider.h
     )
-    source_group(dao\\postgres FILES
+    source_group(src\\dao\\postgres FILES
         ./dao/postgres/model_postgres.cpp
         ./dao/postgres/model_postgres.h
         ./dao/postgres/symbol_provider_postgres.cpp
         ./dao/postgres/symbol_provider_postgres.h
     )
-    source_group(dto FILES    
+    source_group(src\\dto FILES    
         ./dto/input_channel.h
         ./dto/recollection.h
         ./dto/recollection_exception.h
         ./dto/symbol.h
     )
-    source_group(util FILES
+    source_group(src\\util FILES
         ./util/file.cpp
         ./util/file.h
         ./util/logger.h

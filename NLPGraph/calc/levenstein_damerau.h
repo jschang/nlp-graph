@@ -31,7 +31,7 @@ private:
 public:
     LevensteinDamerau(boost::compute::context &context);
     ~LevensteinDamerau();
-    int calculate(uint16_t width, uint16_t haystackSize, uint64_t* needle, uint64_t* haystack, uint64_t *distancesOut, uint64_t *operationsOut);
+    int calculate(uint width, uint haystackSize, uint64_t* needle, uint64_t* haystack, uint64_t *distancesOut, uint64_t *operationsOut);
 };
 
 }}
