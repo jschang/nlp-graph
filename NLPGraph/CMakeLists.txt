@@ -19,6 +19,8 @@ if (BUILD_NLPGRAPH_LIB)
         ./dto/recollection_exception.h
         ./dto/symbol.h
         ./nlpgraph.h
+        ./util/string.cpp
+        ./util/string.h
         ./util/file.cpp
         ./util/file.h
         ./util/logger.h
@@ -56,6 +58,8 @@ if (BUILD_NLPGRAPH_LIB)
         ./dto/symbol.h
     )
     source_group(src\\util FILES
+    	./util/string.cpp
+        ./util/string.h
         ./util/file.cpp
         ./util/file.h
         ./util/logger.h

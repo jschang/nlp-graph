@@ -15,6 +15,9 @@ namespace NLPGraph {
 namespace Util {
 
 class File {
+private:
+    File() {}
+public:
     static std::string readTextFile(std::string fileName, std::string encoding);
     static char* readFile(std::string fileName);
 };

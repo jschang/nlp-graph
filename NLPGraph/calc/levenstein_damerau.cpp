@@ -20,24 +20,32 @@ using namespace NLPGraph::Util;
 namespace NLPGraph {
 namespace Calc {
 
+const uint CL_LOG_ON = 0b00000001;
+
 LevensteinDamerau::LevensteinDamerau(context &context) 
         : m_logger(boost::log::keywords::channel="NLPGraph::Calc::LevensteinDamerau") {
     m_context = context;
+    clLogOn = false;
     device dev(m_context.get_device());
     m_commandQueue = command_queue(m_context, dev);
     m_program = OpenCL::createAndBuildProgram(BOOST_COMPUTE_STRINGIZE_SOURCE(
     
-        inline uint append(__global char *log, uint logPos, __constant char* string) {
-            return logPos;
-            uint idx=0;
-            while(string[idx]!=0) {
-                log[logPos++] = string[idx++];
+        __constant uint CL_LOG_ON = 0b00000001; 
+    
+        inline uint append(const uint flags, __global char *log, uint logPos, __constant char* string) {
+            if ( flags & CL_LOG_ON ) {
+                uint idx=0;
+                while(string[idx]!=0) {
+                    log[logPos++] = string[idx++];
+                }
+                log[logPos]=0;
+                return logPos;
             }
-            log[logPos]=0;
             return logPos;
         }
             
         __kernel void calc_levenstein_damerau(
+                const uint flags,
                 const uint widthIn,               // needle and each in haystack width
                 __constant ulong *needleIn,       // needle uint64_t's 
                 __global ulong *haystackIn,       // haystack uint64_t's 
@@ -56,17 +64,17 @@ LevensteinDamerau::LevensteinDamerau(context &context)
             
             __private ulong distanceTotal = 0;
             
-            while(needleIdx<widthIn  && (logPos=append(logOut,logPos,"Iteration Start\n"))) {
+            while(needleIdx<widthIn  && (logPos=append(flags,logOut,logPos,"Iteration Start\n"))) {
             
                 do {
                     if(haystackIdx>=widthIn) {
-                        logPos=append(logOut,logPos,"haystack ended...incrementing dist\n");
+                        logPos=append(flags,logOut,logPos,"haystack ended...incrementing dist\n");
                         distanceTotal++;
                         needleIdx++;
                         break;
                     }
                     if(needleIdx>=widthIn) {
-                        logPos=append(logOut,logPos,"needle ended...incrementing dist\n");
+                        logPos=append(flags,logOut,logPos,"needle ended...incrementing dist\n");
                         distanceTotal++;
                         haystackIdx++;
                         break;
@@ -80,37 +88,37 @@ LevensteinDamerau::LevensteinDamerau(context &context)
                             if(needleCur == haystackLast) {
                                 if(needleLast == haystackLast) { 
                                     // 1111 - error: never been here before
-                                    logPos=append(logOut,logPos,"1111 - error: never been here before\n");
+                                    logPos=append(flags,logOut,logPos,"1111 - error: never been here before\n");
                                 } else { 
                                     // 1110 - error: never been here before
-                                    logPos=append(logOut,logPos,"1110 - error: never been here before\n");
+                                    logPos=append(flags,logOut,logPos,"1110 - error: never been here before\n");
                                 }
                             } else {
                                 if(needleLast == haystackLast) { 
                                     // 1101 - error: never been here before
-                                    logPos=append(logOut,logPos,"1101 - error: never been here before\n");
+                                    logPos=append(flags,logOut,logPos,"1101 - error: never been here before\n");
                                 } else { 
                                     // 1100 - error: never been here before
-                                    logPos=append(logOut,logPos,"1100 - error: never been here before\n");
+                                    logPos=append(flags,logOut,logPos,"1100 - error: never been here before\n");
                                 }
                             }
                         } else {
                             if(needleCur == haystackLast) { 
                                 if(needleLast == haystackLast) { 
                                     // 1011 - error: never been here before
-                                    logPos=append(logOut,logPos,"1011 - error: never been here before\n");
+                                    logPos=append(flags,logOut,logPos,"1011 - error: never been here before\n");
                                 } else { 
                                     // 1010 - possible insertion
-                                    logPos=append(logOut,logPos,"1010 - possible insertion\n");
+                                    logPos=append(flags,logOut,logPos,"1010 - possible insertion\n");
                                     distanceTotal++;
                                 }
                             } else { 
                                 if(needleLast == haystackLast) {
                                     // 1001 - continuing match
-                                    logPos=append(logOut,logPos,"1001 - continuing match\n");
+                                    logPos=append(flags,logOut,logPos,"1001 - continuing match\n");
                                 } else {
                                     // 1000 - match restored
-                                    logPos=append(logOut,logPos,"1000 - match restored\n");
+                                    logPos=append(flags,logOut,logPos,"1000 - match restored\n");
                                 }
                             }
                         }
@@ -119,20 +127,20 @@ LevensteinDamerau::LevensteinDamerau(context &context)
                             if(needleCur == haystackLast) {
                                 if(needleLast == haystackLast) {
                                     // 0111 - error: never been here before
-                                    logPos=append(logOut,logPos,"0111 - error: never been here before\n");
+                                    logPos=append(flags,logOut,logPos,"0111 - error: never been here before\n");
                                 } else {
                                     // 0110 - transposition
-                                    logPos=append(logOut,logPos,"0110 - transposition\n");
+                                    logPos=append(flags,logOut,logPos,"0110 - transposition\n");
                                     distanceTotal++;
                                 }
                             } else {
                                 if(needleLast == haystackLast) {
                                     // 0101 - repeat haystack
-                                    logPos=append(logOut,logPos,"0101 - repeat haystack\n");
+                                    logPos=append(flags,logOut,logPos,"0101 - repeat haystack\n");
                                     distanceTotal++;
                                 } else {
                                     // 0100 - may be restoration of match
-                                    logPos=append(logOut,logPos,"0100 - may be restoration of match\n");
+                                    logPos=append(flags,logOut,logPos,"0100 - may be restoration of match\n");
                                     needleIdx--;
                                     break;
                                 }
@@ -141,11 +149,11 @@ LevensteinDamerau::LevensteinDamerau(context &context)
                             if(needleCur == haystackLast) {
                                 if(needleLast == haystackLast) {
                                     // 0011 - replacement or deletion
-                                    logPos=append(logOut,logPos,"0011 - replacement or deletion\n");
+                                    logPos=append(flags,logOut,logPos,"0011 - replacement or deletion\n");
                                     //distanceTotal++;
                                 } else {
                                     // 0010 - restore match, last was actually ommission in haystack
-                                    logPos=append(logOut,logPos,"0010 - restore match, last was actually ommission in haystack\n");
+                                    logPos=append(flags,logOut,logPos,"0010 - restore match, last was actually ommission in haystack\n");
                                     haystackIdx--;
                                     distanceTotal--;
                                     break;
@@ -153,11 +161,11 @@ LevensteinDamerau::LevensteinDamerau(context &context)
                             } else {
                                 if(needleLast == haystackLast) {
                                     // 0001 - break match, replacement
-                                    logPos=append(logOut,logPos,"0001 - break match, replacement\n");
+                                    logPos=append(flags,logOut,logPos,"0001 - break match, replacement\n");
                                     distanceTotal++;
                                 } else {
                                     // 0000 - continue broken match, replacement
-                                    logPos=append(logOut,logPos,"0000 - continue broken match, replacement\n");
+                                    logPos=append(flags,logOut,logPos,"0000 - continue broken match, replacement\n");
                                     distanceTotal++;
                                 }
                             }
@@ -170,8 +178,8 @@ LevensteinDamerau::LevensteinDamerau(context &context)
                     haystackLast = haystackCur;
                     
                 } while(false);
-                logPos=append(logOut,logPos,(needleIdx<widthIn?"needleIdx<widthIn = true; ":"needleIdx<widthIn = false; "));
-                logPos=append(logOut,logPos,(haystackIdx<widthIn?"haystackIdx<widthIn = true\n":"haystackIdx<widthIn = false\n"));
+                logPos=append(flags,logOut,logPos,(needleIdx<widthIn?"needleIdx<widthIn = true; ":"needleIdx<widthIn = false; "));
+                logPos=append(flags,logOut,logPos,(haystackIdx<widthIn?"haystackIdx<widthIn = true\n":"haystackIdx<widthIn = false\n"));
             }
             distancesOut[haystackRowIdx] = distanceTotal;
         }
@@ -197,20 +205,26 @@ int LevensteinDamerau::calculate(uint width, uint haystackSize, uint64_t* needle
     vector<char> device_log(50000,m_context);
     device_log[0] = 0;
     
-    m_kernel.set_arg(0,width);
-    m_kernel.set_arg(1,device_needle);
-    m_kernel.set_arg(2,device_haystack);
-    m_kernel.set_arg(3,device_distances);
-    m_kernel.set_arg(4,device_operations);
-    m_kernel.set_arg(5,device_log);
+    uint flags = (clLogOn ? CL_LOG_ON : 0);
+    m_kernel.set_arg(0,flags);
+    m_kernel.set_arg(1,width);
+    m_kernel.set_arg(2,device_needle);
+    m_kernel.set_arg(3,device_haystack);
+    m_kernel.set_arg(4,device_distances);
+    m_kernel.set_arg(5,device_operations);
+    m_kernel.set_arg(6,device_log);
     m_commandQueue.enqueue_1d_range_kernel(m_kernel, 0, haystackSize, 1);
 
     char log[50000];
     copy(device_log.begin(),device_log.end(),(char*)&log,m_commandQueue);
-    LOG_I << std::string(log);
+    if(clLogOn) {
+        LOG_I << "Run log:" << std::string(log);
+    }
     
     copy(device_distances.begin(),device_distances.end(),distancesOut,m_commandQueue);
     copy(device_operations.begin(),device_operations.end(),operationsOut,m_commandQueue);
+    
+    m_kernel.
 
     return result;
 }
