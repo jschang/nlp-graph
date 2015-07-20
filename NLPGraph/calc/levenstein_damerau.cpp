@@ -60,30 +60,30 @@ LevensteinDamerau::LevensteinDamerau(context &context)
             __private uint haystackCur;
         } levenstein_damerau_type;
         
-        uint append_preamble(levenstein_damerau_type *self, __private uint descr);
-        uint append(levenstein_damerau_type *self, __private char* string, __private uint descr);
-        void al(levenstein_damerau_type *self, __private uint descr, __private char* str);
-        void ac(levenstein_damerau_type *self, __private uint descr, __constant char* str);
-        __private char * z(__private char *in, __private int len);
-        __private char * s(__private char *strOut, __constant char *strIn);
-        __private char * itoa(levenstein_damerau_type *self, __private ulong inNum, __private int base);
+        uint append_preamble(levenstein_damerau_type *self, uint descr);
+        uint append(levenstein_damerau_type *self, char* string, uint descr);
+        void al(levenstein_damerau_type *self, uint descr, char* str);
+        void ac(levenstein_damerau_type *self, uint descr, __constant char* str);
+        char * z(char *in, int len);
+        char * s(char *strOut, __constant char *strIn);
+        char * itoa(levenstein_damerau_type *self, ulong inNum, int base);
         
-        inline void al(levenstein_damerau_type *self, __private uint descr, __private char* str) {
+        inline void al(levenstein_damerau_type *self, uint descr, char* str) {
             self->logPos = append_preamble(self,descr);
             self->logPos = append(self,str,descr);
         }
-        inline void ac(levenstein_damerau_type *self, __private uint descr, __constant char* str) {
+        inline void ac(levenstein_damerau_type *self, uint descr, __constant char* str) {
             self->logPos = append_preamble(self,descr);
             self->logPos = append(self,s(z(self->str,self->strLen),str),descr);
         }
-        inline void aci(levenstein_damerau_type *self, __private uint descr, __constant char* str, ulong num) {
+        inline void aci(levenstein_damerau_type *self, uint descr, __constant char* str, ulong num) {
             self->logPos = append_preamble(self,descr);
             self->logPos = append(self,s(z(self->str,self->strLen),str),descr);
             self->logPos = append(self,itoa(self,num,10),descr);
             self->logPos = append(self,s(z(self->str,self->strLen),"\n"),descr);
         }
         
-        inline __private char * s(__private char *strOut, __constant char *strIn) {
+        inline char * s(char *strOut, __constant char *strIn) {
             int i=0;
             while(strIn[i]!='\0') {
                 strOut[i] = strIn[i];
@@ -92,14 +92,14 @@ LevensteinDamerau::LevensteinDamerau(context &context)
             return strOut;
         }
         
-        inline __private char * z(__private char *in, __private int len) {
+        inline char * z(char *in, int len) {
             for(int i=0; i<len; i++) {
                 in[i] = 0;
             }
             return in;
         }
         
-        inline uint append_preamble(levenstein_damerau_type *self, __private uint descr) {
+        inline uint append_preamble(levenstein_damerau_type *self, uint descr) {
         
             self->logPos = append(self,s(z(self->str,self->strLen),"global_id:"),descr);
                 self->logPos = append(self,itoa(self,self->haystackRowIdx,10),descr);
@@ -120,7 +120,7 @@ LevensteinDamerau::LevensteinDamerau(context &context)
             return self->logPos;
         }
     
-        inline uint append(levenstein_damerau_type *self, __private char* string, __private uint descr) {
+        inline uint append(levenstein_damerau_type *self, char* string, uint descr) {
             if ( self->flags & CL_LOG_ON ) {
                 if( ((self->flags & CL_LOG_ERROR_ONLY) && (descr & CL_LOG_TYPE_ERROR))
                         || !(self->flags & CL_LOG_ERROR_ONLY) ) {
@@ -135,10 +135,10 @@ LevensteinDamerau::LevensteinDamerau(context &context)
             return 1;
         }
         
-        inline void reverse(__private char *str, __private int len) {
+        inline void reverse(char *str, int len) {
         }
         
-        inline __private char* itoa(levenstein_damerau_type *self, __private ulong inNum, __private int base) {
+        inline char* itoa(levenstein_damerau_type *self, ulong inNum, int base) {
             ulong num = inNum;
             z(self->str,self->strLen);
             int i = 0;
