@@ -37,161 +37,272 @@ LevensteinDamerau::LevensteinDamerau(context &context)
         
         __constant uint CL_LOG_TYPE_ERROR = 0b00000001; 
     
-        inline uint append(const uint flags, __global char *log, uint logPos, __constant char* string, const uint descr) {
-            if ( flags & CL_LOG_ON ) {
-                if( ((flags & CL_LOG_ERROR_ONLY) && (descr & CL_LOG_TYPE_ERROR))
-                        || !(flags & CL_LOG_ERROR_ONLY) ) {
+        typedef struct {
+            __private uint flags;
+            __private uint widthIn;           // needle and each in haystack width
+            __constant ulong *needleIn;       // needle uint64_t's 
+            __global ulong *haystackIn;       // haystack uint64_t's 
+            __global ulong *distancesOut;     // results 
+            __global ulong *operationsOut;    // the operations to transform the haystack element into the needle
+            __global char *logOut;
+            __private uint haystackRowIdx;
+            __private uint strLen;
+            __local char *str;
+            __local uint logPos;
+            __private uint needleIdx;
+            __private uint haystackIdx;
+            __private ulong needleLast;
+            __private ulong haystackLast;
+            __private ulong distanceTotal;
+            __local uint needleCur;
+            __local uint haystackCur;
+        } self_type;
+        
+        uint append_preamble(self_type self);
+        uint append(self_type self, __local char* string, __private uint descr);
+        void al(self_type self, __private uint descr, __local char* str);
+        void ac(self_type self, __private uint descr, __constant char* str);
+        __local char * z(__local char *in, __private int len);
+        __local char * s(__local char *strOut, __constant char *strIn);
+        __local char* itoa(self_type self, __private int inNum, __private int base);
+        
+        inline void al(self_type self, __private uint descr, __local char* str) {
+            self.logPos = append_preamble(self);
+            self.logPos = append(self,str,descr);
+        }
+        inline void ac(self_type self, __private uint descr, __constant char* str) {
+            self.logPos = append_preamble(self);
+            self.logPos = append(self,s(z(self.str,self.strLen),str),descr);
+        }
+        
+        inline __local char * s(__local char *strOut, __constant char *strIn) {
+            int i=0;
+            while(strIn[i]!='\0') {
+                strOut[i] = strIn[i];
+                i++;
+            }
+            return strOut;
+        }
+        
+        inline __local char * z(__local char *in, __private int len) {
+            for(int i=0; i<len; i++) {
+                in[i] = 0;
+            }
+            return in;
+        }
+        
+        inline uint append_preamble(self_type self) {
+            self.logPos = append(self,s(z(self.str,self.strLen),"global_id:"),0);
+            self.logPos = append(self,itoa(self,self.haystackRowIdx,10),0);
+            self.logPos = append(self,s(z(self.str,self.strLen),",needle:"),0);
+            self.logPos = append(self,itoa(self,self.needleIdx,10),0);
+            self.logPos = append(self,s(z(self.str,self.strLen),",haystack:"),0);
+            self.logPos = append(self,itoa(self,self.haystackIdx,10),0);
+            return self.logPos;
+        }
+    
+        inline uint append(self_type self, __local char* string, __private uint descr) {
+            if ( self.flags & CL_LOG_ON ) {
+                if( ((self.flags & CL_LOG_ERROR_ONLY) && (descr & CL_LOG_TYPE_ERROR))
+                        || !(self.flags & CL_LOG_ERROR_ONLY) ) {
                     uint idx=0;
                     while(string[idx]!=0) {
-                        log[logPos++] = string[idx++];
+                        self.logOut[self.logPos++] = string[idx++];
                     }
-                    log[logPos]=0;
-                    return logPos;
+                    self.logOut[self.logPos]=0;
+                    return self.logPos;
                 }
             }
             return 1;
         }
+        
+        inline void reverse(__local char *str, __private int len) {
+        }
+        
+        inline __local char* itoa(self_type self, __private int inNum, __private int base) {
+            int num = inNum;
+            z(self.str,self.strLen);
+            int i = 0;
+            bool isNegative = false;
+            if (num == 0) {
+                self.str[i++] = '0';
+                self.str[i] = '\0';
+                return self.str;
+            }
+            if (num < 0 && base == 10) {
+                isNegative = true;
+                num = -num;
+            }
+            while (num != 0) {
+                int rem = num % base;
+                self.str[i++] = (rem > 9)? (rem-10) + 'a' : rem + '0';
+                num = num/base;
+            }
+            if (isNegative) {
+                self.str[i++] = '-';
+            }
+            self.str[i] = '\0';
+            reverse(self.str, i);
+            return self.str;
+        }
             
         __kernel void calc_levenstein_damerau(
-                const uint flags,
-                const uint widthIn,               // needle and each in haystack width
+                __private uint flags,
+                __private uint widthIn,           // needle and each in haystack width
                 __constant ulong *needleIn,       // needle uint64_t's 
                 __global ulong *haystackIn,       // haystack uint64_t's 
                 __global ulong *distancesOut,     // results 
                 __global ulong *operationsOut,    // the operations to transform the haystack element into the needle
                 __global char *logOut
         ) { 
-            __private uint haystackRowIdx = get_global_id(0);
+            self_type self;
+        
+            __local char strAr[255];  // didn't have another way to allocate it, 
+                                      // and the param has to retain addr space
+            __local char *str;
+            __private int strLen;
+            strLen = 255;
+            str = (__local char*)&strAr;
+            z(strAr,strLen);
+            self.str = str;
+            self.strLen = strLen;
+            self.flags = flags;
+            self.widthIn = widthIn;
+            self.needleIn = needleIn;
             
-            __private uint logPos = haystackRowIdx * 2048;
+            self.haystackRowIdx = get_global_id(0);
+
+            self.logOut = logOut;            
+            self.logOut[0] = 0x13;
+            self.logPos = self.haystackRowIdx * 2048;
             
-            __private uint needleIdx = 0;
-            __private uint haystackIdx = 0;
-            __private ulong needleLast = 0;
-            __private ulong haystackLast = 0;
+            self.logPos = 0;
+            self.needleIdx = 0;
+            self.haystackIdx = 0;
+            self.needleLast = 0;
+            self.haystackLast = 0;
+            self.distanceTotal = 0;
             
-            __private ulong distanceTotal = 0;
-            
-            logOut[0] = '\0';
-            
-            while(needleIdx<widthIn  && (logPos=append(flags,logOut,logPos,"Iteration Start\n",0))) {
+            ac(self,0,"test\n");
+            while(self.needleIdx<widthIn  && (self.logPos=append(self,s(z(self.str,self.strLen),"Iteration Start\n"),0))) {
             
                 do {
-                    if(haystackIdx>=widthIn) {
-                        logPos=append(flags,logOut,logPos,"haystack ended...incrementing dist\n",0);
-                        distanceTotal++;
-                        needleIdx++;
+                    if(self.haystackIdx>=self.widthIn) {
+                        ac(self,0,"haystack ended...incrementing dist\n");
+                        self.distanceTotal++;
+                        self.needleIdx++;
                         break;
                     }
-                    if(needleIdx>=widthIn) {
-                        logPos=append(flags,logOut,logPos,"needle ended...incrementing dist\n",0);
-                        distanceTotal++;
-                        haystackIdx++;
+                    if(self.needleIdx>=self.widthIn) {
+                        ac(self,0,"needle ended...incrementing dist\n");
+                        self.distanceTotal++;
+                        self.haystackIdx++;
                         break;
                     }
 
-                    ulong needleCur = needleIn[needleIdx];
-                    ulong haystackCur = haystackIn[(widthIn*haystackRowIdx)+haystackIdx];
+                    self.needleCur = self.needleIn[self.needleIdx];
+                    self.haystackCur = self.haystackIn[ ( self.widthIn * self.haystackRowIdx ) + self.haystackIdx ];
                     
-                    if(needleCur == haystackCur) {
-                        if(haystackCur == needleLast) {
-                            if(needleCur == haystackLast) {
-                                if(needleLast == haystackLast) { 
+                    if(self.needleCur == self.haystackCur) {
+                        if(self.haystackCur == self.needleLast) {
+                            if(self.needleCur == self.haystackLast) {
+                                if(self.needleLast == self.haystackLast) { 
                                     // 1111 - error: never been here before
-                                    logPos=append(flags,logOut,logPos,"1111 - error: never been here before\n",CL_LOG_TYPE_ERROR);
+                                    ac(self,CL_LOG_TYPE_ERROR," - 1111 - error: never been here before\n");
                                 } else { 
                                     // 1110 - error: never been here before
-                                    logPos=append(flags,logOut,logPos,"1110 - error: never been here before\n",CL_LOG_TYPE_ERROR);
+                                    ac(self,CL_LOG_TYPE_ERROR," - 1110 - error: never been here before\n");
                                 }
                             } else {
-                                if(needleLast == haystackLast) { 
+                                if(self.needleLast == self.haystackLast) { 
                                     // 1101 - error: never been here before
-                                    logPos=append(flags,logOut,logPos,"1101 - error: never been here before\n",CL_LOG_TYPE_ERROR);
+                                    ac(self,CL_LOG_TYPE_ERROR," - 1101 - error: never been here before\n");
                                 } else { 
                                     // 1100 - error: never been here before
-                                    logPos=append(flags,logOut,logPos,"1100 - error: never been here before\n",CL_LOG_TYPE_ERROR);
+                                    ac(self,CL_LOG_TYPE_ERROR," - 1100 - error: never been here before\n");
                                 }
                             }
                         } else {
-                            if(needleCur == haystackLast) { 
-                                if(needleLast == haystackLast) { 
+                            if(self.needleCur == self.haystackLast) { 
+                                if(self.needleLast == self.haystackLast) { 
                                     // 1011 - error: never been here before
-                                    logPos=append(flags,logOut,logPos,"1011 - error: never been here before\n",CL_LOG_TYPE_ERROR);
+                                    ac(self,CL_LOG_TYPE_ERROR," - 1011 - error: never been here before\n");
                                 } else { 
                                     // 1010 - possible insertion
-                                    logPos=append(flags,logOut,logPos,"1010 - possible insertion\n",0);
-                                    distanceTotal++;
+                                    ac(self,0," - 1010 - possible insertion\n");
+                                    self.distanceTotal++;
                                 }
                             } else { 
-                                if(needleLast == haystackLast) {
+                                if(self.needleLast == self.haystackLast) {
                                     // 1001 - continuing match
-                                    logPos=append(flags,logOut,logPos,"1001 - continuing match\n",0);
+                                    ac(self,0," - 1001 - continuing match\n");
                                 } else {
                                     // 1000 - match restored
-                                    logPos=append(flags,logOut,logPos,"1000 - match restored\n",0);
+                                    ac(self,0," - 1000 - match restored\n");
                                 }
                             }
                         }
                     } else {
-                        if(haystackCur == needleLast) {
-                            if(needleCur == haystackLast) {
-                                if(needleLast == haystackLast) {
+                        if(self.haystackCur == self.needleLast) {
+                            if(self.needleCur == self.haystackLast) {
+                                if(self.needleLast == self.haystackLast) {
                                     // 0111 - error: never been here before
-                                    logPos=append(flags,logOut,logPos,"0111 - error: never been here before\n",CL_LOG_TYPE_ERROR);
+                                    ac(self,CL_LOG_TYPE_ERROR," - 0111 - error: never been here before\n");
                                 } else {
                                     // 0110 - transposition
-                                    logPos=append(flags,logOut,logPos,"0110 - transposition\n",0);
-                                    distanceTotal++;
+                                    ac(self,0," - 0110 - transposition\n");
+                                    self.distanceTotal++;
                                 }
                             } else {
-                                if(needleLast == haystackLast) {
+                                if(self.needleLast == self.haystackLast) {
                                     // 0101 - repeat haystack
-                                    logPos=append(flags,logOut,logPos,"0101 - repeat haystack\n",0);
-                                    distanceTotal++;
+                                    ac(self,0," - 0101 - repeat haystack\n");
+                                    self.distanceTotal++;
                                 } else {
                                     // 0100 - may be restoration of match
-                                    logPos=append(flags,logOut,logPos,"0100 - may be restoration of match\n",0);
-                                    needleIdx--;
+                                    ac(self,0," - 0100 - may be restoration of match\n");
+                                    self.needleIdx--;
                                     break;
                                 }
                             }
                         } else {
-                            if(needleCur == haystackLast) {
-                                if(needleLast == haystackLast) {
+                            if(self.needleCur == self.haystackLast) {
+                                if(self.needleLast == self.haystackLast) {
                                     // 0011 - replacement or deletion
-                                    logPos=append(flags,logOut,logPos,"0011 - replacement or deletion\n",0);
+                                    ac(self,0," - 0011 - replacement or deletion\n");
                                     //distanceTotal++;
                                 } else {
                                     // 0010 - restore match, last was actually ommission in haystack
-                                    logPos=append(flags,logOut,logPos,"0010 - restore match, last was actually ommission in haystack\n",0);
-                                    haystackIdx--;
-                                    distanceTotal--;
+                                    ac(self,0," - 0010 - restore match, last was actually ommission in haystack\n");
+                                    self.haystackIdx--;
+                                    self.distanceTotal--;
                                     break;
                                 }
                             } else {
-                                if(needleLast == haystackLast) {
+                                if(self.needleLast == self.haystackLast) {
                                     // 0001 - break match, replacement
-                                    logPos=append(flags,logOut,logPos,"0001 - break match, replacement\n",0);
-                                    distanceTotal++;
+                                    //logPos=log(haystackRowIdx,needleIdx,haystackIdx,str,strLen,)
+                                    ac(self,0," - 0001 - break match, replacement\n");
+                                    self.distanceTotal++;
                                 } else {
                                     // 0000 - continue broken match, replacement
-                                    logPos=append(flags,logOut,logPos,"0000 - continue broken match, replacement\n",0);
-                                    distanceTotal++;
+                                    ac(self,0," - 0000 - continue broken match, replacement\n");
+                                    self.distanceTotal++;
                                 }
                             }
                         }
                     }
                     
-                    needleIdx++;
-                    haystackIdx++;
-                    needleLast = needleCur;
-                    haystackLast = haystackCur;
+                    self.needleIdx++;
+                    self.haystackIdx++;
+                    self.needleLast = self.needleCur;
+                    self.haystackLast = self.haystackCur;
                     
                 } while(false);
-                logPos=append(flags,logOut,logPos,(needleIdx<widthIn?"needleIdx<widthIn = true; ":"needleIdx<widthIn = false; "),0);
-                logPos=append(flags,logOut,logPos,(haystackIdx<widthIn?"haystackIdx<widthIn = true\n":"haystackIdx<widthIn = false\n"),0);
+                ac(self,0,(self.needleIdx<self.widthIn?"needleIdx<widthIn = true; ":"needleIdx<widthIn = false; "));
+                ac(self,0,(self.haystackIdx<self.widthIn?"haystackIdx<widthIn = true\n":"haystackIdx<widthIn = false\n"));
             }
-            distancesOut[haystackRowIdx] = distanceTotal;
+            self.distancesOut[self.haystackRowIdx] = self.distanceTotal;
         }
     ),m_context);
     m_kernel = kernel(m_program, "calc_levenstein_damerau");
