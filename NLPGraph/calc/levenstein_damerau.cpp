@@ -49,26 +49,26 @@ LevensteinDamerau::LevensteinDamerau(context &context)
             __private uint haystackSize;
             __private uint haystackRowIdx;
             __private uint strLen;
-            __local char *str;
-            __local uint logPos;
+            __private char *str;
+            __private uint logPos;
             __private uint needleIdx;
             __private uint haystackIdx;
             __private ulong needleLast;
             __private ulong haystackLast;
             __private ulong distanceTotal;
-            __local uint needleCur;
-            __local uint haystackCur;
+            __private uint needleCur;
+            __private uint haystackCur;
         } self_type;
         
         uint append_preamble(self_type *self, __private uint descr);
-        uint append(self_type *self, __local char* string, __private uint descr);
-        void al(self_type *self, __private uint descr, __local char* str);
+        uint append(self_type *self, __private char* string, __private uint descr);
+        void al(self_type *self, __private uint descr, __private char* str);
         void ac(self_type *self, __private uint descr, __constant char* str);
-        __local char * z(__local char *in, __private int len);
-        __local char * s(__local char *strOut, __constant char *strIn);
-        __local char* itoa(self_type *self, __private ulong inNum, __private int base);
+        __private char * z(__private char *in, __private int len);
+        __private char * s(__private char *strOut, __constant char *strIn);
+        __private char* itoa(self_type *self, __private ulong inNum, __private int base);
         
-        inline void al(self_type *self, __private uint descr, __local char* str) {
+        inline void al(self_type *self, __private uint descr, __private char* str) {
             self->logPos = append_preamble(self,descr);
             self->logPos = append(self,str,descr);
         }
@@ -83,7 +83,7 @@ LevensteinDamerau::LevensteinDamerau(context &context)
             self->logPos = append(self,s(z(self->str,self->strLen),"\n"),descr);
         }
         
-        inline __local char * s(__local char *strOut, __constant char *strIn) {
+        inline __private char * s(__private char *strOut, __constant char *strIn) {
             int i=0;
             while(strIn[i]!='\0') {
                 strOut[i] = strIn[i];
@@ -92,7 +92,7 @@ LevensteinDamerau::LevensteinDamerau(context &context)
             return strOut;
         }
         
-        inline __local char * z(__local char *in, __private int len) {
+        inline __private char * z(__private char *in, __private int len) {
             for(int i=0; i<len; i++) {
                 in[i] = 0;
             }
@@ -120,7 +120,7 @@ LevensteinDamerau::LevensteinDamerau(context &context)
             return self->logPos;
         }
     
-        inline uint append(self_type *self, __local char* string, __private uint descr) {
+        inline uint append(self_type *self, __private char* string, __private uint descr) {
             if ( self->flags & CL_LOG_ON ) {
                 if( ((self->flags & CL_LOG_ERROR_ONLY) && (descr & CL_LOG_TYPE_ERROR))
                         || !(self->flags & CL_LOG_ERROR_ONLY) ) {
@@ -135,10 +135,10 @@ LevensteinDamerau::LevensteinDamerau(context &context)
             return 1;
         }
         
-        inline void reverse(__local char *str, __private int len) {
+        inline void reverse(__private char *str, __private int len) {
         }
         
-        inline __local char* itoa(self_type *self, __private ulong inNum, __private int base) {
+        inline __private char* itoa(self_type *self, __private ulong inNum, __private int base) {
             ulong num = inNum;
             z(self->str,self->strLen);
             int i = 0;
@@ -178,12 +178,12 @@ LevensteinDamerau::LevensteinDamerau(context &context)
         ) { 
             self_type self;
         
-            __local char strAr[255];  // didn't have another way to allocate it, 
-                                      // and the param has to retain addr space
-            __local char *str;
+            __private char strAr[255];  // didn't have another way to allocate it, 
+                                        // and the param has to retain addr space
+            __private char *str;
             __private int strLen;
             strLen = 255;
-            str = (__local char*)&strAr;
+            str = (__private char*)&strAr;
             z(strAr,strLen);
             self.str = str;
             self.strLen = strLen;
@@ -332,7 +332,7 @@ LevensteinDamerau::LevensteinDamerau(context &context)
                     self.haystackLast = self.haystackCur;
                     
                 } while(false);
-                ac(&self,0,self.needleIdx<self.widthIn?"needleIdx<widthIn = true; ":"needleIdx<widthIn = false; \n");
+                ac(&self,0,self.needleIdx<self.widthIn?"needleIdx<widthIn = true; \n":"needleIdx<widthIn = false; \n");
                 ac(&self,0,self.haystackIdx<self.widthIn?"haystackIdx<widthIn = true\n":"haystackIdx<widthIn = false\n");
             }
             self.distancesOut[self.haystackRowIdx] = self.distanceTotal;
