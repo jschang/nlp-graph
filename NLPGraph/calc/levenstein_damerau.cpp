@@ -66,7 +66,7 @@ LevensteinDamerau::LevensteinDamerau(context &context)
         void ac(self_type *self, __private uint descr, __constant char* str);
         __local char * z(__local char *in, __private int len);
         __local char * s(__local char *strOut, __constant char *strIn);
-        __local char* itoa(self_type *self, __private int inNum, __private int base);
+        __local char* itoa(self_type *self, __private ulong inNum, __private int base);
         
         inline void al(self_type *self, __private uint descr, __local char* str) {
             self->logPos = append_preamble(self,descr);
@@ -75,6 +75,12 @@ LevensteinDamerau::LevensteinDamerau(context &context)
         inline void ac(self_type *self, __private uint descr, __constant char* str) {
             self->logPos = append_preamble(self,descr);
             self->logPos = append(self,s(z(self->str,self->strLen),str),descr);
+        }
+        inline void aci(self_type *self, __private uint descr, __constant char* str, ulong num) {
+            self->logPos = append_preamble(self,descr);
+            self->logPos = append(self,s(z(self->str,self->strLen),str),descr);
+            self->logPos = append(self,itoa(self,num,10),descr);
+            self->logPos = append(self,s(z(self->str,self->strLen),"\n"),descr);
         }
         
         inline __local char * s(__local char *strOut, __constant char *strIn) {
@@ -94,12 +100,22 @@ LevensteinDamerau::LevensteinDamerau(context &context)
         }
         
         inline uint append_preamble(self_type *self, __private uint descr) {
+        
             self->logPos = append(self,s(z(self->str,self->strLen),"global_id:"),descr);
-            self->logPos = append(self,itoa(self,self->haystackRowIdx,10),descr);
-            self->logPos = append(self,s(z(self->str,self->strLen),",needle:"),descr);
-            self->logPos = append(self,itoa(self,self->needleIdx,10),descr);
-            self->logPos = append(self,s(z(self->str,self->strLen),",haystack:"),descr);
-            self->logPos = append(self,itoa(self,self->haystackIdx,10),descr);
+                self->logPos = append(self,itoa(self,self->haystackRowIdx,10),descr);
+                
+            self->logPos = append(self,s(z(self->str,self->strLen),",needleIdx:"),descr);
+                self->logPos = append(self,itoa(self,self->needleIdx,10),descr);
+                
+            self->logPos = append(self,s(z(self->str,self->strLen),",haystackIdx:"),descr);
+                self->logPos = append(self,itoa(self,self->haystackIdx,10),descr);
+                
+            self->logPos = append(self,s(z(self->str,self->strLen),",needleCur:"),descr);
+                self->logPos = append(self,itoa(self,self->needleCur,10),descr);
+                
+            self->logPos = append(self,s(z(self->str,self->strLen),",haystackCur:"),descr);
+                self->logPos = append(self,itoa(self,self->haystackCur,10),descr);
+                
             self->logPos = append(self,s(z(self->str,self->strLen)," - "),descr);
             return self->logPos;
         }
@@ -122,28 +138,28 @@ LevensteinDamerau::LevensteinDamerau(context &context)
         inline void reverse(__local char *str, __private int len) {
         }
         
-        inline __local char* itoa(self_type *self, __private int inNum, __private int base) {
-            int num = inNum;
+        inline __local char* itoa(self_type *self, __private ulong inNum, __private int base) {
+            ulong num = inNum;
             z(self->str,self->strLen);
             int i = 0;
-            bool isNegative = false;
+            //bool isNegative = false;
             if (num == 0) {
                 self->str[i++] = '0';
                 self->str[i] = '\0';
                 return self->str;
             }
-            if (num < 0 && base == 10) {
+            /*if (num < 0 && base == 10) {
                 isNegative = true;
                 num = -num;
-            }
+            }*/
             while (num != 0) {
                 int rem = num % base;
                 self->str[i++] = (rem > 9)? (rem-10) + 'a' : rem + '0';
                 num = num/base;
             }
-            if (isNegative) {
+            /*if (isNegative) {
                 self->str[i++] = '-';
-            }
+            }*/
             self->str[i] = '\0';
             reverse(self->str, i);
             return self->str;
@@ -191,9 +207,17 @@ LevensteinDamerau::LevensteinDamerau(context &context)
             self.distanceTotal = 0;
             self.distancesOut = distancesOut;
             
-            ac(&self,0,"haystackIdx:");
-            al(&self,0,itoa(&self,self.haystackIdx,10));
-            while( self.needleIdx < widthIn ) {
+            aci(&self,0,"strLen:         ",self.strLen);
+            aci(&self,0,"flags:          ",self.flags);
+            aci(&self,0,"widthIn:        ",self.widthIn);
+            
+            aci(&self,0,"haystackSize:   ",self.haystackSize);
+            aci(&self,0,"haystackRowIdx: ",self.haystackRowIdx);
+
+            aci(&self,0,"logLength:      ",self.logLength);            
+            aci(&self,0,"logPos:         ",self.logPos);
+            
+            while( self.needleIdx < self.widthIn ) {
             
                 do {
                     if(self.haystackIdx>=self.widthIn) {
@@ -211,8 +235,6 @@ LevensteinDamerau::LevensteinDamerau(context &context)
                     
                     self.needleCur = self.needleIn[ self.needleIdx ];
                     self.haystackCur = self.haystackIn[ ( self.widthIn * self.haystackRowIdx ) + self.haystackIdx ];
-                    ac(&self,0,"haystackIdx:");
-                    al(&self,0,itoa(&self,self.haystackIdx,10));
                     
                     if(self.needleCur == self.haystackCur) {
                         if(self.haystackCur == self.needleLast) {
@@ -310,7 +332,7 @@ LevensteinDamerau::LevensteinDamerau(context &context)
                     self.haystackLast = self.haystackCur;
                     
                 } while(false);
-                ac(&self,0,self.needleIdx<self.widthIn?"needleIdx<widthIn = true; ":"needleIdx<widthIn = false; ");
+                ac(&self,0,self.needleIdx<self.widthIn?"needleIdx<widthIn = true; ":"needleIdx<widthIn = false; \n");
                 ac(&self,0,self.haystackIdx<self.widthIn?"haystackIdx<widthIn = true\n":"haystackIdx<widthIn = false\n");
             }
             self.distancesOut[self.haystackRowIdx] = self.distanceTotal;
