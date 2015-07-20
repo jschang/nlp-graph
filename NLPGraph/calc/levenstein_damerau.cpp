@@ -68,10 +68,6 @@ LevensteinDamerau::LevensteinDamerau(context &context)
         __local char * s(__local char *strOut, __constant char *strIn);
         __local char* itoa(self_type *self, __private int inNum, __private int base);
         
-        inline void test(self_type *self, __private uint descr, __constant char* str) {
-            self->logPos = append_preamble(self,descr);
-            self->logPos = append(self,s(z(self->str,self->strLen),str),descr);
-        }
         inline void al(self_type *self, __private uint descr, __local char* str) {
             self->logPos = append_preamble(self,descr);
             self->logPos = append(self,str,descr);
@@ -193,8 +189,10 @@ LevensteinDamerau::LevensteinDamerau(context &context)
             self.needleLast = 0;
             self.haystackLast = 0;
             self.distanceTotal = 0;
+            self.distancesOut = distancesOut;
             
-            test(&self,0,"test\n");
+            ac(&self,0,"haystackIdx:");
+            al(&self,0,itoa(&self,self.haystackIdx,10));
             while( self.needleIdx < widthIn ) {
             
                 do {
@@ -210,9 +208,11 @@ LevensteinDamerau::LevensteinDamerau(context &context)
                         self.haystackIdx++;
                         break;
                     }
-
-                    self.needleCur = self.needleIn[self.needleIdx];
+                    
+                    self.needleCur = self.needleIn[ self.needleIdx ];
                     self.haystackCur = self.haystackIn[ ( self.widthIn * self.haystackRowIdx ) + self.haystackIdx ];
+                    ac(&self,0,"haystackIdx:");
+                    al(&self,0,itoa(&self,self.haystackIdx,10));
                     
                     if(self.needleCur == self.haystackCur) {
                         if(self.haystackCur == self.needleLast) {
