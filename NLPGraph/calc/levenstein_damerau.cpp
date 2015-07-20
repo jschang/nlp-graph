@@ -66,7 +66,7 @@ LevensteinDamerau::LevensteinDamerau(context &context)
         void ac(self_type *self, __private uint descr, __constant char* str);
         __private char * z(__private char *in, __private int len);
         __private char * s(__private char *strOut, __constant char *strIn);
-        __private char* itoa(self_type *self, __private ulong inNum, __private int base);
+        __private char * itoa(self_type *self, __private ulong inNum, __private int base);
         
         inline void al(self_type *self, __private uint descr, __private char* str) {
             self->logPos = append_preamble(self,descr);
