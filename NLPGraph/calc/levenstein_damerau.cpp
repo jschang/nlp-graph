@@ -28,26 +28,26 @@ __constant uint CL_LOG_ERROR_ONLY = 0b00000010;
 __constant uint CL_LOG_TYPE_ERROR = 0b00000001; 
 
 typedef struct {
-    __private uint flags;
-    __private uint widthIn;           // needle and each in haystack width
+    uint flags;
+    uint widthIn;           // needle and each in haystack width
     __constant ulong *needleIn;       // needle uint64_t's 
     __global ulong *haystackIn;       // haystack uint64_t's 
     __global ulong *distancesOut;     // results 
     __global ulong *operationsOut;    // the operations to transform the haystack element into the needle
     __global char *logOut;
-    __private uint logLength;
-    __private uint haystackSize;
-    __private uint haystackRowIdx;
-    __private uint strLen;
-    __private char *str;
-    __private uint logPos;
-    __private uint needleIdx;
-    __private uint haystackIdx;
-    __private ulong needleLast;
-    __private ulong haystackLast;
-    __private ulong distanceTotal;
-    __private uint needleCur;
-    __private uint haystackCur;
+    uint logLength;
+    uint haystackSize;
+    uint haystackRowIdx;
+    uint strLen;
+    char *str;
+    uint logPos;
+    uint needleIdx;
+    uint haystackIdx;
+    ulong needleLast;
+    ulong haystackLast;
+    ulong distanceTotal;
+    uint needleCur;
+    uint haystackCur;
 } levenstein_damerau_type;
 
 uint append_preamble(levenstein_damerau_type *self, uint descr);
@@ -168,13 +168,13 @@ __kernel void calc_levenstein_damerau(
 ) { 
     levenstein_damerau_type self;
 
-    __private char strAr[255];  // didn't have another way to allocate it, 
+    char strAr[255];  // didn't have another way to allocate it, 
                                 // and the param has to retain addr space
-    __private char *str;
-    __private int strLen;
+    char *str;
+    int strLen;
     
     strLen = 255;
-    str = (__private char*)&strAr;
+    str = (char*)&strAr;
     z(strAr,strLen);
     
     self.str = str;
