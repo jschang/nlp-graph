@@ -58,25 +58,25 @@ LevensteinDamerau::LevensteinDamerau(context &context)
             __private ulong distanceTotal;
             __private uint needleCur;
             __private uint haystackCur;
-        } self_type;
+        } levenstein_damerau_type;
         
-        uint append_preamble(self_type *self, __private uint descr);
-        uint append(self_type *self, __private char* string, __private uint descr);
-        void al(self_type *self, __private uint descr, __private char* str);
-        void ac(self_type *self, __private uint descr, __constant char* str);
+        uint append_preamble(levenstein_damerau_type *self, __private uint descr);
+        uint append(levenstein_damerau_type *self, __private char* string, __private uint descr);
+        void al(levenstein_damerau_type *self, __private uint descr, __private char* str);
+        void ac(levenstein_damerau_type *self, __private uint descr, __constant char* str);
         __private char * z(__private char *in, __private int len);
         __private char * s(__private char *strOut, __constant char *strIn);
-        __private char * itoa(self_type *self, __private ulong inNum, __private int base);
+        __private char * itoa(levenstein_damerau_type *self, __private ulong inNum, __private int base);
         
-        inline void al(self_type *self, __private uint descr, __private char* str) {
+        inline void al(levenstein_damerau_type *self, __private uint descr, __private char* str) {
             self->logPos = append_preamble(self,descr);
             self->logPos = append(self,str,descr);
         }
-        inline void ac(self_type *self, __private uint descr, __constant char* str) {
+        inline void ac(levenstein_damerau_type *self, __private uint descr, __constant char* str) {
             self->logPos = append_preamble(self,descr);
             self->logPos = append(self,s(z(self->str,self->strLen),str),descr);
         }
-        inline void aci(self_type *self, __private uint descr, __constant char* str, ulong num) {
+        inline void aci(levenstein_damerau_type *self, __private uint descr, __constant char* str, ulong num) {
             self->logPos = append_preamble(self,descr);
             self->logPos = append(self,s(z(self->str,self->strLen),str),descr);
             self->logPos = append(self,itoa(self,num,10),descr);
@@ -99,7 +99,7 @@ LevensteinDamerau::LevensteinDamerau(context &context)
             return in;
         }
         
-        inline uint append_preamble(self_type *self, __private uint descr) {
+        inline uint append_preamble(levenstein_damerau_type *self, __private uint descr) {
         
             self->logPos = append(self,s(z(self->str,self->strLen),"global_id:"),descr);
                 self->logPos = append(self,itoa(self,self->haystackRowIdx,10),descr);
@@ -120,7 +120,7 @@ LevensteinDamerau::LevensteinDamerau(context &context)
             return self->logPos;
         }
     
-        inline uint append(self_type *self, __private char* string, __private uint descr) {
+        inline uint append(levenstein_damerau_type *self, __private char* string, __private uint descr) {
             if ( self->flags & CL_LOG_ON ) {
                 if( ((self->flags & CL_LOG_ERROR_ONLY) && (descr & CL_LOG_TYPE_ERROR))
                         || !(self->flags & CL_LOG_ERROR_ONLY) ) {
@@ -138,7 +138,7 @@ LevensteinDamerau::LevensteinDamerau(context &context)
         inline void reverse(__private char *str, __private int len) {
         }
         
-        inline __private char* itoa(self_type *self, __private ulong inNum, __private int base) {
+        inline __private char* itoa(levenstein_damerau_type *self, __private ulong inNum, __private int base) {
             ulong num = inNum;
             z(self->str,self->strLen);
             int i = 0;
@@ -166,25 +166,27 @@ LevensteinDamerau::LevensteinDamerau(context &context)
         }
             
         __kernel void calc_levenstein_damerau(
-                __private uint flags,
-                __private uint widthIn,           // needle and each in haystack width
+                uint flags,
+                uint widthIn,           // needle and each in haystack width
                 __constant ulong *needleIn,       // needle uint64_t's 
                 __global ulong *haystackIn,       // haystack uint64_t's 
                 __global ulong *distancesOut,     // results 
                 __global ulong *operationsOut,    // the operations to transform the haystack element into the needle
                 __global char *logOut,
-                __private uint logLength,
-                __private uint haystackSize
+                uint logLength,
+                uint haystackSize
         ) { 
-            self_type self;
+            levenstein_damerau_type self;
         
             __private char strAr[255];  // didn't have another way to allocate it, 
                                         // and the param has to retain addr space
             __private char *str;
             __private int strLen;
+            
             strLen = 255;
             str = (__private char*)&strAr;
             z(strAr,strLen);
+            
             self.str = str;
             self.strLen = strLen;
             self.flags = flags;
