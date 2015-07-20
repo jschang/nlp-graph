@@ -45,6 +45,8 @@ LevensteinDamerau::LevensteinDamerau(context &context)
             __global ulong *distancesOut;     // results 
             __global ulong *operationsOut;    // the operations to transform the haystack element into the needle
             __global char *logOut;
+            __private uint logLength;
+            __private uint haystackSize;
             __private uint haystackRowIdx;
             __private uint strLen;
             __local char *str;
@@ -58,21 +60,25 @@ LevensteinDamerau::LevensteinDamerau(context &context)
             __local uint haystackCur;
         } self_type;
         
-        uint append_preamble(self_type self);
-        uint append(self_type self, __local char* string, __private uint descr);
-        void al(self_type self, __private uint descr, __local char* str);
-        void ac(self_type self, __private uint descr, __constant char* str);
+        uint append_preamble(self_type *self, __private uint descr);
+        uint append(self_type *self, __local char* string, __private uint descr);
+        void al(self_type *self, __private uint descr, __local char* str);
+        void ac(self_type *self, __private uint descr, __constant char* str);
         __local char * z(__local char *in, __private int len);
         __local char * s(__local char *strOut, __constant char *strIn);
-        __local char* itoa(self_type self, __private int inNum, __private int base);
+        __local char* itoa(self_type *self, __private int inNum, __private int base);
         
-        inline void al(self_type self, __private uint descr, __local char* str) {
-            self.logPos = append_preamble(self);
-            self.logPos = append(self,str,descr);
+        inline void test(self_type *self, __private uint descr, __constant char* str) {
+            self->logPos = append_preamble(self,descr);
+            self->logPos = append(self,s(z(self->str,self->strLen),str),descr);
         }
-        inline void ac(self_type self, __private uint descr, __constant char* str) {
-            self.logPos = append_preamble(self);
-            self.logPos = append(self,s(z(self.str,self.strLen),str),descr);
+        inline void al(self_type *self, __private uint descr, __local char* str) {
+            self->logPos = append_preamble(self,descr);
+            self->logPos = append(self,str,descr);
+        }
+        inline void ac(self_type *self, __private uint descr, __constant char* str) {
+            self->logPos = append_preamble(self,descr);
+            self->logPos = append(self,s(z(self->str,self->strLen),str),descr);
         }
         
         inline __local char * s(__local char *strOut, __constant char *strIn) {
@@ -91,26 +97,27 @@ LevensteinDamerau::LevensteinDamerau(context &context)
             return in;
         }
         
-        inline uint append_preamble(self_type self) {
-            self.logPos = append(self,s(z(self.str,self.strLen),"global_id:"),0);
-            self.logPos = append(self,itoa(self,self.haystackRowIdx,10),0);
-            self.logPos = append(self,s(z(self.str,self.strLen),",needle:"),0);
-            self.logPos = append(self,itoa(self,self.needleIdx,10),0);
-            self.logPos = append(self,s(z(self.str,self.strLen),",haystack:"),0);
-            self.logPos = append(self,itoa(self,self.haystackIdx,10),0);
-            return self.logPos;
+        inline uint append_preamble(self_type *self, __private uint descr) {
+            self->logPos = append(self,s(z(self->str,self->strLen),"global_id:"),descr);
+            self->logPos = append(self,itoa(self,self->haystackRowIdx,10),descr);
+            self->logPos = append(self,s(z(self->str,self->strLen),",needle:"),descr);
+            self->logPos = append(self,itoa(self,self->needleIdx,10),descr);
+            self->logPos = append(self,s(z(self->str,self->strLen),",haystack:"),descr);
+            self->logPos = append(self,itoa(self,self->haystackIdx,10),descr);
+            self->logPos = append(self,s(z(self->str,self->strLen)," - "),descr);
+            return self->logPos;
         }
     
-        inline uint append(self_type self, __local char* string, __private uint descr) {
-            if ( self.flags & CL_LOG_ON ) {
-                if( ((self.flags & CL_LOG_ERROR_ONLY) && (descr & CL_LOG_TYPE_ERROR))
-                        || !(self.flags & CL_LOG_ERROR_ONLY) ) {
+        inline uint append(self_type *self, __local char* string, __private uint descr) {
+            if ( self->flags & CL_LOG_ON ) {
+                if( ((self->flags & CL_LOG_ERROR_ONLY) && (descr & CL_LOG_TYPE_ERROR))
+                        || !(self->flags & CL_LOG_ERROR_ONLY) ) {
                     uint idx=0;
                     while(string[idx]!=0) {
-                        self.logOut[self.logPos++] = string[idx++];
+                        self->logOut[self->logPos++] = string[idx++];
                     }
-                    self.logOut[self.logPos]=0;
-                    return self.logPos;
+                    self->logOut[self->logPos]=0;
+                    return self->logPos;
                 }
             }
             return 1;
@@ -119,15 +126,15 @@ LevensteinDamerau::LevensteinDamerau(context &context)
         inline void reverse(__local char *str, __private int len) {
         }
         
-        inline __local char* itoa(self_type self, __private int inNum, __private int base) {
+        inline __local char* itoa(self_type *self, __private int inNum, __private int base) {
             int num = inNum;
-            z(self.str,self.strLen);
+            z(self->str,self->strLen);
             int i = 0;
             bool isNegative = false;
             if (num == 0) {
-                self.str[i++] = '0';
-                self.str[i] = '\0';
-                return self.str;
+                self->str[i++] = '0';
+                self->str[i] = '\0';
+                return self->str;
             }
             if (num < 0 && base == 10) {
                 isNegative = true;
@@ -135,15 +142,15 @@ LevensteinDamerau::LevensteinDamerau(context &context)
             }
             while (num != 0) {
                 int rem = num % base;
-                self.str[i++] = (rem > 9)? (rem-10) + 'a' : rem + '0';
+                self->str[i++] = (rem > 9)? (rem-10) + 'a' : rem + '0';
                 num = num/base;
             }
             if (isNegative) {
-                self.str[i++] = '-';
+                self->str[i++] = '-';
             }
-            self.str[i] = '\0';
-            reverse(self.str, i);
-            return self.str;
+            self->str[i] = '\0';
+            reverse(self->str, i);
+            return self->str;
         }
             
         __kernel void calc_levenstein_damerau(
@@ -153,7 +160,9 @@ LevensteinDamerau::LevensteinDamerau(context &context)
                 __global ulong *haystackIn,       // haystack uint64_t's 
                 __global ulong *distancesOut,     // results 
                 __global ulong *operationsOut,    // the operations to transform the haystack element into the needle
-                __global char *logOut
+                __global char *logOut,
+                __private uint logLength,
+                __private uint haystackSize
         ) { 
             self_type self;
         
@@ -170,31 +179,33 @@ LevensteinDamerau::LevensteinDamerau(context &context)
             self.widthIn = widthIn;
             self.needleIn = needleIn;
             
+            self.haystackSize = haystackSize;
             self.haystackRowIdx = get_global_id(0);
 
+            self.logLength = logLength;
             self.logOut = logOut;            
             self.logOut[0] = 0x13;
+            self.logOut[1] = '\0';
             self.logPos = self.haystackRowIdx * 2048;
             
-            self.logPos = 0;
             self.needleIdx = 0;
             self.haystackIdx = 0;
             self.needleLast = 0;
             self.haystackLast = 0;
             self.distanceTotal = 0;
             
-            ac(self,0,"test\n");
-            while(self.needleIdx<widthIn  && (self.logPos=append(self,s(z(self.str,self.strLen),"Iteration Start\n"),0))) {
+            test(&self,0,"test\n");
+            while( self.needleIdx < widthIn ) {
             
                 do {
                     if(self.haystackIdx>=self.widthIn) {
-                        ac(self,0,"haystack ended...incrementing dist\n");
+                        ac(&self,0,"haystack ended...incrementing dist\n");
                         self.distanceTotal++;
                         self.needleIdx++;
                         break;
                     }
                     if(self.needleIdx>=self.widthIn) {
-                        ac(self,0,"needle ended...incrementing dist\n");
+                        ac(&self,0,"needle ended...incrementing dist\n");
                         self.distanceTotal++;
                         self.haystackIdx++;
                         break;
@@ -208,37 +219,37 @@ LevensteinDamerau::LevensteinDamerau(context &context)
                             if(self.needleCur == self.haystackLast) {
                                 if(self.needleLast == self.haystackLast) { 
                                     // 1111 - error: never been here before
-                                    ac(self,CL_LOG_TYPE_ERROR," - 1111 - error: never been here before\n");
+                                    ac(&self,CL_LOG_TYPE_ERROR,"1111 - error: never been here before\n");
                                 } else { 
                                     // 1110 - error: never been here before
-                                    ac(self,CL_LOG_TYPE_ERROR," - 1110 - error: never been here before\n");
+                                    ac(&self,CL_LOG_TYPE_ERROR,"1110 - error: never been here before\n");
                                 }
                             } else {
                                 if(self.needleLast == self.haystackLast) { 
                                     // 1101 - error: never been here before
-                                    ac(self,CL_LOG_TYPE_ERROR," - 1101 - error: never been here before\n");
+                                    ac(&self,CL_LOG_TYPE_ERROR,"1101 - error: never been here before\n");
                                 } else { 
                                     // 1100 - error: never been here before
-                                    ac(self,CL_LOG_TYPE_ERROR," - 1100 - error: never been here before\n");
+                                    ac(&self,CL_LOG_TYPE_ERROR,"1100 - error: never been here before\n");
                                 }
                             }
                         } else {
                             if(self.needleCur == self.haystackLast) { 
                                 if(self.needleLast == self.haystackLast) { 
                                     // 1011 - error: never been here before
-                                    ac(self,CL_LOG_TYPE_ERROR," - 1011 - error: never been here before\n");
+                                    ac(&self,CL_LOG_TYPE_ERROR,"1011 - error: never been here before\n");
                                 } else { 
                                     // 1010 - possible insertion
-                                    ac(self,0," - 1010 - possible insertion\n");
+                                    ac(&self,0,"1010 - possible insertion\n");
                                     self.distanceTotal++;
                                 }
                             } else { 
                                 if(self.needleLast == self.haystackLast) {
                                     // 1001 - continuing match
-                                    ac(self,0," - 1001 - continuing match\n");
+                                    ac(&self,0,"1001 - continuing match\n");
                                 } else {
                                     // 1000 - match restored
-                                    ac(self,0," - 1000 - match restored\n");
+                                    ac(&self,0,"1000 - match restored\n");
                                 }
                             }
                         }
@@ -247,20 +258,20 @@ LevensteinDamerau::LevensteinDamerau(context &context)
                             if(self.needleCur == self.haystackLast) {
                                 if(self.needleLast == self.haystackLast) {
                                     // 0111 - error: never been here before
-                                    ac(self,CL_LOG_TYPE_ERROR," - 0111 - error: never been here before\n");
+                                    ac(&self,CL_LOG_TYPE_ERROR,"0111 - error: never been here before\n");
                                 } else {
                                     // 0110 - transposition
-                                    ac(self,0," - 0110 - transposition\n");
+                                    ac(&self,0,"0110 - transposition\n");
                                     self.distanceTotal++;
                                 }
                             } else {
                                 if(self.needleLast == self.haystackLast) {
                                     // 0101 - repeat haystack
-                                    ac(self,0," - 0101 - repeat haystack\n");
+                                    ac(&self,0,"0101 - repeat haystack\n");
                                     self.distanceTotal++;
                                 } else {
                                     // 0100 - may be restoration of match
-                                    ac(self,0," - 0100 - may be restoration of match\n");
+                                    ac(&self,0,"0100 - may be restoration of match\n");
                                     self.needleIdx--;
                                     break;
                                 }
@@ -269,11 +280,11 @@ LevensteinDamerau::LevensteinDamerau(context &context)
                             if(self.needleCur == self.haystackLast) {
                                 if(self.needleLast == self.haystackLast) {
                                     // 0011 - replacement or deletion
-                                    ac(self,0," - 0011 - replacement or deletion\n");
+                                    ac(&self,0,"0011 - replacement or deletion\n");
                                     //distanceTotal++;
                                 } else {
                                     // 0010 - restore match, last was actually ommission in haystack
-                                    ac(self,0," - 0010 - restore match, last was actually ommission in haystack\n");
+                                    ac(&self,0,"0010 - restore match, last was actually ommission in haystack\n");
                                     self.haystackIdx--;
                                     self.distanceTotal--;
                                     break;
@@ -282,11 +293,11 @@ LevensteinDamerau::LevensteinDamerau(context &context)
                                 if(self.needleLast == self.haystackLast) {
                                     // 0001 - break match, replacement
                                     //logPos=log(haystackRowIdx,needleIdx,haystackIdx,str,strLen,)
-                                    ac(self,0," - 0001 - break match, replacement\n");
+                                    ac(&self,0,"0001 - break match, replacement\n");
                                     self.distanceTotal++;
                                 } else {
                                     // 0000 - continue broken match, replacement
-                                    ac(self,0," - 0000 - continue broken match, replacement\n");
+                                    ac(&self,0,"0000 - continue broken match, replacement\n");
                                     self.distanceTotal++;
                                 }
                             }
@@ -299,8 +310,8 @@ LevensteinDamerau::LevensteinDamerau(context &context)
                     self.haystackLast = self.haystackCur;
                     
                 } while(false);
-                ac(self,0,(self.needleIdx<self.widthIn?"needleIdx<widthIn = true; ":"needleIdx<widthIn = false; "));
-                ac(self,0,(self.haystackIdx<self.widthIn?"haystackIdx<widthIn = true\n":"haystackIdx<widthIn = false\n"));
+                ac(&self,0,self.needleIdx<self.widthIn?"needleIdx<widthIn = true; ":"needleIdx<widthIn = false; ");
+                ac(&self,0,self.haystackIdx<self.widthIn?"haystackIdx<widthIn = true\n":"haystackIdx<widthIn = false\n");
             }
             self.distancesOut[self.haystackRowIdx] = self.distanceTotal;
         }
@@ -323,8 +334,8 @@ int LevensteinDamerau::calculate(uint width, uint haystackSize, uint64_t* needle
     
     vector<uint64_t> device_distances(haystackSize,m_context);
     vector<uint64_t> device_operations(haystackSize*(width*2),m_context);
-    vector<char> device_log(50000,m_context);
-    device_log[0] = 0;
+    uint logLength = 50000;
+    vector<char> device_log(logLength,m_context);
     
     uint flags = (clLogOn ? CL_LOG_ON : 0) 
         | (clLogErrorOnly ? CL_LOG_ERROR_ONLY : 0);
@@ -335,12 +346,14 @@ int LevensteinDamerau::calculate(uint width, uint haystackSize, uint64_t* needle
     m_kernel.set_arg(4,device_distances);
     m_kernel.set_arg(5,device_operations);
     m_kernel.set_arg(6,device_log);
+    m_kernel.set_arg(7,logLength);
+    m_kernel.set_arg(8,haystackSize);
     m_commandQueue.enqueue_1d_range_kernel(m_kernel, 0, haystackSize, 1);
 
-    char log[50000];
+    char log[logLength];
     copy(device_log.begin(),device_log.end(),(char*)&log,m_commandQueue);
     if(clLogOn) {
-        LOG_I << "Run log:" << std::string(log);
+        LOG_I << "Run log:\n" << std::string(log);
     }
     
     copy(device_distances.begin(),device_distances.end(),distancesOut,m_commandQueue);

@@ -247,7 +247,7 @@ BOOST_AUTO_TEST_CASE( stress_test ) {
     // fire up the calculator
     LevensteinDamerau alg(bContext);
     alg.clLogOn = true;
-    alg.clLogErrorOnly = false;
+    alg.clLogErrorOnly = true;
 
     uint testSize = 1;
     uint testWidth = 10;
@@ -306,6 +306,8 @@ BOOST_AUTO_TEST_CASE( stress_test ) {
 
 BOOST_AUTO_TEST_CASE( perf_test ) {
 
+    return;
+    
     LoggerType logger(boost::log::keywords::channel="nlpgraph_calc_levenstein_damerau");
 
     // get the best device
