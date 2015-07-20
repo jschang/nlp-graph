@@ -1,11 +1,11 @@
 #define BOOST_LOG_DYN_LINK
-#include <time.h>
+
 #include <util/opencl.h>
 #include <util/time_helper.h>
+#include <util/math.h>
 #include <calc/levenstein_damerau.h>
 #include <boost/test/unit_test.hpp>
 #include <boost/compute.hpp>
-#include <boost/random.hpp>
 
 #include <nlpgraph.h>
 #include <util/string.h>
@@ -18,7 +18,6 @@ using namespace NLPGraph::Dto;
 using namespace NLPGraph::Util;
 using namespace NLPGraph::Calc;
 using namespace boost::compute;
-using namespace boost::random;
 using namespace boost;
 
 LoggerType logger(boost::log::keywords::channel="nlpgraph_calc_levenstein_damerau");
@@ -127,7 +126,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t distancesOut[1];
         uint64_t operationsOut[haystackSize*(2*width)];
         LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
-        LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
+        LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize-1);
         alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
         LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 1);
@@ -141,7 +140,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t distancesOut[1];
         uint64_t operationsOut[haystackSize*(2*width)];
         LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
-        LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
+        LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize-1);
         alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
         LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 1);
@@ -155,7 +154,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t distancesOut[1];
         uint64_t operationsOut[haystackSize*(2*width)];
         LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
-        LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
+        LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize-1);
         alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
         LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 1);
@@ -248,15 +247,14 @@ BOOST_AUTO_TEST_CASE( stress_test ) {
     // fire up the calculator
     LevensteinDamerau alg(bContext);
     alg.clLogOn = true;
+    alg.clLogErrorOnly = true;
 
-    // initialize the overly complicated initialization for random numbers
-    struct timeval tv;
-    boost::random::mt19937 randGen(tv.tv_usec);
-    uniform_int<uint64_t> dist(0, std::numeric_limits<uint64_t>::max());
-    boost::variate_generator<boost::random::mt19937&, uniform_int<uint64_t>> getRand(randGen, dist);
-    
     uint testSize = 1;
-    uint testWidth = 35;
+    uint testWidth = 10;
+    
+    NLPGraph::Util::GeneratorIntegerPtr<uint64_t> getRand = NLPGraph::Util::Math::rangeRandGen<uint64_t>(1000,9999);
+    NLPGraph::Util::GeneratorRealPtr getChance = NLPGraph::Util::Math::rangeRandGen(0.0f,1.0f);
+    NLPGraph::Util::GeneratorIntegerPtr<uint> getNeedleWidth = NLPGraph::Util::Math::rangeRandGen<uint>(0,testWidth);
     
     uint64_t *needle = (uint64_t *)malloc(sizeof(uint64_t)*testSize);
     uint64_t *haystack = new uint64_t[testWidth*testSize];
@@ -264,25 +262,39 @@ BOOST_AUTO_TEST_CASE( stress_test ) {
     uint64_t *operationsOut = new uint64_t[testSize*(2*testWidth)]; 
 
     for(int i=0; i<100; i++) {
-        memset(haystack,testWidth*testSize,sizeof(uint64_t));
-        for(int i=0; i<testSize; i++) {
-            for(int j=0; j<testWidth; j++) {
-                double a = (double)getRand();
-                double b = (double)getRand();
-                double c = ::fmin(a,b)/::fmax(a,b);
-                haystack[(i*testWidth)+j] = c > .10 ? needle[j] : getRand();
-            }
+        memset(distancesOut,0,sizeof(uint64_t)*testSize);
+        memset(needle,0,sizeof(uint64_t)*testSize);
+        uint needleWidth = (*getNeedleWidth)();
+        for(int i=0; i<(needleWidth); i++) {
+            needle[i] = (*getRand)();
         }
-        memset(needle,testSize,sizeof(uint64_t));
-        for(int i=0; i<(testWidth); i++) {
-            needle[i] = getRand();
+        memset(haystack,0,testWidth*testSize*sizeof(uint64_t));
+        uint haystackBase = 0;
+        uint haystackJ = 0;
+        for(int i=0, haystackJ=0; i<testSize; i++, haystackBase+=testWidth) {
+            int j=0;
+            while(j<needleWidth && haystackJ<testWidth) {
+                uint64_t needleJ = needle[j];
+                float c = (*getChance)();
+                if(c>.70) { // 70% of the time, just copy the position
+                    haystack[ haystackBase + haystackJ ] = needleJ;
+                    haystackJ ++;
+                    j++;
+                } else if( c>=.70 && c<.80 ) { // 10% of the time, delete a position
+                    j++;
+                } else { // 25% of the time, append a position
+                    uint64_t rand = (*getRand)();
+                    haystack[ haystackBase + haystackJ ] = rand;
+                    haystackJ ++;
+                }
+            }
         }
         LOG << "needle:" << NLPGraph::Util::String::str(needle,testWidth);
         LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,testWidth*testSize);
         timespec start = TimeHelper::getTimeStruct();
         alg.calculate(testWidth, testSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
         timespec end = TimeHelper::getTimeStruct();
-        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,testWidth);
+        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,testSize);
         LOG << "time: " << (end.tv_nsec - start.tv_nsec);
     }
     
@@ -302,27 +314,23 @@ BOOST_AUTO_TEST_CASE( perf_test ) {
     
     // spin up a context
     context bContext;
-    bContext = context(OpenCL::contextWithDeviceInfo(deviceInfo));    
+    bContext = context(OpenCL::contextWithDeviceInfo(deviceInfo)); 
+    
+    NLPGraph::Util::GeneratorIntegerPtr<uint64_t> getRand = NLPGraph::Util::Math::rangeRandGen<uint64_t>(1000,9999);   
     
     // fire up the calculator
     LevensteinDamerau alg(bContext);
-
-    // initialize the overly complicated initialization for random numbers
-    struct timeval tv;
-    boost::random::mt19937 randGen(tv.tv_usec);
-    uniform_int<uint64_t> dist(0, std::numeric_limits<uint64_t>::max());
-    boost::variate_generator<boost::random::mt19937&, uniform_int<uint64_t>> getRand(randGen, dist);
     
     uint testSize = 50000;
     uint testWidth = 35;
     
     uint64_t *needle = new uint64_t[testSize];
     for(int i=0; i<(testWidth); i++) {
-        needle[i] = getRand();
+        needle[i] = (*getRand)();
     }
     uint64_t *haystack = new uint64_t[testWidth*testSize];
     for(int i=0; i<(testSize*testWidth); i++) {
-        haystack[i] = getRand();
+        haystack[i] = (*getRand)();
     }
     uint64_t *distancesOut = new uint64_t[testSize];
     uint64_t *operationsOut = new uint64_t[testSize*(2*testWidth)]; 

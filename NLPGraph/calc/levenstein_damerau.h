@@ -30,6 +30,7 @@ private:
     Util::LoggerType              m_logger;
 public:
     bool clLogOn;
+    bool clLogErrorOnly;
 public:
     LevensteinDamerau(boost::compute::context &context);
     ~LevensteinDamerau();
