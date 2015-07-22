@@ -21,7 +21,6 @@ extern const char *kLevensteinDamerauOpenCLSource;
 class LevensteinDamerau {
 private:
     boost::compute::context       m_context;
-    boost::compute::program       m_program;
     boost::compute::kernel        m_kernel;
     boost::compute::command_queue m_commandQueue;
     uint64_t*                     m_needle;

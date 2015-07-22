@@ -24,12 +24,15 @@ void OpenCL::deviceInfo(cl_device_id id, OpenCLDeviceInfoType &thisDeviceInfo) {
 
     std::string tmpString;
     boost::compute::device thisDevice(id);
-    bzero(&thisDeviceInfo,sizeof(OpenCLDeviceInfoType));
+    memset(&thisDeviceInfo,0,sizeof(OpenCLDeviceInfoType));
     thisDeviceInfo.id = id;
+        LOG(severity_level::normal) << "device id                       :" << thisDeviceInfo.id;
     // verify device availability CL_DEVICE_AVAILABLE
     thisDeviceInfo.available = thisDevice.get_info<cl_bool>(CL_DEVICE_AVAILABLE);
+        LOG(severity_level::normal) << "CL_DEVICE_AVAILABLE             :" << thisDeviceInfo.available;
     // verify device has a compiler CL_DEVICE_COMPILER_AVAILABLE
     thisDeviceInfo.compilerAvailable = thisDevice.get_info<cl_bool>(CL_DEVICE_COMPILER_AVAILABLE);
+        LOG(severity_level::normal) << "CL_DEVICE_COMPILER_AVAILABLE    :" << thisDeviceInfo.compilerAvailable;
     // verify device supports full profile CL_DEVICE_PROFILE
     tmpString = thisDevice.get_info<std::string>(CL_DEVICE_PROFILE);
     if(tmpString.compare("FULL_PROFILE")!=0) {
@@ -37,6 +40,7 @@ void OpenCL::deviceInfo(cl_device_id id, OpenCLDeviceInfoType &thisDeviceInfo) {
     } else {
         thisDeviceInfo.fullProfile = true;
     }
+        LOG(severity_level::normal) << "CL_DEVICE_PROFILE               :" << tmpString;
     // verify that device supports "OpenCL 1.1" CL_DEVICE_VERSION
     tmpString = thisDevice.get_info<std::string>(CL_DEVICE_VERSION);
     if(tmpString.compare("OpenCL 1.1")!=0 || tmpString.compare("OpenCL 1.2")!=0) {
@@ -44,10 +48,17 @@ void OpenCL::deviceInfo(cl_device_id id, OpenCLDeviceInfoType &thisDeviceInfo) {
     } else {
         thisDeviceInfo.supportsVer1_1 = false;
     }
+        LOG(severity_level::normal) << "CL_DEVICE_VERSION               :" << tmpString;
     thisDeviceInfo.localMemSize = thisDevice.get_info<cl_ulong>(CL_DEVICE_LOCAL_MEM_SIZE);
+        LOG(severity_level::normal) << "CL_DEVICE_LOCAL_MEM_SIZE        :" << thisDeviceInfo.localMemSize;
     thisDeviceInfo.globalMemSize = thisDevice.get_info<cl_ulong>(CL_DEVICE_GLOBAL_MEM_SIZE);
+        LOG(severity_level::normal) << "CL_DEVICE_GLOBAL_MEM_SIZE       :" << thisDeviceInfo.globalMemSize;
     thisDeviceInfo.globalMemCacheSize = thisDevice.get_info<cl_ulong>(CL_DEVICE_GLOBAL_MEM_CACHE_SIZE);
+        LOG(severity_level::normal) << "CL_DEVICE_GLOBAL_MEM_CACHE_SIZE    :" << thisDeviceInfo.globalMemCacheSize;
+    thisDeviceInfo.maxConstantBufferSize = thisDevice.get_info<cl_ulong>(CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE);
+        LOG(severity_level::normal) << "CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE :" << thisDeviceInfo.maxConstantBufferSize;
     thisDeviceInfo.computeUnits = thisDevice.get_info<cl_uint>(CL_DEVICE_MAX_COMPUTE_UNITS);
+        LOG(severity_level::normal) << "CL_DEVICE_MAX_COMPUTE_UNITS     :" << thisDeviceInfo.computeUnits;
 }
 
 bool OpenCL::bestDeviceInfo(OpenCLDeviceInfoType &bestDevice) {
@@ -124,7 +135,7 @@ void OpenCL::default_error_handler (
 boost::compute::program OpenCL::createAndBuildProgram(std::string src, boost::compute::context ctx) {
     boost::compute::program bProgram = boost::compute::program::create_with_source(src, ctx);
     try {
-        bProgram.build("-Werror -cl-std=CL1.1");
+        bProgram.build("-Werror -cl-std=CL1.2");//1");
     } catch(...) {
         std::string buildLog = bProgram.get_build_info<std::string>(CL_PROGRAM_BUILD_LOG,ctx.get_device());
         LOG(severity_level::critical) << buildLog;

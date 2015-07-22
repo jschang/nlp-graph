@@ -14,22 +14,24 @@
 #define LOG_E BOOST_LOG_SEV(m_logger,severity_level::critical) << __PRETTY_FUNCTION__ << " "
 #define LOG_I BOOST_LOG_SEV(m_logger,severity_level::normal) << __PRETTY_FUNCTION__ << " "
 
-using namespace boost::compute;
 using namespace NLPGraph::Util;
 
 namespace NLPGraph {
 namespace Calc {
 
-const char *kLevensteinDamerauOpenCLSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
+/* ************* */
+/* HEADER SOURCE */
+/* ************* */
+const char *kLevensteinDamerauOpenCLHeader = BOOST_COMPUTE_STRINGIZE_SOURCE(
 
-__constant uint CL_LOG_ON = 0b00000001; 
+__constant uint CL_LOG_ON         = 0b00000001; 
 __constant uint CL_LOG_ERROR_ONLY = 0b00000010;
 
-__constant uint CL_LOG_TYPE_ERROR = 0b00000001; 
+__constant uint CL_LOG_TYPE_ERROR = 0b00000001;  
 
 typedef struct {
     uint flags;
-    uint widthIn;           // needle and each in haystack width
+    uint widthIn;                     // needle and each in haystack width
     __constant ulong *needleIn;       // needle uint64_t's 
     __global ulong *haystackIn;       // haystack uint64_t's 
     __global ulong *distancesOut;     // results 
@@ -54,9 +56,18 @@ uint append_preamble(levenstein_damerau_type *self, uint descr);
 uint append(levenstein_damerau_type *self, char* string, uint descr);
 void al(levenstein_damerau_type *self, uint descr, char* str);
 void ac(levenstein_damerau_type *self, uint descr, __constant char* str);
+void aci(levenstein_damerau_type *self, uint descr, __constant char* str, ulong num);
 char * z(char *in, int len);
+__global char * zg(__global char *in, int len);
 char * s(char *strOut, __constant char *strIn);
 char * itoa(levenstein_damerau_type *self, ulong inNum, int base);
+
+);
+
+/* ****************** */
+/* SUPPORT LIB SOURCE */
+/* ****************** */
+const char *kLevensteinDamerauOpenCLSupprtSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
 
 inline void al(levenstein_damerau_type *self, uint descr, char* str) {
     self->logPos = append_preamble(self,descr);
@@ -73,6 +84,10 @@ inline void aci(levenstein_damerau_type *self, uint descr, __constant char* str,
     self->logPos = append(self,s(z(self->str,self->strLen),"\n"),descr);
 }
 
+/**
+ * copy a __constant string to a __private one, returning
+ * the pointer to the __private one.
+ */
 inline char * s(char *strOut, __constant char *strIn) {
     int i=0;
     while(strIn[i]!='\0') {
@@ -82,7 +97,20 @@ inline char * s(char *strOut, __constant char *strIn) {
     return strOut;
 }
 
+/**
+ * Zero out a __private string of a given length.
+ */
 inline char * z(char *in, int len) {
+    for(int i=0; i<len; i++) {
+        in[i] = 0;
+    }
+    return in;
+}
+
+/**
+ * Zero out a __private string of a given length.
+ */
+inline __global char * zg(__global char *in, int len) {
     for(int i=0; i<len; i++) {
         in[i] = 0;
     }
@@ -110,6 +138,9 @@ inline uint append_preamble(levenstein_damerau_type *self, uint descr) {
     return self->logPos;
 }
 
+/**
+ * Core logging function
+ */
 inline uint append(levenstein_damerau_type *self, char* string, uint descr) {
     if ( self->flags & CL_LOG_ON ) {
         if( ((self->flags & CL_LOG_ERROR_ONLY) && (descr & CL_LOG_TYPE_ERROR))
@@ -125,6 +156,9 @@ inline uint append(levenstein_damerau_type *self, char* string, uint descr) {
     return 1;
 }
 
+/**
+ * Will eventually reverse a string...used in itoa
+ */
 inline void reverse(char *str, int len) {
 }
 
@@ -154,6 +188,13 @@ inline char* itoa(levenstein_damerau_type *self, ulong inNum, int base) {
     reverse(self->str, i);
     return self->str;
 }
+
+);
+
+/* ************* */
+/* KERNEL SOURCE */
+/* ************* */
+const char *kLevensteinDamerauOpenCLSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
     
 __kernel void calc_levenstein_damerau(
         uint flags,
@@ -162,14 +203,14 @@ __kernel void calc_levenstein_damerau(
         __global ulong *haystackIn,       // haystack uint64_t's 
         __global ulong *distancesOut,     // results 
         __global ulong *operationsOut,    // the operations to transform the haystack element into the needle
-        __global char *logOut,
+        __global char  *logOut,
         uint logLength,
         uint haystackSize
 ) { 
     levenstein_damerau_type self;
 
     char strAr[255];  // didn't have another way to allocate it, 
-                                // and the param has to retain addr space
+                      // and the param has to retain addr space
     char *str;
     int strLen;
     
@@ -187,10 +228,10 @@ __kernel void calc_levenstein_damerau(
     self.haystackRowIdx = get_global_id(0);
 
     self.logLength = logLength;
-    self.logOut = logOut;            
-    self.logOut[0] = 0x13;
-    self.logOut[1] = '\0';
+    self.logOut = logOut;
     self.logPos = self.haystackRowIdx * 2048;
+    self.logOut[self.logPos] = 0x13;
+    zg(self.logOut+self.logPos,2048);
     
     self.needleIdx = 0;
     self.haystackIdx = 0;
@@ -202,15 +243,15 @@ __kernel void calc_levenstein_damerau(
     aci(&self,0,"strLen:         ",self.strLen);
     aci(&self,0,"flags:          ",self.flags);
     aci(&self,0,"widthIn:        ",self.widthIn);
-    
+
     aci(&self,0,"haystackSize:   ",self.haystackSize);
     aci(&self,0,"haystackRowIdx: ",self.haystackRowIdx);
 
     aci(&self,0,"logLength:      ",self.logLength);            
     aci(&self,0,"logPos:         ",self.logPos);
-    
+
     while( self.needleIdx < self.widthIn ) {
-    
+
         do {
             if(self.haystackIdx>=self.widthIn) {
                 ac(&self,0,"haystack ended...incrementing dist\n");
@@ -224,9 +265,10 @@ __kernel void calc_levenstein_damerau(
                 self.haystackIdx++;
                 break;
             }
-            
             self.needleCur = self.needleIn[ self.needleIdx ];
             self.haystackCur = self.haystackIn[ ( self.widthIn * self.haystackRowIdx ) + self.haystackIdx ];
+ /*          } while(false);
+    }*/
             
             if(self.needleCur == self.haystackCur) {
                 if(self.haystackCur == self.needleLast) {
@@ -329,21 +371,70 @@ __kernel void calc_levenstein_damerau(
     }
     self.distancesOut[self.haystackRowIdx] = self.distanceTotal;
 }
+
 );
 
 const uint CL_LOG_ON = 0b00000001;
 const uint CL_LOG_ERROR_ONLY = 0b00000010;
 
-LevensteinDamerau::LevensteinDamerau(context &context) 
+LevensteinDamerau::LevensteinDamerau(boost::compute::context &context) 
         : m_logger(boost::log::keywords::channel="NLPGraph::Calc::LevensteinDamerau") {
     m_context = context;
     clLogOn = false;
     clLogErrorOnly = 0;
-    device dev(m_context.get_device());
-    m_commandQueue = command_queue(m_context, dev);
-    LOG_I << "Source:\n" << kLevensteinDamerauOpenCLSource;
-    m_program = OpenCL::createAndBuildProgram(kLevensteinDamerauOpenCLSource,m_context);
-    m_kernel = kernel(m_program, "calc_levenstein_damerau");
+    boost::compute::device dev(m_context.get_device());
+    m_commandQueue = boost::compute::command_queue(m_context, dev);
+    
+    if(false) {
+        std::vector<boost::compute::program> programs;
+        
+        int headerSize = sizeof(char)*strlen(kLevensteinDamerauOpenCLHeader);
+        int sourceSize = sizeof(char)*strlen(kLevensteinDamerauOpenCLSource);
+        int supportSize = sizeof(char)*strlen(kLevensteinDamerauOpenCLSupprtSource);
+        
+        char * source = (char *)malloc(headerSize+sourceSize+1);
+        char * support = (char *)malloc(headerSize+supportSize+1);
+        
+        memset(source,0,headerSize+sourceSize+1);
+        memset(support,0,headerSize+supportSize+1);
+        
+        memcpy(support, kLevensteinDamerauOpenCLHeader, headerSize);
+        memcpy(source, kLevensteinDamerauOpenCLHeader, headerSize);
+        
+        memcpy(support+headerSize, kLevensteinDamerauOpenCLSupprtSource, supportSize);
+        memcpy(source+headerSize, kLevensteinDamerauOpenCLSource, sourceSize);
+        
+        LOG_I << "Support:\n" << support;
+        LOG_I << "Source:\n" << source;
+        
+        boost::compute::program pSupport = OpenCL::createAndBuildProgram(support,m_context);
+        boost::compute::program pProgram = OpenCL::createAndBuildProgram(source,m_context);
+        
+        programs.push_back(pSupport);
+        programs.push_back(pProgram);
+        m_kernel = boost::compute::kernel(boost::compute::program::link(programs, m_context), "calc_levenstein_damerau");
+        
+    } else {
+    
+        std::vector<boost::compute::program> programs;
+        
+        int headerSize = sizeof(char)*strlen(kLevensteinDamerauOpenCLHeader);
+        int sourceSize = sizeof(char)*strlen(kLevensteinDamerauOpenCLSource);
+        int supportSize = sizeof(char)*strlen(kLevensteinDamerauOpenCLSupprtSource);
+        
+        char * source = (char *)malloc(headerSize+supportSize+sourceSize+1);
+        
+        memset(source,0,headerSize+sourceSize+supportSize+1);
+        
+        memcpy(source, kLevensteinDamerauOpenCLHeader, headerSize);
+        memcpy(source+headerSize, kLevensteinDamerauOpenCLSupprtSource, supportSize);
+        memcpy(source+headerSize+supportSize, kLevensteinDamerauOpenCLSource, sourceSize);
+        
+        LOG_I << "Source:\n" << source;
+        
+        boost::compute::program pProgram = OpenCL::createAndBuildProgram(source,m_context);
+        m_kernel = boost::compute::kernel(pProgram, "calc_levenstein_damerau");
+    }
 }
 LevensteinDamerau::~LevensteinDamerau() {
 }
@@ -351,18 +442,23 @@ int LevensteinDamerau::calculate(uint width, uint haystackSize, uint64_t* needle
 
     int result = 0;
 
-    vector<uint64_t> device_needle(width,m_context);
+    boost::compute::vector<uint64_t> device_needle(width,m_context);
     std::vector<uint64_t> host_needle(needle, needle+width);
     copy(host_needle.begin(),host_needle.end(), device_needle.begin(), m_commandQueue);
     
-    vector<uint64_t> device_haystack(haystackSize*width,m_context);
+    boost::compute::vector<uint64_t> device_haystack(haystackSize*width,m_context);
     std::vector<uint64_t> host_haystack(haystack, haystack+(haystackSize*width));
-    copy(host_haystack.begin(), host_haystack.end(), device_haystack.begin(), m_commandQueue);
+    boost::compute::copy(host_haystack.begin(), host_haystack.end(), device_haystack.begin(), m_commandQueue);
     
-    vector<uint64_t> device_distances(haystackSize,m_context);
-    vector<uint64_t> device_operations(haystackSize*(width*2),m_context);
+    boost::compute::vector<uint64_t> device_distances(haystackSize,m_context);
+    boost::compute::fill(device_distances.begin(),device_distances.end(),0,m_commandQueue);
+    
+    boost::compute::vector<uint64_t> device_operations(haystackSize*(width*2),m_context);
+    boost::compute::fill(device_operations.begin(),device_operations.end(),0,m_commandQueue);
+    
     uint logLength = 50000;
-    vector<char> device_log(logLength,m_context);
+    boost::compute::vector<char> device_log(logLength,m_context);
+    boost::compute::fill(device_log.begin(),device_log.end(),0,m_commandQueue);
     
     uint flags = (clLogOn ? CL_LOG_ON : 0) 
         | (clLogErrorOnly ? CL_LOG_ERROR_ONLY : 0);
@@ -383,8 +479,13 @@ int LevensteinDamerau::calculate(uint width, uint haystackSize, uint64_t* needle
         LOG_I << "Run log:\n" << std::string(log);
     }
     
-    copy(device_distances.begin(),device_distances.end(),distancesOut,m_commandQueue);
-    copy(device_operations.begin(),device_operations.end(),operationsOut,m_commandQueue);
+    std::vector<uint64_t> host_distances(haystackSize);
+    boost::compute::copy(device_distances.begin(), device_distances.end(), host_distances.begin(), m_commandQueue);
+    std::copy(host_distances.begin(), host_distances.end(), distancesOut);
+    
+    std::vector<uint64_t> host_operations(haystackSize*(width*2));
+    boost::compute::copy(device_operations.begin(), device_operations.end(), device_operations.begin(), m_commandQueue);
+    std::copy(host_operations.begin(), host_operations.end(), operationsOut);
 
     return result;
 }
