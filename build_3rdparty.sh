@@ -145,13 +145,14 @@ install() {
     
     untar install "compute-0.4"
     
-    do_configure "libpqxx-4.0.1"
-    do_make "libpqxx-4.0.1"
+    _TARGET="libpqxx-4.0.1"
+    do_configure $_TARGET
+    do_make $_TARGET
     chkerr "Unable to make $_TARGET"
-    do_make "libpqxx-4.0.1" install
+    do_make $_TARGET install
     # this will fail, but only at the archive install...
     # so we'll just copy that manually
-    cp "$BUILD_DIR/libpqxx-4.0.1/src/.libs/libpqxx.a" "$INSTALL_DIR/$_TARGET/lib"
+    cp "$BUILD_DIR/$_TARGET/src/.libs/libpqxx.a" "$INSTALL_DIR/$_TARGET/lib"
 }
 
 clean() {
