@@ -443,6 +443,7 @@ int LevensteinDamerau::calculate(uint width, uint haystackSize, uint64_t* needle
 
     int result = 0;
     uint64_t zero = 0;
+    uint errcode = 0;
     
     LOG_I << "width         : " << width;
     LOG_I << "haystackSize  : " << haystackSize;
@@ -458,12 +459,37 @@ int LevensteinDamerau::calculate(uint width, uint haystackSize, uint64_t* needle
     boost::compute::copy(host_haystack.begin(), host_haystack.end(), device_haystack.begin(), m_commandQueue);
     
     boost::compute::vector<uint64_t> device_distances(haystackSize, (const uint64_t)&zero, m_commandQueue);
+    uint64_t* host_distances = malloc(haystackSize*sizeof(uint64_t));
+    memset(host_distances,0,haystackSize*(sizeof(uint64_t));
+    cl_mem deviceDistancesBuf = clCreateBuffer(m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(uint64_t)*haystackSize,host_distances,$errcode);
+    if(errcode!=CL_SUCCESS) {
+        Exception except;
+        except.msg = "Unable to allocate " << count << " uint64_t on cl device buffer";
+        LOG_E << except.msg;
+        throw except;
+    }
     
     int count = (haystackSize*(width*2));
-    boost::compute::vector<uint64_t> device_operations(count, (const uint64_t)&zero, m_commandQueue);
+    uint64_t* host_operations = malloc(count*sizeof(uint64_t));
+    memset(host_operations,0,count*(sizeof(uint64_t));
+    cl_mem deviceOperationsBuf = clCreateBuffer(m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(uint64_t)*count,host_operations,$errcode);
+    if(errcode!=CL_SUCCESS) {
+        Exception except;
+        except.msg = "Unable to allocate " << count << " uint64_t on cl device buffer";
+        LOG_E << except.msg;
+        throw except;
+    }
     
     uint logLength = 50000;
-    boost::compute::vector<char> device_log(logLength, (const uint64_t)&zero, m_commandQueue);
+    char *log = malloc(sizeof(char)*logLength);
+    memset(log,0,sizeof(char)*logLength);
+    cl_mem logBuf = clCreateBuffer(m_context,CL_MEM_WRITE_ONLY,sizeof(char)*logLength,log,&errcode);
+    if(errcode!=CL_SUCCESS) {
+        Exception except;
+        except.msg = "Unable to allocate a " << logLength << " log buffer";
+        LOG_E << except.msg;
+        throw except;
+    }
     
     uint flags =   (clLogOn        ? CL_LOG_ON         : 0) 
     	         | (clLogErrorOnly ? CL_LOG_ERROR_ONLY : 0);
@@ -472,26 +498,25 @@ int LevensteinDamerau::calculate(uint width, uint haystackSize, uint64_t* needle
     m_kernel.set_arg(1,width);
     m_kernel.set_arg(2,device_needle);
     m_kernel.set_arg(3,device_haystack);
-    m_kernel.set_arg(4,device_distances);
-    m_kernel.set_arg(5,device_operations);
-    m_kernel.set_arg(6,device_log);
+    m_kernel.set_arg(4,deviceDistancesBuf);
+    m_kernel.set_arg(5,deviceOperationsBuf);
+    m_kernel.set_arg(6,logBug);
     m_kernel.set_arg(7,logLength);
     m_kernel.set_arg(8,haystackSize);
     
     m_commandQueue.enqueue_1d_range_kernel(m_kernel, 0, haystackSize, 1);
 
-    std::vector<char> host_log(logLength);
-    boost::compute::copy(device_log.begin(), device_log.end(), host_log.begin(), m_commandQueue);
+    errcode = clEnqueueReadBuffer(m_commandQueue,logBuf,true,0,sizeof(char)*logLength,log,0,NULL);
+    if(errcode!=CL_SUCCESS) {
+        Exception except;
+        except.msg = "Unable to read a " << logLength << " log buffer";
+        LOG_E << except.msg;
+        throw except;
+    }
     if(clLogOn) {
         LOG_I << "Run log:\n" << &host_log;
     }
     
-    //boost::compute::copy(device_distances.begin(), device_distances.end(), host_distances_vec.begin(), m_commandQueue);
-    //std::copy(host_distances_vec.begin(), host_distances_vec.end(), distancesOut);
-    
-    //boost::compute::copy(device_operations.begin(), device_operations.end(), host_operations_vec.begin(), m_commandQueue);
-    //std::copy(host_operations_vec.begin(), host_operations_vec.end(), operationsOut);
-
     return result;
 }
 

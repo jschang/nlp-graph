@@ -16,18 +16,16 @@
 // they are apparently the microsoft of
 // gpu manufacturers.
 #define CL_USE_DEPRECATED_OPENCL_1_1_APIS
-
 #ifdef __MACH__
     #include <OpenCL/cl.h>
 #else
     #include <CL/cl.h>
 #endif
+// we absolutely need to avoid 1.2, because of NVIDIA's lazy-ass
 #ifdef CL_VERSION_1_2
     #undef CL_VERSION_1_2
     #ifndef CL_VERSION_1_1
-        #pragma message "OpenCL 1.1 is found"
-    #else
-        #warning "OpenCL 1.1 is NOT naturally defined"
+        #warning "CL_VERSION_1_1 is NOT defined.  Defining it, hoping that boost::compute's ifdefs alone will see us through"
         #define CL_VERSION_1_1 1
     #endif
 #endif
