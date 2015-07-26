@@ -450,15 +450,14 @@ int LevensteinDamerau::calculate(uint width, uint haystackSize, uint64_t* needle
     std::vector<uint64_t> host_haystack(haystack, haystack+(haystackSize*width));
     boost::compute::copy(host_haystack.begin(), host_haystack.end(), device_haystack.begin(), m_commandQueue);
     
-    boost::compute::vector<uint64_t> device_distances(haystackSize,m_context);
-    boost::compute::fill(device_distances.begin(),device_distances.end(),0,m_commandQueue);
+    uint64_t zero = 0;
+    boost::compute::vector<uint64_t> device_distances(haystackSize,(const uint64_t)&zero,m_commandQueue);
     
-    boost::compute::vector<uint64_t> device_operations(haystackSize*(width*2),m_context);
-    boost::compute::fill(device_operations.begin(),device_operations.end(),0,m_commandQueue);
+    int count = (haystackSize*(width*2));
+    boost::compute::vector<uint64_t> device_operations(count,(const uint64_t)&zero,m_commandQueue);
     
     uint logLength = 50000;
-    boost::compute::vector<char> device_log(logLength,m_context);
-    boost::compute::fill(device_log.begin(),device_log.end(),0,m_commandQueue);
+    boost::compute::vector<char> device_log(logLength,(const uint64_t)&zero,m_commandQueue);
     
     uint flags = (clLogOn ? CL_LOG_ON : 0) 
         | (clLogErrorOnly ? CL_LOG_ERROR_ONLY : 0);
@@ -473,19 +472,17 @@ int LevensteinDamerau::calculate(uint width, uint haystackSize, uint64_t* needle
     m_kernel.set_arg(8,haystackSize);
     m_commandQueue.enqueue_1d_range_kernel(m_kernel, 0, haystackSize, 1);
 
-    char log[logLength];
-    copy(device_log.begin(),device_log.end(),(char*)&log,m_commandQueue);
+    std::vector<char> host_log(logLength);
+    copy(device_log.begin(),device_log.end(),host_log.begin(),m_commandQueue);
     if(clLogOn) {
-        LOG_I << "Run log:\n" << std::string(log);
+        LOG_I << "Run log:\n" << &host_log;
     }
     
-    std::vector<uint64_t> host_distances(haystackSize);
-    boost::compute::copy(device_distances.begin(), device_distances.end(), host_distances.begin(), m_commandQueue);
-    std::copy(host_distances.begin(), host_distances.end(), distancesOut);
+    //boost::compute::copy(device_distances.begin(), device_distances.end(), host_distances_vec.begin(), m_commandQueue);
+    //std::copy(host_distances_vec.begin(), host_distances_vec.end(), distancesOut);
     
-    std::vector<uint64_t> host_operations(haystackSize*(width*2));
-    boost::compute::copy(device_operations.begin(), device_operations.end(), device_operations.begin(), m_commandQueue);
-    std::copy(host_operations.begin(), host_operations.end(), operationsOut);
+    //boost::compute::copy(device_operations.begin(), device_operations.end(), host_operations_vec.begin(), m_commandQueue);
+    //std::copy(host_operations_vec.begin(), host_operations_vec.end(), operationsOut);
 
     return result;
 }

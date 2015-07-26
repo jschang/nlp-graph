@@ -27,8 +27,8 @@
     #ifndef CL_VERSION_1_1
         #pragma message "OpenCL 1.1 is found"
     #else
-        #pragma message "OpenCL 1.1 is NOT naturally defined"
-        #define CL_VERSION_1_1
+        #warning "OpenCL 1.1 is NOT naturally defined"
+        #define CL_VERSION_1_1 1
     #endif
 #endif
 
