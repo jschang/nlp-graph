@@ -9,6 +9,7 @@
 #define BOOST_LOG_DYN_LINK
 #include "levenstein_damerau.h"
 #include "../util/opencl.h"
+#include "../util/string.h"
 #include <boost/compute.hpp>
 
 #define LOG_E BOOST_LOG_SEV(m_logger,severity_level::critical) << __PRETTY_FUNCTION__ << " "
@@ -441,26 +442,32 @@ LevensteinDamerau::~LevensteinDamerau() {
 int LevensteinDamerau::calculate(uint width, uint haystackSize, uint64_t* needle, uint64_t* haystack, uint64_t *distancesOut, uint64_t *operationsOut) {
 
     int result = 0;
-
-    boost::compute::vector<uint64_t> device_needle(width,m_context);
-    std::vector<uint64_t> host_needle(needle, needle+width);
-    copy(host_needle.begin(),host_needle.end(), device_needle.begin(), m_commandQueue);
+    uint64_t zero = 0;
     
-    boost::compute::vector<uint64_t> device_haystack(haystackSize*width,m_context);
+    LOG_I << "width         : " << width;
+    LOG_I << "haystackSize  : " << haystackSize;
+    LOG_I << "needle        : " << NLPGraph::Util::String::str(needle,width);
+    LOG_I << "haystack:     : " << NLPGraph::Util::String::str(haystack,width*haystackSize);
+
+    boost::compute::vector<uint64_t> device_needle(width, m_context);
+    std::vector<uint64_t> host_needle(needle, needle+width);
+    copy(host_needle.begin(), host_needle.end(), device_needle.begin(), m_commandQueue);
+    
+    boost::compute::vector<uint64_t> device_haystack(haystackSize*width ,m_context);
     std::vector<uint64_t> host_haystack(haystack, haystack+(haystackSize*width));
     boost::compute::copy(host_haystack.begin(), host_haystack.end(), device_haystack.begin(), m_commandQueue);
     
-    uint64_t zero = 0;
-    boost::compute::vector<uint64_t> device_distances(haystackSize,(const uint64_t)&zero,m_commandQueue);
+    boost::compute::vector<uint64_t> device_distances(haystackSize, (const uint64_t)&zero, m_commandQueue);
     
     int count = (haystackSize*(width*2));
-    boost::compute::vector<uint64_t> device_operations(count,(const uint64_t)&zero,m_commandQueue);
+    boost::compute::vector<uint64_t> device_operations(count, (const uint64_t)&zero, m_commandQueue);
     
     uint logLength = 50000;
-    boost::compute::vector<char> device_log(logLength,(const uint64_t)&zero,m_commandQueue);
+    boost::compute::vector<char> device_log(logLength, (const uint64_t)&zero, m_commandQueue);
     
-    uint flags = (clLogOn ? CL_LOG_ON : 0) 
-        | (clLogErrorOnly ? CL_LOG_ERROR_ONLY : 0);
+    uint flags =   (clLogOn        ? CL_LOG_ON         : 0) 
+    	         | (clLogErrorOnly ? CL_LOG_ERROR_ONLY : 0);
+    	
     m_kernel.set_arg(0,flags);
     m_kernel.set_arg(1,width);
     m_kernel.set_arg(2,device_needle);
@@ -470,10 +477,11 @@ int LevensteinDamerau::calculate(uint width, uint haystackSize, uint64_t* needle
     m_kernel.set_arg(6,device_log);
     m_kernel.set_arg(7,logLength);
     m_kernel.set_arg(8,haystackSize);
+    
     m_commandQueue.enqueue_1d_range_kernel(m_kernel, 0, haystackSize, 1);
 
     std::vector<char> host_log(logLength);
-    copy(device_log.begin(),device_log.end(),host_log.begin(),m_commandQueue);
+    boost::compute::copy(device_log.begin(), device_log.end(), host_log.begin(), m_commandQueue);
     if(clLogOn) {
         LOG_I << "Run log:\n" << &host_log;
     }
