@@ -11,7 +11,7 @@
 
 #include "../nlpgraph.h"
 #include "../util/logger.h"
-#include <boost/compute.hpp>
+#include "../util/opencl.h"
 
 namespace NLPGraph {
 namespace Calc {

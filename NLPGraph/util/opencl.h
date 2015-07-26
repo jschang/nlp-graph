@@ -10,6 +10,10 @@
 #define __NLPGraph__opencl__
 
 #include "../nlpgraph.h"
+#include <CL/cl.h>
+#ifdef CL_VERSION_1_2
+#undef CL_VERSION_1_2
+#endif
 #include <boost/compute.hpp>
 
 namespace NLPGraph {
