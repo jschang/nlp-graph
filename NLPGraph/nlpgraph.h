@@ -36,6 +36,11 @@ namespace Dto {
     typedef boost::shared_ptr<InputChannel> InputChannelPtr;
     class RecollectionException;
     typedef boost::shared_ptr<RecollectionException> RecollectionExceptionPtr;
-}};
+}
+typedef struct NLPGraphException : boost::exception, std::exception {
+    std::string msg;
+    const char *what() const noexcept { return msg.c_str(); };
+} NLPGraphExceptionType;
+};
 
 #endif /* defined(__NLPGraph__nlpgraph__) */

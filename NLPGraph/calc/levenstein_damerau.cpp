@@ -11,6 +11,7 @@
 #include "../util/opencl.h"
 #include "../util/string.h"
 #include <boost/compute.hpp>
+#include <exception>
 
 #define LOG_E BOOST_LOG_SEV(m_logger,severity_level::critical) << __PRETTY_FUNCTION__ << " "
 #define LOG_I BOOST_LOG_SEV(m_logger,severity_level::normal) << __PRETTY_FUNCTION__ << " "
@@ -443,7 +444,7 @@ int LevensteinDamerau::calculate(uint width, uint haystackSize, uint64_t* needle
 
     int result = 0;
     uint64_t zero = 0;
-    uint errcode = 0;
+    cl_int errcode = 0;
     
     LOG_I << "width         : " << width;
     LOG_I << "haystackSize  : " << haystackSize;
@@ -459,37 +460,19 @@ int LevensteinDamerau::calculate(uint width, uint haystackSize, uint64_t* needle
     boost::compute::copy(host_haystack.begin(), host_haystack.end(), device_haystack.begin(), m_commandQueue);
     
     boost::compute::vector<uint64_t> device_distances(haystackSize, (const uint64_t)&zero, m_commandQueue);
-    uint64_t* host_distances = malloc(haystackSize*sizeof(uint64_t));
-    memset(host_distances,0,haystackSize*(sizeof(uint64_t));
-    cl_mem deviceDistancesBuf = clCreateBuffer(m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(uint64_t)*haystackSize,host_distances,$errcode);
-    if(errcode!=CL_SUCCESS) {
-        Exception except;
-        except.msg = "Unable to allocate " << count << " uint64_t on cl device buffer";
-        LOG_E << except.msg;
-        throw except;
-    }
+    uint64_t* host_distances = (uint64_t*)malloc(haystackSize*sizeof(uint64_t));
+    memset(host_distances,0,haystackSize*sizeof(uint64_t));
+    cl_mem deviceDistancesBuf = clCreateBuffer(m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(uint64_t)*haystackSize,host_distances,&errcode);
     
     int count = (haystackSize*(width*2));
-    uint64_t* host_operations = malloc(count*sizeof(uint64_t));
-    memset(host_operations,0,count*(sizeof(uint64_t));
-    cl_mem deviceOperationsBuf = clCreateBuffer(m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(uint64_t)*count,host_operations,$errcode);
-    if(errcode!=CL_SUCCESS) {
-        Exception except;
-        except.msg = "Unable to allocate " << count << " uint64_t on cl device buffer";
-        LOG_E << except.msg;
-        throw except;
-    }
+    uint64_t* host_operations = (uint64_t*)malloc(count*sizeof(uint64_t));
+    memset(host_operations,0,count*sizeof(uint64_t));
+    cl_mem deviceOperationsBuf = clCreateBuffer(m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(uint64_t)*count,host_operations,&errcode);
     
     uint logLength = 50000;
-    char *log = malloc(sizeof(char)*logLength);
+    char *log = (char*)malloc(sizeof(char)*logLength);
     memset(log,0,sizeof(char)*logLength);
     cl_mem logBuf = clCreateBuffer(m_context,CL_MEM_WRITE_ONLY,sizeof(char)*logLength,log,&errcode);
-    if(errcode!=CL_SUCCESS) {
-        Exception except;
-        except.msg = "Unable to allocate a " << logLength << " log buffer";
-        LOG_E << except.msg;
-        throw except;
-    }
     
     uint flags =   (clLogOn        ? CL_LOG_ON         : 0) 
     	         | (clLogErrorOnly ? CL_LOG_ERROR_ONLY : 0);
@@ -500,21 +483,15 @@ int LevensteinDamerau::calculate(uint width, uint haystackSize, uint64_t* needle
     m_kernel.set_arg(3,device_haystack);
     m_kernel.set_arg(4,deviceDistancesBuf);
     m_kernel.set_arg(5,deviceOperationsBuf);
-    m_kernel.set_arg(6,logBug);
+    m_kernel.set_arg(6,logBuf);
     m_kernel.set_arg(7,logLength);
     m_kernel.set_arg(8,haystackSize);
     
     m_commandQueue.enqueue_1d_range_kernel(m_kernel, 0, haystackSize, 1);
 
-    errcode = clEnqueueReadBuffer(m_commandQueue,logBuf,true,0,sizeof(char)*logLength,log,0,NULL);
-    if(errcode!=CL_SUCCESS) {
-        Exception except;
-        except.msg = "Unable to read a " << logLength << " log buffer";
-        LOG_E << except.msg;
-        throw except;
-    }
+    errcode = clEnqueueReadBuffer(m_commandQueue,logBuf,true,0,sizeof(char)*logLength,log,0,NULL,NULL);
     if(clLogOn) {
-        LOG_I << "Run log:\n" << &host_log;
+        LOG_I << "Run log:\n" << log;
     }
     
     return result;
