@@ -10,7 +10,11 @@
 #define __NLPGraph__opencl__
 
 #include "../nlpgraph.h"
-#include <CL/cl.h>
+#ifdef __MACH__
+    #include <OpenCL/cl.h>
+#else
+    #include <CL/cl.h>
+#endif
 #ifdef CL_VERSION_1_2
 #undef CL_VERSION_1_2
 #endif

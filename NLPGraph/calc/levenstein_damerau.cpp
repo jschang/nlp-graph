@@ -386,7 +386,7 @@ LevensteinDamerau::LevensteinDamerau(boost::compute::context &context)
     m_commandQueue = boost::compute::command_queue(m_context, dev);
     
     if(false) {
-        std::vector<boost::compute::program> programs;
+        /*std::vector<boost::compute::program> programs;
         
         int headerSize = sizeof(char)*strlen(kLevensteinDamerauOpenCLHeader);
         int sourceSize = sizeof(char)*strlen(kLevensteinDamerauOpenCLSource);
@@ -413,7 +413,7 @@ LevensteinDamerau::LevensteinDamerau(boost::compute::context &context)
         programs.push_back(pSupport);
         programs.push_back(pProgram);
         m_kernel = boost::compute::kernel(boost::compute::program::link(programs, m_context), "calc_levenstein_damerau");
-        
+        */
     } else {
     
         std::vector<boost::compute::program> programs;
