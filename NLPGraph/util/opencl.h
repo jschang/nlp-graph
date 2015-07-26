@@ -10,14 +10,28 @@
 #define __NLPGraph__opencl__
 
 #include "../nlpgraph.h"
+
+// because nvidia is laggard in updating
+// probably due to pushing cuda...
+// they are apparently the microsoft of
+// gpu manufacturers.
+#define CL_USE_DEPRECATED_OPENCL_1_1_APIS
+
 #ifdef __MACH__
     #include <OpenCL/cl.h>
 #else
     #include <CL/cl.h>
 #endif
 #ifdef CL_VERSION_1_2
-#undef CL_VERSION_1_2
+    #undef CL_VERSION_1_2
+    #ifndef CL_VERSION_1_1
+        #pragma message "OpenCL 1.1 is found"
+    #else
+        #pragma message "OpenCL 1.1 is NOT naturally defined"
+        #define CL_VERSION_1_1
+    #endif
 #endif
+
 #include <boost/compute.hpp>
 
 namespace NLPGraph {
