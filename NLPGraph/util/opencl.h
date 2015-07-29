@@ -43,15 +43,17 @@ typedef struct OpenCLException : boost::exception, std::exception {
 typedef struct OpenCLDeviceInfo {
     cl_device_id id;
     cl_platform_id platformId;
-    cl_ulong globalMemCacheSize; // CL_DEVICE_GLOBAL_MEM_CACHE_SIZE
-    cl_ulong globalMemSize;      // CL_DEVICE_GLOBAL_MEM_SIZE
-    cl_ulong localMemSize;       // CL_DEVICE_LOCAL_MEM_SIZE
+    cl_ulong globalMemCacheSize;    // CL_DEVICE_GLOBAL_MEM_CACHE_SIZE
+    cl_ulong globalMemSize;         // CL_DEVICE_GLOBAL_MEM_SIZE
+    cl_ulong localMemSize;          // CL_DEVICE_LOCAL_MEM_SIZE
     cl_ulong maxConstantBufferSize; // CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE
-    cl_bool available;           // CL_DEVICE_AVAILABLE
-    cl_bool compilerAvailable;   // CL_DEVICE_COMPILER_AVAILABLE
-    cl_uint computeUnits;        // CL_DEVICE_MAX_COMPUTE_UNITS
-    cl_bool fullProfile;         // CL_DEVICE_PROFILE
-    cl_bool supportsVer1_1;      // CL_DRIVER_VERSION
+    cl_bool available;              // CL_DEVICE_AVAILABLE
+    cl_bool compilerAvailable;      // CL_DEVICE_COMPILER_AVAILABLE
+    cl_uint computeUnits;           // CL_DEVICE_MAX_COMPUTE_UNITS
+    cl_bool fullProfile;            // CL_DEVICE_PROFILE
+    cl_bool supportsVer1_1;         // CL_DRIVER_VERSION
+    size_t maxWorkItemSizes[3];     // CL_DEVICE_MAX_WORK_ITEM_SIZES
+    
 } OpenCLDeviceInfoType;
 
 class OpenCL {

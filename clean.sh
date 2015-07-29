@@ -1,11 +1,9 @@
 #!/bin/bash
 
-find NLPGraph -name 'NLPGraph.build' -exec rm -rf {} \+
-find NLPGraphTests -name 'NLPGraphTests.build' -exec rm -rf {} \+
-find NLPGraph -iname '*cmake*' -not -name CMakeLists.txt -exec rm -rf {} \+
-find NLPGraphTests -iname '*cmake*' -not -name CMakeLists.txt -exec rm -rf {} \+
-find NLPGraph -iname 'Makefile' -exec rm -rf {} \+
-find NLPGraphTests -iname 'Makefile' -exec rm -rf {} \+
-rm Makefile
-rm -rf CMakeFiles
-rm *cmake*
+for target in NLPGraph NLPGraphTests .; do
+find . -name "$target.build" -exec rm -rvf {} \+
+find $target -iname '*cmake*' -not -name CMakeLists.txt -exec rm -rvf {} \+
+find $target -iname 'Makefile' -exec rm -rvf {} \+
+find $target -name Debug -exec rm -rvf {} \+
+find $target -iname *xcode* -exec rm -rvf {} \+
+done;
