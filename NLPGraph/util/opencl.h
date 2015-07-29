@@ -62,7 +62,6 @@ public:
     static bool bestDeviceInfo(OpenCLDeviceInfoType &bestDevice);
     static cl_context contextWithDeviceInfo(OpenCLDeviceInfoType &deviceInfo);
     static boost::compute::program createAndBuildProgram(std::string src, boost::compute::context ctx);
-    static boost::compute::program getSupportLibrary(boost::compute::context ctx);
 public:
     static void default_error_handler (
         const char *errinfo, const void *private_info, 

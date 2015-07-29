@@ -72,18 +72,18 @@ char * itoa(levenstein_damerau_type *self, ulong inNum, int base);
 const char *kLevensteinDamerauOpenCLSupprtSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
 
 inline void al(levenstein_damerau_type *self, uint descr, char* str) {
-    self->logPos = append_preamble(self,descr);
-    self->logPos = append(self,str,descr);
+    self->logPos = append_preamble(self, descr);
+    self->logPos = append(self, str, descr);
 }
 inline void ac(levenstein_damerau_type *self, uint descr, __constant char* str) {
-    self->logPos = append_preamble(self,descr);
-    self->logPos = append(self,s(z(self->str,self->strLen),str),descr);
+    self->logPos = append_preamble(self, descr);
+    self->logPos = append(self, s(z(self->str, self->strLen), str), descr);
 }
 inline void aci(levenstein_damerau_type *self, uint descr, __constant char* str, ulong num) {
-    self->logPos = append_preamble(self,descr);
-    self->logPos = append(self,s(z(self->str,self->strLen),str),descr);
-    self->logPos = append(self,itoa(self,num,10),descr);
-    self->logPos = append(self,s(z(self->str,self->strLen),"\n"),descr);
+    self->logPos = append_preamble(self, descr);
+    self->logPos = append(self, s(z(self->str, self->strLen), str), descr);
+    self->logPos = append(self, itoa(self, num, 10), descr);
+    self->logPos = append(self, s(z(self->str, self->strLen), "\n"),descr);
 }
 
 /**
@@ -110,7 +110,7 @@ inline char * z(char *in, int len) {
 }
 
 /**
- * Zero out a __private string of a given length.
+ * Zero out a __global string of a given length.
  */
 inline __global char * zg(__global char *in, int len) {
     for(int i=0; i<len; i++) {
@@ -121,7 +121,7 @@ inline __global char * zg(__global char *in, int len) {
 
 inline uint append_preamble(levenstein_damerau_type *self, uint descr) {
 
-    self->logPos = append(self,s(z(self->str,self->strLen),"global_id:"),descr);
+    /*self->logPos = append(self,s(z(self->str,self->strLen),"global_id:"),descr);
         self->logPos = append(self,itoa(self,self->haystackRowIdx,10),descr);
         
     self->logPos = append(self,s(z(self->str,self->strLen),",needleIdx:"),descr);
@@ -136,7 +136,8 @@ inline uint append_preamble(levenstein_damerau_type *self, uint descr) {
     self->logPos = append(self,s(z(self->str,self->strLen),",haystackCur:"),descr);
         self->logPos = append(self,itoa(self,self->haystackCur,10),descr);
         
-    self->logPos = append(self,s(z(self->str,self->strLen)," - "),descr);
+    self->logPos = append(self,s(z(self->str,self->strLen)," - "),descr);*/
+
     return self->logPos;
 }
 
@@ -162,30 +163,38 @@ inline uint append(levenstein_damerau_type *self, char* string, uint descr) {
  * Will eventually reverse a string...used in itoa
  */
 inline void reverse(char *str, int len) {
+    if(!len || len==1) {
+        return;
+    }
+    for(int i=0, j=len-1; j!=0; j--) {
+        char left = str[i];
+        str[i] = str[j];
+        str[j] = left;
+    }
 }
 
 inline char* itoa(levenstein_damerau_type *self, ulong inNum, int base) {
     ulong num = inNum;
     z(self->str,self->strLen);
     int i = 0;
-    //bool isNegative = false;
+//    bool isNegative = false;
     if (num == 0) {
         self->str[i++] = '0';
         self->str[i] = '\0';
         return self->str;
     }
-    /*if (num < 0 && base == 10) {
-        isNegative = true;
-        num = -num;
-    }*/
+//    if (num < 0 && base == 10) {
+//        isNegative = true;
+//        num = -num;
+//    }
     while (num != 0) {
         int rem = num % base;
         self->str[i++] = (rem > 9)? (rem-10) + 'a' : rem + '0';
         num = num/base;
     }
-    /*if (isNegative) {
-        self->str[i++] = '-';
-    }*/
+//    if (isNegative) {
+//        self->str[i++] = '-';
+//    }
     self->str[i] = '\0';
     reverse(self->str, i);
     return self->str;
@@ -210,14 +219,10 @@ __kernel void calc_levenstein_damerau(
         uint haystackSize
 ) { 
     levenstein_damerau_type self;
-
+    int strLen = 255;
     char strAr[255];  // didn't have another way to allocate it, 
                       // and the param has to retain addr space
-    char *str;
-    int strLen;
-    
-    strLen = 255;
-    str = (char*)&strAr;
+    char *str = (char*)&strAr;
     z(strAr,strLen);
     
     self.str = str;
@@ -269,8 +274,6 @@ __kernel void calc_levenstein_damerau(
             }
             self.needleCur = self.needleIn[ self.needleIdx ];
             self.haystackCur = self.haystackIn[ ( self.widthIn * self.haystackRowIdx ) + self.haystackIdx ];
- /*          } while(false);
-    }*/
             
             if(self.needleCur == self.haystackCur) {
                 if(self.haystackCur == self.needleLast) {
@@ -371,12 +374,12 @@ __kernel void calc_levenstein_damerau(
         ac(&self,0,self.needleIdx<self.widthIn?"needleIdx<widthIn = true; \n":"needleIdx<widthIn = false; \n");
         ac(&self,0,self.haystackIdx<self.widthIn?"haystackIdx<widthIn = true\n":"haystackIdx<widthIn = false\n");
     }
+    aci(&self,0,"distanceTotal:  ",self.distanceTotal);
     self.distancesOut[self.haystackRowIdx] = self.distanceTotal;
 }
-
 );
 
-const uint CL_LOG_ON = 0b00000001;
+const uint CL_LOG_ON         = 0b00000001;
 const uint CL_LOG_ERROR_ONLY = 0b00000010;
 
 LevensteinDamerau::LevensteinDamerau(boost::compute::context &context) 
@@ -387,56 +390,24 @@ LevensteinDamerau::LevensteinDamerau(boost::compute::context &context)
     boost::compute::device dev(m_context.get_device());
     m_commandQueue = boost::compute::command_queue(m_context, dev);
     
-    if(false) {
-        /*std::vector<boost::compute::program> programs;
-        
-        int headerSize = sizeof(char)*strlen(kLevensteinDamerauOpenCLHeader);
-        int sourceSize = sizeof(char)*strlen(kLevensteinDamerauOpenCLSource);
-        int supportSize = sizeof(char)*strlen(kLevensteinDamerauOpenCLSupprtSource);
-        
-        char * source = (char *)malloc(headerSize+sourceSize+1);
-        char * support = (char *)malloc(headerSize+supportSize+1);
-        
-        memset(source,0,headerSize+sourceSize+1);
-        memset(support,0,headerSize+supportSize+1);
-        
-        memcpy(support, kLevensteinDamerauOpenCLHeader, headerSize);
-        memcpy(source, kLevensteinDamerauOpenCLHeader, headerSize);
-        
-        memcpy(support+headerSize, kLevensteinDamerauOpenCLSupprtSource, supportSize);
-        memcpy(source+headerSize, kLevensteinDamerauOpenCLSource, sourceSize);
-        
-        LOG_I << "Support:\n" << support;
-        LOG_I << "Source:\n" << source;
-        
-        boost::compute::program pSupport = OpenCL::createAndBuildProgram(support,m_context);
-        boost::compute::program pProgram = OpenCL::createAndBuildProgram(source,m_context);
-        
-        programs.push_back(pSupport);
-        programs.push_back(pProgram);
-        m_kernel = boost::compute::kernel(boost::compute::program::link(programs, m_context), "calc_levenstein_damerau");
-        */
-    } else {
+    int headerSize = sizeof(char)*strlen(kLevensteinDamerauOpenCLHeader);
+    int sourceSize = sizeof(char)*strlen(kLevensteinDamerauOpenCLSource);
+    int supportSize = sizeof(char)*strlen(kLevensteinDamerauOpenCLSupprtSource);
     
-        std::vector<boost::compute::program> programs;
-        
-        int headerSize = sizeof(char)*strlen(kLevensteinDamerauOpenCLHeader);
-        int sourceSize = sizeof(char)*strlen(kLevensteinDamerauOpenCLSource);
-        int supportSize = sizeof(char)*strlen(kLevensteinDamerauOpenCLSupprtSource);
-        
-        char * source = (char *)malloc(headerSize+supportSize+sourceSize+1);
-        
-        memset(source,0,headerSize+sourceSize+supportSize+1);
-        
-        memcpy(source, kLevensteinDamerauOpenCLHeader, headerSize);
-        memcpy(source+headerSize, kLevensteinDamerauOpenCLSupprtSource, supportSize);
-        memcpy(source+headerSize+supportSize, kLevensteinDamerauOpenCLSource, sourceSize);
-        
-        LOG_I << "Source:\n" << source;
-        
-        boost::compute::program pProgram = OpenCL::createAndBuildProgram(source,m_context);
-        m_kernel = boost::compute::kernel(pProgram, "calc_levenstein_damerau");
-    }
+    char * source = (char *)malloc(headerSize+supportSize+sourceSize+1);
+    
+    memset(source,0,headerSize+sourceSize+supportSize+1);
+    
+    memcpy(source, kLevensteinDamerauOpenCLHeader, headerSize);
+    memcpy(source+headerSize, kLevensteinDamerauOpenCLSupprtSource, supportSize);
+    memcpy(source+headerSize+supportSize, kLevensteinDamerauOpenCLSource, sourceSize);
+    
+    LOG_I << "Source:\n" << source;
+    
+    // I would have used link, but NVIDIA doesn't support OpenCL 1.2
+    // and this will prolly end up running on AWS hardware a bunch
+    boost::compute::program pProgram = OpenCL::createAndBuildProgram(source,m_context);
+    m_kernel = boost::compute::kernel(pProgram, "calc_levenstein_damerau");
 }
 LevensteinDamerau::~LevensteinDamerau() {
 }
@@ -460,19 +431,19 @@ int LevensteinDamerau::calculate(uint width, uint haystackSize, uint64_t* needle
     boost::compute::copy(host_haystack.begin(), host_haystack.end(), device_haystack.begin(), m_commandQueue);
     
     boost::compute::vector<uint64_t> device_distances(haystackSize, (const uint64_t)&zero, m_commandQueue);
-    uint64_t* host_distances = (uint64_t*)malloc(haystackSize*sizeof(uint64_t));
+    uint64_t host_distances[haystackSize*sizeof(uint64_t)];
     memset(host_distances,0,haystackSize*sizeof(uint64_t));
-    cl_mem deviceDistancesBuf = clCreateBuffer(m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(uint64_t)*haystackSize,host_distances,&errcode);
+    cl_mem deviceDistancesBuf = clCreateBuffer(m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(uint64_t)*haystackSize,&host_distances,&errcode);
     
     int count = (haystackSize*(width*2));
-    uint64_t* host_operations = (uint64_t*)malloc(count*sizeof(uint64_t));
-    memset(host_operations,0,count*sizeof(uint64_t));
-    cl_mem deviceOperationsBuf = clCreateBuffer(m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(uint64_t)*count,host_operations,&errcode);
+    uint64_t host_operations[count*sizeof(uint64_t)];
+    memset(&host_operations,0,count*sizeof(uint64_t));
+    cl_mem deviceOperationsBuf = clCreateBuffer(m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(uint64_t)*count,&host_operations,&errcode);
     
     uint logLength = 50000;
-    char *log = (char*)malloc(sizeof(char)*logLength);
-    memset(log,0,sizeof(char)*logLength);
-    cl_mem logBuf = clCreateBuffer(m_context,CL_MEM_WRITE_ONLY,sizeof(char)*logLength,log,&errcode);
+    char log[logLength];
+    memset(&log,0,sizeof(char)*logLength);
+    cl_mem logBuf = clCreateBuffer(m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(char)*logLength,&log,&errcode);
     
     uint flags =   (clLogOn        ? CL_LOG_ON         : 0) 
     	         | (clLogErrorOnly ? CL_LOG_ERROR_ONLY : 0);
@@ -493,6 +464,10 @@ int LevensteinDamerau::calculate(uint width, uint haystackSize, uint64_t* needle
     if(clLogOn) {
         LOG_I << "Run log:\n" << log;
     }
+    
+    clReleaseMemObject(logBuf);
+    clReleaseMemObject(deviceOperationsBuf);
+    clReleaseMemObject(deviceDistancesBuf);
     
     return result;
 }

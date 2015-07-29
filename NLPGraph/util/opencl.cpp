@@ -128,9 +128,12 @@ bool OpenCL::bestDeviceInfo(OpenCLDeviceInfoType &bestDevice) {
 cl_context OpenCL::contextWithDeviceInfo(OpenCLDeviceInfoType &deviceInfo) {
     // create the context
     cl_int errcode_ret;
+    LOG(severity_level::critical) << "Creating clCreateContext for "
+        << "platformId:" << deviceInfo.platformId << ", deviceId:" << deviceInfo.id;
     cl_context_properties props[] = {CL_CONTEXT_PLATFORM,(cl_context_properties)deviceInfo.platformId,0};
     cl_context clContext = clCreateContext(props,1,&deviceInfo.id,&default_error_handler,0,&errcode_ret);
     if(errcode_ret!=CL_SUCCESS) {
+        LOG(severity_level::critical) << "clCreateContext failed with code " << errcode_ret;
         OpenCLException except;
         except.msg = "clCreateContext failed.";
         throw except;
@@ -153,7 +156,7 @@ void OpenCL::default_error_handler (
 boost::compute::program OpenCL::createAndBuildProgram(std::string src, boost::compute::context ctx) {
     boost::compute::program bProgram = boost::compute::program::create_with_source(src, ctx);
     try {
-        bProgram.build("-Werror -cl-std=CL1.1");
+        bProgram.build("-cl-std=CL1.1 -Werror");
     } catch(...) {
         std::string buildLog = bProgram.get_build_info<std::string>(CL_PROGRAM_BUILD_LOG,ctx.get_device());
         LOG(severity_level::critical) << buildLog;
