@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t operationsOut[haystackSize*(2*width)];
         LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
         LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
-        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
         LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 0);
     }
@@ -85,7 +85,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t operationsOut[haystackSize*(2*width)];
         LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
         LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
-        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
         LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 2);
     }
@@ -99,7 +99,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t operationsOut[haystackSize*(2*width)];
         LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
         LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
-        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
         LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 2);
     }
@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t operationsOut[haystackSize*(2*width)];
         LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
         LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
-        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
         LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 2);
     }
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t operationsOut[haystackSize*(2*width)];
         LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
         LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize-1);
-        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
         LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 1);
     }
@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t operationsOut[haystackSize*(2*width)];
         LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
         LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize-1);
-        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
         LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 1);
     }
@@ -155,7 +155,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t operationsOut[haystackSize*(2*width)];
         LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
         LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize-1);
-        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
         LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 1);
     }
@@ -169,7 +169,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t operationsOut[haystackSize*(2*width)];
         LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
         LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
-        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
         LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         // this is actually correct, there is only one operation: "substitution"
         BOOST_CHECK(distancesOut[0] == 1);
@@ -184,7 +184,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t operationsOut[haystackSize*(2*width)];
         LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
         LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
-        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
         LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 1);
     }
@@ -198,7 +198,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t operationsOut[haystackSize*(2*width)];
         LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
         LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
-        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
         LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 1);
     }
@@ -212,7 +212,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t operationsOut[haystackSize*(2*width)];
         LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
         LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
-        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
         LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 2);
     }
@@ -226,7 +226,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t operationsOut[haystackSize*(2*width)];
         LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
         LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,width*haystackSize);
-        alg.calculate(width, haystackSize, (uint64_t*)needle, (uint64_t*)haystack, (uint64_t*)distancesOut, (uint64_t*)operationsOut);
+        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (uint64_t*)&distancesOut, (uint64_t*)&operationsOut);
         LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
         BOOST_CHECK(distancesOut[0] == 2);
     }

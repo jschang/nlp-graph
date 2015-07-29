@@ -54,7 +54,7 @@ typedef struct {
     uint haystackCur;
 } levenstein_damerau_type;
 
-uint append_preamble(levenstein_damerau_type *self, uint descr);
+//uint append_preamble(levenstein_damerau_type *self, uint descr);
 uint append(levenstein_damerau_type *self, char* string, uint descr);
 void al(levenstein_damerau_type *self, uint descr, char* str);
 void ac(levenstein_damerau_type *self, uint descr, __constant char* str);
@@ -72,15 +72,12 @@ char * itoa(levenstein_damerau_type *self, ulong inNum, int base);
 const char *kLevensteinDamerauOpenCLSupprtSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
 
 inline void al(levenstein_damerau_type *self, uint descr, char* str) {
-    self->logPos = append_preamble(self, descr);
     self->logPos = append(self, str, descr);
 }
 inline void ac(levenstein_damerau_type *self, uint descr, __constant char* str) {
-    self->logPos = append_preamble(self, descr);
     self->logPos = append(self, s(z(self->str, self->strLen), str), descr);
 }
 inline void aci(levenstein_damerau_type *self, uint descr, __constant char* str, ulong num) {
-    self->logPos = append_preamble(self, descr);
     self->logPos = append(self, s(z(self->str, self->strLen), str), descr);
     self->logPos = append(self, itoa(self, num, 10), descr);
     self->logPos = append(self, s(z(self->str, self->strLen), "\n"),descr);
@@ -119,11 +116,11 @@ inline __global char * zg(__global char *in, int len) {
     return in;
 }
 
-inline uint append_preamble(levenstein_damerau_type *self, uint descr) {
+/*inline uint append_preamble(levenstein_damerau_type *self, uint descr) {
 
-    /*self->logPos = append(self,s(z(self->str,self->strLen),"global_id:"),descr);
+    self->logPos = append(self,s(z(self->str,self->strLen),"global_id:"),descr);
         self->logPos = append(self,itoa(self,self->haystackRowIdx,10),descr);
-        
+    
     self->logPos = append(self,s(z(self->str,self->strLen),",needleIdx:"),descr);
         self->logPos = append(self,itoa(self,self->needleIdx,10),descr);
         
@@ -136,10 +133,10 @@ inline uint append_preamble(levenstein_damerau_type *self, uint descr) {
     self->logPos = append(self,s(z(self->str,self->strLen),",haystackCur:"),descr);
         self->logPos = append(self,itoa(self,self->haystackCur,10),descr);
         
-    self->logPos = append(self,s(z(self->str,self->strLen)," - "),descr);*/
+    self->logPos = append(self,s(z(self->str,self->strLen)," - "),descr);
 
     return self->logPos;
-}
+}*/
 
 /**
  * Core logging function
@@ -166,10 +163,14 @@ inline void reverse(char *str, int len) {
     if(!len || len==1) {
         return;
     }
-    for(int i=0, j=len-1; j!=0; j--) {
+    int i=0, j=len-1;
+    
+    while(j>(len/2)) {
         char left = str[i];
         str[i] = str[j];
         str[j] = left;
+        j--; 
+        i++;
     }
 }
 
@@ -189,7 +190,7 @@ inline char* itoa(levenstein_damerau_type *self, ulong inNum, int base) {
 //    }
     while (num != 0) {
         int rem = num % base;
-        self->str[i++] = (rem > 9)? (rem-10) + 'a' : rem + '0';
+        self->str[i++] = (rem > 9) ? (rem-10) + 'a' : rem + '0';
         num = num/base;
     }
 //    if (isNegative) {
@@ -460,10 +461,17 @@ int LevensteinDamerau::calculate(uint width, uint haystackSize, uint64_t* needle
     
     m_commandQueue.enqueue_1d_range_kernel(m_kernel, 0, haystackSize, 1);
 
-    errcode = clEnqueueReadBuffer(m_commandQueue,logBuf,true,0,sizeof(char)*logLength,log,0,NULL,NULL);
+    errcode = clEnqueueReadBuffer(m_commandQueue, logBuf, true, 0, sizeof(char)*logLength, log, 0, NULL, NULL);
+    if(errcode!=CL_SUCCESS) {
+        OpenCLExceptionType except;
+        except.msg = "Unable to read logBuf";
+        throw except;
+    }
     if(clLogOn) {
         LOG_I << "Run log:\n" << log;
     }
+    
+    clEnqueueReadBuffer(m_commandQueue, deviceDistancesBuf, true, 0, sizeof(uint64_t)*haystackSize, distancesOut, 0, NULL, NULL);
     
     clReleaseMemObject(logBuf);
     clReleaseMemObject(deviceOperationsBuf);
