@@ -54,15 +54,18 @@ typedef struct {
     uint haystackCur;
 } levenstein_damerau_type;
 
-//uint append_preamble(levenstein_damerau_type *self, uint descr);
-uint append(levenstein_damerau_type *self, char* string, uint descr);
+uint a(levenstein_damerau_type *self, char* string, uint descr);
+
 void al(levenstein_damerau_type *self, uint descr, char* str);
 void ac(levenstein_damerau_type *self, uint descr, __constant char* str);
 void aci(levenstein_damerau_type *self, uint descr, __constant char* str, ulong num);
+
 char * z(char *in, int len);
 __global char * zg(__global char *in, int len);
 char * s(char *strOut, __constant char *strIn);
 char * itoa(levenstein_damerau_type *self, ulong inNum, int base);
+
+uint append_state(levenstein_damerau_type *self, uint descr);
 
 );
 
@@ -72,15 +75,15 @@ char * itoa(levenstein_damerau_type *self, ulong inNum, int base);
 const char *kLevensteinDamerauOpenCLSupprtSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
 
 inline void al(levenstein_damerau_type *self, uint descr, char* str) {
-    self->logPos = append(self, str, descr);
+    a(self, str, descr);
 }
 inline void ac(levenstein_damerau_type *self, uint descr, __constant char* str) {
-    self->logPos = append(self, s(z(self->str, self->strLen), str), descr);
+    a(self, s(z(self->str, self->strLen), str), descr);
 }
 inline void aci(levenstein_damerau_type *self, uint descr, __constant char* str, ulong num) {
-    self->logPos = append(self, s(z(self->str, self->strLen), str), descr);
-    self->logPos = append(self, itoa(self, num, 10), descr);
-    self->logPos = append(self, s(z(self->str, self->strLen), "\n"),descr);
+    a(self, s(z(self->str, self->strLen), str), descr);
+    a(self, itoa(self, num, 10), descr);
+    a(self, s(z(self->str, self->strLen), "\n"),descr);
 }
 
 /**
@@ -116,32 +119,45 @@ inline __global char * zg(__global char *in, int len) {
     return in;
 }
 
-/*inline uint append_preamble(levenstein_damerau_type *self, uint descr) {
+inline uint append_state(levenstein_damerau_type *self, uint descr) {
 
-    self->logPos = append(self,s(z(self->str,self->strLen),"global_id:"),descr);
-        self->logPos = append(self,itoa(self,self->haystackRowIdx,10),descr);
-    
-    self->logPos = append(self,s(z(self->str,self->strLen),",needleIdx:"),descr);
-        self->logPos = append(self,itoa(self,self->needleIdx,10),descr);
+    /*z(self->str,self->strLen);
+    s(self->str,"global_id:");
+    a(self,self->str,descr);
+    itoa(self,self->haystackRowIdx,10);
+    a(self,self->str,descr);
         
-    self->logPos = append(self,s(z(self->str,self->strLen),",haystackIdx:"),descr);
-        self->logPos = append(self,itoa(self,self->haystackIdx,10),descr);
+    z(self->str,self->strLen);
+    s(self->str,",needleIdx:");
+    a(self,self->str,descr);
+    itoa(self,self->needleIdx,10);
+    a(self,self->str,descr);
         
-    self->logPos = append(self,s(z(self->str,self->strLen),",needleCur:"),descr);
-        self->logPos = append(self,itoa(self,self->needleCur,10),descr);
+    z(self->str,self->strLen);  
+    s(self->str,",haystackIdx:");
+    a(self,self->str,descr);
+    itoa(self,self->haystackIdx,10);
+    a(self,self->str,descr);
         
-    self->logPos = append(self,s(z(self->str,self->strLen),",haystackCur:"),descr);
-        self->logPos = append(self,itoa(self,self->haystackCur,10),descr);
+    z(self->str,self->strLen);   
+    s(self->str,",needleCur:");
+    a(self,self->str,descr);
+    itoa(self,self->needleCur,10);
+    a(self,self->str,descr);
         
-    self->logPos = append(self,s(z(self->str,self->strLen)," - "),descr);
+    z(self->str,self->strLen);   
+    s(self->str,",haystackCur:");
+    a(self,self->str,descr);
+    itoa(self,self->haystackCur,10);
+    a(self,self->str,descr);*/
 
     return self->logPos;
-}*/
+}
 
 /**
  * Core logging function
  */
-inline uint append(levenstein_damerau_type *self, char* string, uint descr) {
+inline uint a(levenstein_damerau_type *self, char* string, uint descr) {
     if ( self->flags & CL_LOG_ON ) {
         if( ((self->flags & CL_LOG_ERROR_ONLY) && (descr & CL_LOG_TYPE_ERROR))
                 || !(self->flags & CL_LOG_ERROR_ONLY) ) {
@@ -220,33 +236,38 @@ __kernel void calc_levenstein_damerau(
         uint haystackSize
 ) { 
     levenstein_damerau_type self;
+    
     int strLen = 255;
     char strAr[255];  // didn't have another way to allocate it, 
                       // and the param has to retain addr space
     char *str = (char*)&strAr;
     z(strAr,strLen);
     
-    self.str = str;
-    self.strLen = strLen;
     self.flags = flags;
     self.widthIn = widthIn;
     self.needleIn = needleIn;
     
+    self.haystackIn = haystackIn;
     self.haystackSize = haystackSize;
     self.haystackRowIdx = get_global_id(0);
 
+    self.str = str;
+    self.strLen = strLen;
     self.logLength = logLength;
     self.logOut = logOut;
     self.logPos = self.haystackRowIdx * 2048;
-    self.logOut[self.logPos] = 0x13;
-    zg(self.logOut+self.logPos,2048);
+    self.logOut [ self.logPos ] = 0x13;
+    zg(self.logOut + self.logPos, 2048);
     
     self.needleIdx = 0;
     self.haystackIdx = 0;
     self.needleLast = 0;
     self.haystackLast = 0;
     self.distanceTotal = 0;
+    self.needleCur = 0;
+    self.haystackCur = 0;
     self.distancesOut = distancesOut;
+    self.operationsOut = operationsOut;
     
     aci(&self,0,"strLen:         ",self.strLen);
     aci(&self,0,"flags:          ",self.flags);
@@ -261,6 +282,9 @@ __kernel void calc_levenstein_damerau(
     while( self.needleIdx < self.widthIn ) {
 
         do {
+            //append_state(&self,0); 
+            //a(&self,"\n",0);
+        
             if(self.haystackIdx>=self.widthIn) {
                 ac(&self,0,"haystack ended...incrementing dist\n");
                 self.distanceTotal++;
@@ -275,6 +299,8 @@ __kernel void calc_levenstein_damerau(
             }
             self.needleCur = self.needleIn[ self.needleIdx ];
             self.haystackCur = self.haystackIn[ ( self.widthIn * self.haystackRowIdx ) + self.haystackIdx ];
+            
+            //append_state(&self,0); a(&self,"\n",0);
             
             if(self.needleCur == self.haystackCur) {
                 if(self.haystackCur == self.needleLast) {
@@ -365,6 +391,7 @@ __kernel void calc_levenstein_damerau(
                     }
                 }
             }
+            //append_state(&self,0); a(&self,"\n",0);
             
             self.needleIdx++;
             self.haystackIdx++;
