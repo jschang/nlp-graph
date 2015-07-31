@@ -121,7 +121,7 @@ inline __global char * zg(__global char *in, int len) {
 
 inline uint append_state(levenstein_damerau_type *self, uint descr) {
 
-    /*z(self->str,self->strLen);
+    z(self->str,self->strLen);
     s(self->str,"global_id:");
     a(self,self->str,descr);
     itoa(self,self->haystackRowIdx,10);
@@ -149,7 +149,7 @@ inline uint append_state(levenstein_damerau_type *self, uint descr) {
     s(self->str,",haystackCur:");
     a(self,self->str,descr);
     itoa(self,self->haystackCur,10);
-    a(self,self->str,descr);*/
+    a(self,self->str,descr);
 
     return self->logPos;
 }
@@ -282,8 +282,8 @@ __kernel void calc_levenstein_damerau(
     while( self.needleIdx < self.widthIn ) {
 
         do {
-            //append_state(&self,0); 
-            //a(&self,"\n",0);
+            append_state(&self,0);
+            ac(&self,0,"\n");
         
             if(self.haystackIdx>=self.widthIn) {
                 ac(&self,0,"haystack ended...incrementing dist\n");
@@ -434,8 +434,8 @@ LevensteinDamerau::LevensteinDamerau(boost::compute::context &context)
     
     // I would have used link, but NVIDIA doesn't support OpenCL 1.2
     // and this will prolly end up running on AWS hardware a bunch
-    boost::compute::program pProgram = OpenCL::createAndBuildProgram(source,m_context);
-    m_kernel = boost::compute::kernel(pProgram, "calc_levenstein_damerau");
+    m_program = OpenCL::createAndBuildProgram(source,m_context);
+    m_kernel = boost::compute::kernel(m_program, "calc_levenstein_damerau");
 }
 LevensteinDamerau::~LevensteinDamerau() {
 }
