@@ -15,14 +15,26 @@ namespace NLPGraph {
 namespace Util {
 
 class String {
+
 private:
     String() {}
+    
 public:
-    template <class T>
-    static std::string str(const T &inArray, const int len) {
+    template <typename T>
+    static std::string str(const T inArray[], const int len) {
         std::stringstream retStr;
         for(int i=0; i<len; i++) {
-            retStr << inArray[i] << ",";
+            retStr << (T)inArray[i] << ",";
+        }
+        return retStr.str();
+    }
+    
+    template <size_t _Size=64, typename T>
+    static std::string strb(const T inArray[], const int len) {
+        std::stringstream retStr;
+        for(int i=0; i<len; i++) {
+            std::bitset<_Size> y((T)inArray[i]);
+            retStr << y << ",";
         }
         return retStr.str();
     }
