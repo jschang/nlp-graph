@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
     LevensteinDamerau alg(bContext);
     
     // flip to on, if you're interested in fixing an issue in the cl code
-    alg.clLogOn = false;
+    alg.clLogOn = true;
     
     // first simple test
     { // perfect match

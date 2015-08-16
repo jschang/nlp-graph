@@ -53,6 +53,7 @@ typedef struct {
     uint needleCur;
     uint haystackCur;
     long currentLocation;
+    uint opsCurIdx;
 } levenstein_damerau_type;
 
 uint a(levenstein_damerau_type *self, char* string, uint descr);
@@ -309,7 +310,9 @@ __kernel void calc_levenstein_damerau(
     self.needleCur = 0;
     self.haystackCur = 0;
     self.distancesOut = distancesOut;
+    
     self.operationsOut = operationsOut;
+    self.opsCurIdx = self.haystackRowIdx * (2 * self.widthIn);
     
     self.currentLocation = 0;
     
@@ -331,12 +334,14 @@ __kernel void calc_levenstein_damerau(
             self.currentLocation = 0;
             if(self.haystackIdx>=self.widthIn) {
                 ac(&self,0,"haystack ended...incrementing dist\n\n");
+                // TODO: add deltion operation
                 self.distanceTotal++;
                 self.needleIdx++;
                 break;
             }
             if(self.needleIdx>=self.widthIn) {
                 ac(&self,0,"needle ended...incrementing dist\n\n");
+                // TODO: add insertion operation
                 self.distanceTotal++;
                 self.haystackIdx++;
                 break;
@@ -346,6 +351,7 @@ __kernel void calc_levenstein_damerau(
             
             append_state(&self,0);
             if(self.needleCur == self.haystackCur) {
+                // these are all current matches
                 self.currentLocation = self.currentLocation | 1 << 3;
                 if(self.haystackCur == self.needleLast) {
                     self.currentLocation = self.currentLocation | 1 << 2;
@@ -353,26 +359,21 @@ __kernel void calc_levenstein_damerau(
                         self.currentLocation = self.currentLocation | 1 << 1;
                         if(self.needleLast == self.haystackLast) { 
                             self.currentLocation = self.currentLocation | 1;
-                            // 1111 - error: never been here before
-                            ac(&self,CL_LOG_TYPE_ERROR," - 1111 - continuing match\n");
-                            /* eg. n:AA, h:AA */
-                        } else { 
-                            // 1110 - error: never been here before
-                            ac(&self,CL_LOG_TYPE_ERROR," - 1110 - error: never been here before\n");
+                            ac(&self,CL_LOG_TYPE_ERROR," - 1111 - continuing match w/ repetition; n:AA, h:AA\n");
+                        } else {
+                            ac(&self,CL_LOG_TYPE_ERROR," - 1110 - error: not logically possible\n");
                             self.distancesOut[self.haystackRowIdx] = -1 * self.currentLocation;
                             return;
                         }
                     } else {
                         if(self.needleLast == self.haystackLast) { 
                             self.currentLocation = self.currentLocation | 1;
-                            // 1101 - error: never been here before
-                            ac(&self,CL_LOG_TYPE_ERROR," - 1101 - error: never been here before\n");
+                            ac(&self,CL_LOG_TYPE_ERROR," - 1101 - error: not logically possible\n");
                             self.distancesOut[self.haystackRowIdx] = -1 * self.currentLocation;
                             return;
-                        } else { 
-                            // 1100 - error: never been here before
-                            ac(&self,CL_LOG_TYPE_ERROR," - 1100 - continuing match\n");
-                            /* eg. n:AA, h:0A */
+                        } else {
+                            ac(&self,CL_LOG_TYPE_ERROR," - 1100 - repetition in needle, rejoining match; n:AA, h:BA\n");
+                            // last would have incremented distanceTotal
                         }
                     }
                 } else {
@@ -380,51 +381,51 @@ __kernel void calc_levenstein_damerau(
                         self.currentLocation = self.currentLocation | 1 << 1;
                         if(self.needleLast == self.haystackLast) { 
                             self.currentLocation = self.currentLocation | 1;
-                            // 1011 - error: never been here before
-                            ac(&self,CL_LOG_TYPE_ERROR," - 1011 - error: never been here before\n");
+                            ac(&self,CL_LOG_TYPE_ERROR," - 1011 - error: not logically possible\n");
                             self.distancesOut[self.haystackRowIdx] = -1 * self.currentLocation;
                             return;
-                        } else { 
-                            // 1010 - possible insertion
-                            ac(&self,0," - 1010 - possible insertion\n");
-                            self.distanceTotal++;
+                        } else {
+                            ac(&self,0," - 1010 - repetition in haystack, match restored; n:BA, h:AA\n");
+                            // self.distanceTotal++;
+                            self.haystackIdx--;
+                            break;
                         }
                     } else { 
                         if(self.needleLast == self.haystackLast) {
                             self.currentLocation = self.currentLocation | 1;
-                            // 1001 - continuing match
-                            ac(&self,0," - 1001 - continuing match\n");
+                            ac(&self,0," - 1001 - continuing match; n:BA, h:BA\n");
                         } else {
-                            // 1000 - match restored
-                            ac(&self,0," - 1000 - match restored\n");
+                            ac(&self,0," - 1000 - match restored; n:BA, h:CA\n");
                         }
                     }
                 }
             } else {
+                // these are all current match failures
                 if(self.haystackCur == self.needleLast) {
                     self.currentLocation = self.currentLocation | 1 << 2;
                     if(self.needleCur == self.haystackLast) {
                         self.currentLocation = self.currentLocation | 1 << 1;
                         if(self.needleLast == self.haystackLast) {
                             self.currentLocation = self.currentLocation | 1;
-                            // 0111 - error: never been here before
-                            ac(&self,CL_LOG_TYPE_ERROR," - 0111 - error: never been here before\n");
+                            ac(&self,CL_LOG_TYPE_ERROR," - 0111 - error: not logically possible\n");
                             self.distancesOut[self.haystackRowIdx] = -1 * self.currentLocation;
                             return;
                         } else {
-                            // 0110 - transposition
-                            ac(&self,0," - 0110 - transposition\n");
+                            ac(&self,0," - 0110 - recognizing transposition; n:AB, h:BA\n");
                             self.distanceTotal++;
+                            // TODO: remark last op as transposition at point instead
+                            // TODO: do not increment distanceTotal, update tests
                         }
                     } else {
                         if(self.needleLast == self.haystackLast) {
                             self.currentLocation = self.currentLocation | 1;
-                            // 0101 - repeat haystack
-                            ac(&self,0," - 0101 - repeat haystack\n");
-                            self.distanceTotal++;
+                            ac(&self,0," - 0101 - current is repeptition in haystack, rewind needle to match haystack; n:AB, h:AA\n");
+                            //self.distanceTotal++; // not sure if i need...wouldn't last have inc at break
+                            self.needleIdx--;
+                            break;
                         } else {
-                            // 0100 - may be restoration of match
-                            ac(&self,0," - 0100 - may be restoration of match\n");
+                            ac(&self,0," - 0100 - last was insertion in haystack, rewind needle to match haystack; n:AB, h:CA\n");
+                            //self.distanceTotal++; // not sure if i need...wouldn't last have inc at break
                             self.needleIdx--;
                             break;
                         }
@@ -434,27 +435,21 @@ __kernel void calc_levenstein_damerau(
                         self.currentLocation = self.currentLocation | 1 << 1;
                         if(self.needleLast == self.haystackLast) {
                             self.currentLocation = self.currentLocation | 1;
-                            // 0011 - replacement or deletion
-                            ac(&self,0," - 0011 - replacement or deletion; i need to see this before i'll trust that i can get away with not incrementing distanceTotal\n");
-                            self.distancesOut[self.haystackRowIdx] = -1 * self.currentLocation;
-                            return;
+                            ac(&self,0," - 0011 - replacement or deletion; n:AA, h:AB\n");
+                            self.distanceTotal++;
                         } else {
-                            // 0010 - restore match, last was actually ommission in haystack
-                            ac(&self,0," - 0010 - restore match, last was actually ommission in haystack\n");
+                            ac(&self,0," - 0010 - rejoin match; n:CB, h:BA\n");
                             self.haystackIdx--;   // need to rewind the haystack
-                            self.distanceTotal--; // and our distance wouldn't be accurate now either
+                            // self.distanceTotal--; // maybe our distance wouldn't be accurate now either
                             break;
                         }
                     } else {
                         if(self.needleLast == self.haystackLast) {
                             self.currentLocation = self.currentLocation | 1;
-                            // 0001 - break match, replacement
-                            //logPos=log(haystackRowIdx,needleIdx,haystackIdx,str,strLen,)
-                            ac(&self,0," - 0001 - break match, replacement\n");
+                            ac(&self,0," - 0001 - break match, replacement;  n:AC, h:AB\n");
                             self.distanceTotal++;
                         } else {
-                            // 0000 - continue broken match, replacement
-                            ac(&self,0," - 0000 - continue broken match, replacement\n");
+                            ac(&self,0," - 0000 - continue broken match, replacement; n:AB, h:CD\n");
                             self.distanceTotal++;
                         }
                     }
