@@ -13,6 +13,10 @@
 #include <boost/log/common.hpp>
 
 namespace NLPGraph {
+namespace Calc {
+    class LevensteinDamerauData;
+    typedef boost::shared_ptr<LevensteinDamerauData> LevensteinDamerauDataPtr;
+};
 namespace Util {
     class OpenCL;
     template <class T> class ResourcePool;
@@ -28,10 +32,8 @@ namespace Dao {
 namespace Dto {
     class Recollection;
     typedef boost::shared_ptr<Recollection> RecollectionPtr;
-    typedef boost::shared_ptr<uint64_t*> RecollectionBinaryPtr;
     class Symbol;
     typedef boost::shared_ptr<Symbol> SymbolPtr;
-    typedef boost::shared_ptr<uint64_t*> SymbolBinaryPtr;
     class InputChannel;
     typedef boost::shared_ptr<InputChannel> InputChannelPtr;
     class RecollectionException;

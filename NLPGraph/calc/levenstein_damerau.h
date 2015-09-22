@@ -18,6 +18,71 @@ namespace Calc {
 
 extern const char *kLevensteinDamerauOpenCLSource;
 
+class LevensteinDamerauData {
+private:
+    uint m_needleWidth = 0;
+    uint m_haystackSize = 0;
+    uint64_t* m_needle = 0;
+    uint64_t* m_haystack = 0;
+    uint64_t* m_operations = 0;
+    uint m_operationsSize = 0;
+    int64_t* m_distances = 0;
+private:
+    void alloc(uint needleWidth, uint haystackSize) {
+        m_needleWidth = needleWidth;
+        m_haystackSize = haystackSize;
+        
+        m_needle = new uint64_t[needleWidth];
+        memset(m_needle,0,sizeof(uint64_t)*needleWidth);
+        
+        m_haystack = new uint64_t[needleWidth*haystackSize];
+        memset(m_haystack,0,sizeof(uint64_t)*needleWidth*haystackSize);
+        
+        m_distances = new int64_t[haystackSize];
+        memset(m_distances,0,sizeof(int64_t)*haystackSize);
+        
+        m_operationsSize = haystackSize*(3*needleWidth);
+        m_operations = new uint64_t[m_operationsSize];
+        memset(m_operations,0,sizeof(uint64_t)*m_operationsSize);
+    }
+public:
+    LevensteinDamerauData(uint needleWidth, uint haystackSize) {
+        this->alloc(needleWidth,haystackSize);
+    }
+    LevensteinDamerauData(uint needleWidth, uint haystackSize, uint64_t* needle, uint64_t* haystack) {
+        this->alloc(needleWidth, haystackSize);
+        memcpy(m_needle,needle,sizeof(uint64_t)*needleWidth);
+        memcpy(m_haystack,haystack,sizeof(uint64_t)*needleWidth*haystackSize);
+    }
+    ~LevensteinDamerauData() {
+        delete m_needle;
+        delete m_haystack;
+        delete m_distances;
+        delete m_operations;
+    }
+    uint getNeedleWidth() {
+        return m_needleWidth;
+    }
+    uint getHaystackSize() {
+        return m_haystackSize;
+    }
+    uint64_t* getNeedle() {
+        return m_needle;
+    }
+    uint64_t* getHaystack() {
+        return m_haystack;
+    }
+    int64_t* getDistances() {
+        return m_distances;
+    }
+    uint getOperationsSize() {
+        return m_operationsSize;
+    }
+    uint64_t* getOperations() {
+        return m_operations;
+    }
+};
+
 class LevensteinDamerau {
 private:
     boost::compute::context       m_context;
@@ -34,7 +99,8 @@ public:
 public:
     LevensteinDamerau(boost::compute::context &context);
     ~LevensteinDamerau();
-    int calculate(uint width, uint haystackSize, uint64_t* needle, uint64_t* haystack, int64_t *distancesOut, uint64_t *operationsOut);
+    int calculate(LevensteinDamerauDataPtr data);
+    int reconstruct(LevensteinDamerauDataPtr data);
 };
 
 }}

@@ -67,47 +67,51 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,3,4};
-        int64_t distancesOut[1];
-        uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (int64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
-        BOOST_CHECK(distancesOut[0] == 0);
+        LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
+            width, haystackSize, (uint64_t*)&needle[0], (uint64_t*)&haystack[0]));
+        alg.calculate(dataPtr);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
+        BOOST_CHECK(dataPtr->getDistances()[0] == 0);
     }
-    { // transposition requires 2 edits
+    { // transposition requires 1 edits
         LOG << "Testing single transposition - middle";
         uint width=4;
         uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,3,2,4};
-        int64_t distancesOut[1];
-        uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (int64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
-        BOOST_CHECK(distancesOut[0] == 2);
+        LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
+            width, haystackSize, needle, haystack));
+        alg.calculate(dataPtr);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
+        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
     }
-    { // transposition requires 2 edits
+    { // transposition requires 1 edits
         LOG << "Testing single transposition - left edge";
         uint width=4;
         uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {2,1,3,4};
-        int64_t distancesOut[1];
-        uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (int64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
-        BOOST_CHECK(distancesOut[0] == 2);
+        LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
+            width, haystackSize, needle, haystack));
+        alg.calculate(dataPtr);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
+        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
     }
-    { // transposition requires 2 edits
+    { // transposition requires 1 edits
         LOG << "Testing single transposition - right edge";
         uint width=4;
         uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,4,3};
-        int64_t distancesOut[1];
-        uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (int64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
-        BOOST_CHECK(distancesOut[0] == 2);
+        LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
+            width, haystackSize, needle, haystack));
+        alg.calculate(dataPtr);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
+        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
     }
     { // single deletion - middle
         LOG << "Testing single deletion - middle";
@@ -115,11 +119,12 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,4,0};
-        int64_t distancesOut[1];
-        uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (int64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
-        BOOST_CHECK(distancesOut[0] == 1);
+        LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
+            width, haystackSize, needle, haystack));
+        alg.calculate(dataPtr);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
+        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
     }
     { // single deletion - left edge
         LOG << "Testing single deletion - left edge";
@@ -127,11 +132,12 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {2,3,4,0};
-        int64_t distancesOut[1];
-        uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (int64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
-        BOOST_CHECK(distancesOut[0] == 1);
+        LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
+            width, haystackSize, needle, haystack));
+        alg.calculate(dataPtr);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
+        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
     }
     { // single deletion - right edge
         LOG << "Testing single deletion - right edge";
@@ -139,24 +145,42 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,3,0};
-        int64_t distancesOut[1];
-        uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (int64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
-        BOOST_CHECK(distancesOut[0] == 1);
+        LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
+            width, haystackSize, needle, haystack));
+        alg.calculate(dataPtr);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
+        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+    }
+    { // single deletion - middle
+        LOG << "Testing single deletion, repetition - middle";
+        uint width=4;
+        uint haystackSize=1;
+        uint64_t needle[] = {1,2,3,4};
+        uint64_t haystack[] = {1,2,2,4};
+        LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
+            width, haystackSize, needle, haystack));
+        alg.calculate(dataPtr);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
+        // this is actually correct, there is only one operation: "substitution"
+        // 2015-08-16 - yeah, but 2 is easier...we'll use two for now: "repetition" and "deletion"
+        BOOST_CHECK(dataPtr->getDistances()[0] == 2);
     }
     { // single deletion - middle
         LOG << "Testing single deletion, insertion - middle";
         uint width=4;
         uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
-        uint64_t haystack[] = {1,2,2,4};
-        int64_t distancesOut[1];
-        uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (int64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
+        uint64_t haystack[] = {1,2,5,4};
+        LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
+            width, haystackSize, needle, haystack));
+        alg.calculate(dataPtr);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
         // this is actually correct, there is only one operation: "substitution"
-        BOOST_CHECK(distancesOut[0] == 1);
+        // 2015-08-16 - yeah, but 2 is easier...we'll use two for now: "repetition" and "deletion"
+        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
     }
     { // single deletion - left edge
         LOG << "Testing single deletion, insertion - left edge";
@@ -164,11 +188,12 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {5,2,3,4};
-        int64_t distancesOut[1];
-        uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (int64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
-        BOOST_CHECK(distancesOut[0] == 1);
+        LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
+            width, haystackSize, needle, haystack));
+        alg.calculate(dataPtr);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
+        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
     }
     { // single deletion - right edge
         LOG << "Testing single deletion, insertion - right edge";
@@ -176,11 +201,12 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,3,5};
-        int64_t distancesOut[1];
-        uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (int64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
-        BOOST_CHECK(distancesOut[0] == 1);
+        LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
+            width, haystackSize, needle, haystack));
+        alg.calculate(dataPtr);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
+        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
     }
     { // single deletion - left edge
         LOG << "Testing single deletion, repetition - left edge";
@@ -188,11 +214,12 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {2,2,3,4};
-        int64_t distancesOut[1];
-        uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (int64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
-        BOOST_CHECK(distancesOut[0] == 2);
+        LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
+            width, haystackSize, needle, haystack));
+        alg.calculate(dataPtr);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
+        BOOST_CHECK(dataPtr->getDistances()[0] == 2);
     }
     { // single deletion - right edge
         LOG << "Testing single deletion, repetition - right edge";
@@ -200,11 +227,12 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,4,4};
-        int64_t distancesOut[1];
-        uint64_t operationsOut[haystackSize*(2*width)];
-        alg.calculate(width, haystackSize, (uint64_t*)&needle, (uint64_t*)&haystack, (int64_t*)&distancesOut, (uint64_t*)&operationsOut);
-        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,1);
-        BOOST_CHECK(distancesOut[0] == 2);
+        LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
+            width, haystackSize, needle, haystack));
+        alg.calculate(dataPtr);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
+        BOOST_CHECK(dataPtr->getDistances()[0] == 2);
     }
 }
 
@@ -234,12 +262,9 @@ BOOST_AUTO_TEST_CASE( stress_test ) {
     
     uint64_t *needle = (uint64_t *)malloc(sizeof(uint64_t)*testSize);
     uint64_t *haystack = new uint64_t[testWidth*testSize];
-    int64_t *distancesOut = new int64_t[testSize];
-    uint64_t *operationsOut = new uint64_t[testSize*(2*testWidth)];
 
     for(int i=0; i<100; i++) {
         LOG << "STARTING ITERATION: " << i;
-        memset(distancesOut,0,sizeof(uint64_t)*testSize);
         memset(needle,0,sizeof(uint64_t)*testSize);
         uint needleWidth = (*getNeedleWidth)();
         for(int i=0; i<(needleWidth); i++) {
@@ -268,17 +293,18 @@ BOOST_AUTO_TEST_CASE( stress_test ) {
         LOG << "needle:" << NLPGraph::Util::String::str(needle,testWidth);
         LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,testWidth*testSize);
         timespec start = TimeHelper::getTimeStruct();
-        alg.calculate(testWidth, testSize, (uint64_t*)needle, (uint64_t*)haystack, (int64_t*)distancesOut, (uint64_t*)operationsOut);
+        LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
+            testWidth, testSize, needle, haystack));
+        alg.calculate(dataPtr);
         timespec end = TimeHelper::getTimeStruct();
-        LOG << "distances:" << NLPGraph::Util::String::str(distancesOut,testSize);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),testSize);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),dataPtr->getOperationsSize());
         LOG << "time: " << (end.tv_nsec - start.tv_nsec);
-        BOOST_CHECK( distancesOut[0] >= 0 );
+        BOOST_CHECK( dataPtr->getDistances()[0] >= 0 );
     }
     
     delete needle;
     delete haystack;
-    delete distancesOut;
-    delete operationsOut;
 }
 
 BOOST_AUTO_TEST_CASE( perf_test ) {
@@ -311,22 +337,20 @@ BOOST_AUTO_TEST_CASE( perf_test ) {
     for(int i=0; i<(testSize*testWidth); i++) {
         haystack[i] = (*getRand)();
     }
-    int64_t *distancesOut = new int64_t[testSize];
-    uint64_t *operationsOut = new uint64_t[testSize*(2*testWidth)]; 
     
     timespec start = TimeHelper::getTimeStruct();
-    alg.calculate(testWidth, testSize, (uint64_t*)needle, (uint64_t*)haystack, (int64_t*)distancesOut, (uint64_t*)operationsOut);
+    LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
+            testWidth, testSize, needle, haystack));
+    alg.calculate(dataPtr);
     timespec end = TimeHelper::getTimeStruct();
     LOG << "time: " << (end.tv_nsec - start.tv_nsec);
     
-    LOG << distancesOut[0];
-    BOOST_CHECK(distancesOut[0] == 1);
+    LOG << dataPtr->getDistances()[0];
+    BOOST_CHECK(dataPtr->getDistances()[0] == 1);
     
     // clean up after self
     delete needle;
     delete haystack;
-    delete distancesOut;
-    delete operationsOut;
 }
 
 BOOST_AUTO_TEST_SUITE_END()
