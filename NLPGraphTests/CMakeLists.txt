@@ -1,3 +1,4 @@
+
 if (BUILD_NLPGRAPH_TESTS)
 
     project(NLPGraphTests)
@@ -7,6 +8,7 @@ if (BUILD_NLPGRAPH_TESTS)
     
     add_executable (NLPGraphTests
         ./calc/levenstein_damerau_test.cpp
+        ./calc/kohonen_som_test.cpp
         ./dao/postgres/model_postgres_test.cpp
         ./nlpgraph_tests.cpp
         ./nlpgraph_tests.h
@@ -20,9 +22,7 @@ if (BUILD_NLPGRAPH_TESTS)
     )
     source_group(src\\calc FILES 
         ./calc/levenstein_damerau_test.cpp
-    )
-    source_group(src\\calc FILES 
-        ./calc/levenstein_damerau_test.cpp
+        ./calc/kohonen_som_test.cpp
     )
     source_group(src\\dao\\postgres FILES 
         ./dao/postgres/model_postgres_test.cpp

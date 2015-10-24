@@ -16,6 +16,8 @@ namespace NLPGraph {
 namespace Calc {
     class LevensteinDamerauData;
     typedef boost::shared_ptr<LevensteinDamerauData> LevensteinDamerauDataPtr;
+    class KohonenSOM;
+    typedef boost::shared_ptr<KohonenSOMData> KohonenSOMDataPtr;
 };
 namespace Util {
     class OpenCL;

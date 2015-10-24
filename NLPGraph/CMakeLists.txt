@@ -3,6 +3,8 @@ if (BUILD_NLPGRAPH_LIB)
     project(NLPGraphLib)
 
     add_library (NLPGraphLib
+        ./calc/kohonen_som.cpp
+        ./calc/kohonen_som.h
         ./calc/levenstein_damerau.cpp
         ./calc/levenstein_damerau.h
         ./context.cpp
