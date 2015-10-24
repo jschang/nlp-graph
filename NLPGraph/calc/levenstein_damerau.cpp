@@ -526,6 +526,11 @@ __kernel void calc_levenstein_damerau(
 const uint CL_LOG_ON         = 0b00000001;
 const uint CL_LOG_ERROR_ONLY = 0b00000010;
 
+const uint64_t OP_INSERT    = 1;
+const uint64_t OP_DELETE    = 2;
+const uint64_t OP_REPEAT    = 3;
+const uint64_t OP_TRANSPOSE = 4;
+
 LevensteinDamerau::LevensteinDamerau(boost::compute::context &context) 
         : m_logger(boost::log::keywords::channel="NLPGraph::Calc::LevensteinDamerau") {
     m_context = context;
@@ -556,6 +561,56 @@ LevensteinDamerau::LevensteinDamerau(boost::compute::context &context)
 LevensteinDamerau::~LevensteinDamerau() {
 }
 int LevensteinDamerau::reconstruct(LevensteinDamerauDataPtr data) {
+
+    data->zeroHaystack();
+    // foreach operations
+    for (
+        long opIdxStart = 0, opIdxEnd = data->getOperationsSize(), haystackIdx = 0; 
+        opIdxStart < opIdxEnd; 
+        opIdxStart += data->getOperationWidth(), haystackIdx += data->getNeedleWidth()
+    ) {
+        uint curHayIdx = haystackIdx;
+        do {
+            bool breakOut = false;
+            for( uint curOpIdx = opIdxStart, curOpIdxEnd = curOpIdx+data->getOperationWidth(); 
+                    curOpIdx < curOpIdxEnd; curOpIdx+=3 ) {
+                uint64_t curOp = data->getOperations()[curOpIdx+opIdxStart];
+                uint64_t needleIdx = data->getOperations()[curOpIdx+opIdxStart+1];
+                uint64_t optInsId = data->getOperations()[curOpIdx+opIdxStart+2];
+                switch (curOp) {
+                    //__constant ulong OP_INSERT    = 1;
+                    case OP_INSERT:
+                        // take current in needle and put here, increment haystackIdx and needleIdx
+                        data->getHaystack()[curHayIdx] = optInsId;
+                        curHayIdx++;
+                        break;
+                    case OP_DELETE:
+                        // do nothing, needleIdx will be in the next op
+                        break;
+                    case OP_REPEAT:
+                        // take current in needle and put here, increment only haystackIdx
+                        data->getHaystack()[curHayIdx] = data->getNeedle()[needleIdx];
+                        curHayIdx++;
+                        break;
+                    case OP_TRANSPOSE:
+                        // take next needle and put it current
+                        data->getHaystack()[curHayIdx] = data->getNeedle()[needleIdx+1];
+                        // take current needle and put it next
+                        data->getHaystack()[curHayIdx+1] = data->getNeedle()[needleIdx];
+                        // increment haystack by 2
+                        curHayIdx+=2;
+                        break;
+                    default:
+                    case 0:
+                        breakOut = true;
+                        break;
+                }
+                if (breakOut) {
+                    break;
+                }
+            }
+        } while(false); // so we can escape the switch statement
+    }        
     return 0;
 }
 int LevensteinDamerau::calculate(LevensteinDamerauDataPtr data) {
@@ -566,6 +621,9 @@ int LevensteinDamerau::calculate(LevensteinDamerauDataPtr data) {
     uint64_t* haystack      = data->getHaystack();
     int64_t* distancesOut   = data->getDistances();
     uint64_t* operationsOut = data->getOperations();
+    
+    data->zeroOperations();
+    data->zeroDistances();
 
     int result = 0;
     uint64_t zero = 0;

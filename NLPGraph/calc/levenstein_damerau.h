@@ -29,21 +29,22 @@ private:
     int64_t* m_distances = 0;
 private:
     void alloc(uint needleWidth, uint haystackSize) {
+    
         m_needleWidth = needleWidth;
         m_haystackSize = haystackSize;
+        m_operationsSize = haystackSize * this->getOperationWidth();
         
         m_needle = new uint64_t[needleWidth];
-        memset(m_needle,0,sizeof(uint64_t)*needleWidth);
+        this->zeroNeedle();
         
         m_haystack = new uint64_t[needleWidth*haystackSize];
-        memset(m_haystack,0,sizeof(uint64_t)*needleWidth*haystackSize);
+        this->zeroHaystack();
         
         m_distances = new int64_t[haystackSize];
-        memset(m_distances,0,sizeof(int64_t)*haystackSize);
+        this->zeroDistances();
         
-        m_operationsSize = haystackSize*(3*needleWidth);
         m_operations = new uint64_t[m_operationsSize];
-        memset(m_operations,0,sizeof(uint64_t)*m_operationsSize);
+        this->zeroOperations();
     }
 public:
     LevensteinDamerauData(uint needleWidth, uint haystackSize) {
@@ -60,6 +61,18 @@ public:
         delete m_distances;
         delete m_operations;
     }
+    void zeroNeedle() {
+        memset(m_needle,0,sizeof(uint64_t)*m_needleWidth);
+    }
+    void zeroHaystack() {
+        memset(m_haystack,0,sizeof(uint64_t)*m_needleWidth*m_haystackSize);
+    }
+    void zeroOperations() {
+        memset(m_operations,0,sizeof(uint64_t)*m_operationsSize);
+    }
+    void zeroDistances() {
+        memset(m_distances,0,sizeof(int64_t)*m_haystackSize);
+    }
     uint getNeedleWidth() {
         return m_needleWidth;
     }
@@ -74,6 +87,9 @@ public:
     }
     int64_t* getDistances() {
         return m_distances;
+    }
+    uint getOperationWidth() {
+        return (3*m_needleWidth);
     }
     uint getOperationsSize() {
         return m_operationsSize;
