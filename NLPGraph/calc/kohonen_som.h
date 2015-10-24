@@ -48,7 +48,7 @@ public:
     KohonenSOM(boost::compute::context &context);
     ~KohonenSOM();
     int train(KohonenSOMDataPtr data, const std::vector<double> &sampleData);
-    int map(KohonenSOMDataPtr data, const std::vector<double> &sample);
+    std::vector<int> map(KohonenSOMDataPtr data, const std::vector<double> &sample);
 };
 
 }}

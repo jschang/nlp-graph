@@ -40,7 +40,9 @@ if (BUILD_NLPGRAPH_LIB)
         ./context.h
         ./nlpgraph.h
     )
-    source_group(src\\calc FILES 
+    source_group(src\\calc FILES
+        ./calc/kohonen_som.cpp
+        ./calc/kohonen_som.h
         ./calc/levenstein_damerau.cpp
         ./calc/levenstein_damerau.h
     )

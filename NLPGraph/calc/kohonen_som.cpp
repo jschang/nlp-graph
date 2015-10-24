@@ -53,9 +53,9 @@ KohonenSOM::KohonenSOM(boost::compute::context &context)
     int supportSize = sizeof(char)*strlen(kKohonenSOMOpenCLSupprtSource);
     char * source = (char *)malloc(headerSize+supportSize+sourceSize+1);
     memset(source,0,headerSize+sourceSize+supportSize+1);
-    memcpy(source, kLevensteinDamerauOpenCLHeader, headerSize);
-    memcpy(source+headerSize, kLevensteinDamerauOpenCLSupprtSource, supportSize);
-    memcpy(source+headerSize+supportSize, kLevensteinDamerauOpenCLSource, sourceSize);
+    memcpy(source, kKohonenSOMOpenCLHeader, headerSize);
+    //memcpy(source+headerSize, kLevensteinDamerauOpenCLSupprtSource, supportSize);
+    memcpy(source+headerSize+supportSize, kKohonenSOMOpenCLSource, sourceSize);
     
     LOG_I << "Source:\n" << source;
     
@@ -64,13 +64,14 @@ KohonenSOM::KohonenSOM(boost::compute::context &context)
     m_program = OpenCL::createAndBuildProgram(source,m_context);
     m_kernel = boost::compute::kernel(m_program, "calc_kohonen_som_bmu");
 }
-KohonenSom::~KohonenSom() {
+KohonenSOM::~KohonenSOM() {
 }
-int KohonenSom::train(KohonenSomDataPtr data) {
+
+int KohonenSOM::train(KohonenSOMDataPtr data, const std::vector<double> &sampleData) {
     return 0;
 }
-int KohonenSom::bmu(KohonenSomDataPtr data, const std::vector<double> &vec) {
-    return 0;
+std::vector<int> KohonenSOM::map(KohonenSOMDataPtr data, const std::vector<double> &sample) {
+    return std::vector<int>();
 }
         
 }}
