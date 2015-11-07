@@ -53,7 +53,7 @@ typedef struct OpenCLDeviceInfo {
     cl_bool fullProfile;            // CL_DEVICE_PROFILE
     cl_bool supportsVer1_1;         // CL_DRIVER_VERSION
     size_t maxWorkItemSizes[3];     // CL_DEVICE_MAX_WORK_ITEM_SIZES
-    std::string extensions;
+    boost::shared_ptr<std::string> extensions;
 } OpenCLDeviceInfoType;
 
 class OpenCL {
