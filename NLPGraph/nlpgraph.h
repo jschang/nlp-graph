@@ -17,7 +17,11 @@ namespace Calc {
     class LevensteinDamerauData;
     typedef boost::shared_ptr<LevensteinDamerauData> LevensteinDamerauDataPtr;
     class KohonenSOMData;
+    class KohonenSOMSampleData;
+    class KohonenSOMResult;
     typedef boost::shared_ptr<KohonenSOMData> KohonenSOMDataPtr;
+    typedef boost::shared_ptr<KohonenSOMSampleData> KohonenSOMSampleDataPtr;
+    typedef boost::shared_ptr<KohonenSOMResult> KohonenSOMResultPtr;
 };
 namespace Util {
     class OpenCL;

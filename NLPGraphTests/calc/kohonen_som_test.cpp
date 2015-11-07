@@ -20,8 +20,6 @@ using namespace NLPGraph::Calc;
 using namespace boost::compute;
 using namespace boost;
 
-LoggerType logger(boost::log::keywords::channel="nlpgraph_calc_kohonen_som");
-
 struct Fixture {
     Fixture() {
         BOOST_TEST_MESSAGE("Fixture setup");
@@ -31,16 +29,7 @@ struct Fixture {
     }
 };
 
-void pfn_notify (
-                 const char *errinfo,
-                 const void *private_info,
-                 size_t cb,
-                 void *user_data
-                 ) {
-    LOG << errinfo;
-}
-
-BOOST_AUTO_TEST_SUITE( nlpgraph_calc_levenstein_damerau )
+BOOST_AUTO_TEST_SUITE( nlpgraph_calc_kohonen_som )
 
 BOOST_AUTO_TEST_CASE( calc_test )
 {

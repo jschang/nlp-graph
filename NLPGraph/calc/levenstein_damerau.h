@@ -113,10 +113,10 @@ public:
     bool clLogOn;
     bool clLogErrorOnly;
 public:
-    LevensteinDamerau(boost::compute::context &context);
+    LevensteinDamerau(const boost::compute::context &context);
     ~LevensteinDamerau();
-    int calculate(LevensteinDamerauDataPtr data);
-    int reconstruct(LevensteinDamerauDataPtr data);
+    int calculate(const LevensteinDamerauDataPtr &data);
+    int reconstruct(const LevensteinDamerauDataPtr &data);
 };
 
 }}

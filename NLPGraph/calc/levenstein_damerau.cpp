@@ -531,7 +531,7 @@ const uint64_t OP_DELETE    = 2;
 const uint64_t OP_REPEAT    = 3;
 const uint64_t OP_TRANSPOSE = 4;
 
-LevensteinDamerau::LevensteinDamerau(boost::compute::context &context) 
+LevensteinDamerau::LevensteinDamerau(const boost::compute::context &context) 
         : m_logger(boost::log::keywords::channel="NLPGraph::Calc::LevensteinDamerau") {
     m_context = context;
     clLogOn = false;
@@ -543,24 +543,32 @@ LevensteinDamerau::LevensteinDamerau(boost::compute::context &context)
     int sourceSize = sizeof(char)*strlen(kLevensteinDamerauOpenCLSource);
     int supportSize = sizeof(char)*strlen(kLevensteinDamerauOpenCLSupprtSource);
     
-    char * source = (char *)malloc(headerSize+supportSize+sourceSize+1);
+    char * source = 0;
+    try {
+        source = (char *)malloc(headerSize+supportSize+sourceSize+1);
     
-    memset(source,0,headerSize+sourceSize+supportSize+1);
-    
-    memcpy(source, kLevensteinDamerauOpenCLHeader, headerSize);
-    memcpy(source+headerSize, kLevensteinDamerauOpenCLSupprtSource, supportSize);
-    memcpy(source+headerSize+supportSize, kLevensteinDamerauOpenCLSource, sourceSize);
-    
-    LOG_I << "Source:\n" << source;
-    
-    // I would have used link, but NVIDIA doesn't support OpenCL 1.2
-    // and this will prolly end up running on AWS hardware a bunch
-    m_program = OpenCL::createAndBuildProgram(source,m_context);
-    m_kernel = boost::compute::kernel(m_program, "calc_levenstein_damerau");
+        memset(source,0,headerSize+sourceSize+supportSize+1);
+        
+        memcpy(source, kLevensteinDamerauOpenCLHeader, headerSize);
+        memcpy(source+headerSize, kLevensteinDamerauOpenCLSupprtSource, supportSize);
+        memcpy(source+headerSize+supportSize, kLevensteinDamerauOpenCLSource, sourceSize);
+        
+        LOG_I << "Source:\n" << source;
+        
+        // I would have used link, but NVIDIA doesn't support OpenCL 1.2
+        // and this will prolly end up running on AWS hardware a bunch
+        m_program = OpenCL::createAndBuildProgram(source,m_context);
+        m_kernel = boost::compute::kernel(m_program, "calc_levenstein_damerau");
+        
+        delete source;
+    } catch(...) {
+        if(source!=0) delete source;
+        throw;
+    }
 }
 LevensteinDamerau::~LevensteinDamerau() {
 }
-int LevensteinDamerau::reconstruct(LevensteinDamerauDataPtr data) {
+int LevensteinDamerau::reconstruct(const LevensteinDamerauDataPtr &data) {
 
     data->zeroHaystack();
     // foreach operations
@@ -613,7 +621,7 @@ int LevensteinDamerau::reconstruct(LevensteinDamerauDataPtr data) {
     }        
     return 0;
 }
-int LevensteinDamerau::calculate(LevensteinDamerauDataPtr data) {
+int LevensteinDamerau::calculate(const LevensteinDamerauDataPtr &data) {
 
     uint width              = data->getNeedleWidth();
     uint haystackSize       = data->getHaystackSize();
