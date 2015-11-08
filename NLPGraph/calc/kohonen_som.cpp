@@ -31,42 +31,51 @@ namespace Calc {
 
 const char *kKohonenSOMOpenCLHeader = "";
 const char *kKohonenSOMOpenCLSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
-       
-    inline float _calc_sample_distance(__global float* weights, long startIdx, uint nodeWidth, __constant float* sample) {
+    
+    inline float _calc_sample_distance(__global float* weights, ulong startIdx, uint nodeWidth, __constant float* sample) {
         float accum = 0.0f;
-        for(uint i = 0; i<nodeWidth; i++) {
-            float diff = weights[startIdx+i] - sample[i];
-            accum += pown(diff,2);
+        float diff = 0.0f;
+        uint i = 0;
+        for(i = 0; i<nodeWidth; i++) {
+            diff = weights[startIdx+i] - sample[i];
+            accum += pow(diff,2);
         }
-        return pow( accum, .5f) ;
+        accum = pow(accum, .5f);
+        return accum;
     }
     
     inline void _calc_coords(uint dimCount, __constant uint* dimSizes, size_t offset, uint* thisCoords) {
         // reversed so, processed as xy, then y
-        ulong trim = offset;
-        for(int i = dimCount-1; i>=0; i--) {
-            ulong multi = 1;
-            for(int j=i-1; j>=0; j--) {
+        ulong trim = offset, multi = 0;
+        int i = 0, j = 0;
+        for(i = dimCount-1; i>=0; i--) {
+            multi = 1;
+            for(j=i-1; j>=0; j--) {
                 multi *= dimSizes[j];
             }
             thisCoords[i] = trim / multi;
             trim = trim % multi; 
-        }
+        } 
     }
     
     inline float _calc_map_coord_distance(uint dimCount, __constant uint* bmuCoords, uint* thisCoords) {
         float accum = 0.0f;
-        for(uint i = 0; i<dimCount; i++) {
-            accum += pow((float)(bmuCoords[i]-thisCoords[i]),2);
+        uint i = 0;
+        int diff = 0;
+        for(i = 0; i < dimCount; i++) {
+            diff = bmuCoords[i] - thisCoords[i];
+            diff *= diff; 
+            accum += (float)diff; // THIS line, only, causes CL_DEVICE_NOT_AVAILABLE !!!
         }
-        return pow(accum,.5f);
+        accum = pow(accum,.5f);
+        return accum;
     }
 
     __kernel void calc_kohonen_som_distances(
             // map data
             __global float* weights,      // weights
-            uint nodeWidth,                // the number of weights per node
-            uint nodeCount,                // the total number of weights
+            uint nodeWidth,               // the number of weights per node
+            uint nodeCount,               // the total number of weights
             __constant float* sample,     // sample, of nodeWidth wide
             __global float* output        // the output distance of each node to the sample
         ) {
@@ -78,15 +87,14 @@ const char *kKohonenSOMOpenCLSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
     __kernel void calc_kohonen_som_update_weights(
             // map data
             __global float* weights,       // weights
-            uint nodeWidth,                 // the number of weights per node
-            uint dimCount,                  // the number of dimensions
-            __constant uint* dimSizes,      // the size of each dimension
-            __constant float *sampleData,             // the sample to use for updating the bmu and surrounding units
-            __constant uint* bmuCoords,     // the coordinates of the best matching unit, from which we derive offset
+            uint nodeWidth,                // the number of weights per node
+            uint dimCount,                 // the number of dimensions
+            __constant uint* dimSizes,     // the size of each dimension
+            __constant float *sampleData,  // the sample to use for updating the bmu and surrounding units
+            __constant uint* bmuCoords,    // the coordinates of the best matching unit, from which we derive offset
             float learningRate,            // calculated on the CPU as per step
             float radius                   // calculated on the CPU as per step
         ) {
-        
         size_t nodeIndex = get_global_id(0);
         ulong startIdx = nodeIndex * nodeWidth;
         
@@ -135,7 +143,7 @@ KohonenSOM::KohonenSOM(const boost::compute::context &context)
         // I would have used link, but NVIDIA doesn't support OpenCL 1.2
         // and this will prolly end up running on AWS hardware a bunch
         m_program = OpenCL::createAndBuildProgram(source,m_context);
-        m_mappingKernel = boost::compute::kernel(m_program, "calc_kohonen_som_bmu");
+        m_mappingKernel = boost::compute::kernel(m_program, "calc_kohonen_som_distances");
         m_weightUpdateKernel = boost::compute::kernel(m_program, "calc_kohonen_som_update_weights");
         
         delete source;
