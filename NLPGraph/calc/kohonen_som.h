@@ -19,26 +19,36 @@ namespace NLPGraph {
         
 class KohonenSOMData {
 private:
-    // the final map dimensions
-    std::vector<int> _mapDimensions;
     // the vector length of each node's weights
     int _nodeWidth;
     
     // OpenCL data
     cl_mem _clNodeWeights = 0;
+    uint64_t _nodeCount = 0;
+    cl_mem _clMapDimensions = 0;
+    boost::shared_ptr< std::vector<uint32_t> > _mapDimensions;
 public:
     KohonenSOMData(const boost::compute::context &context, 
             const std::vector<double> &nodeWeights, // product(mapDimensions) * nodeWidth
-            const std::vector<int> &mapDimensions, 
+            const std::vector<uint32_t> &mapDimensions, 
             const int nodeWidth) {
             
-        this->_mapDimensions = mapDimensions;
+        this->_mapDimensions = boost::shared_ptr< std::vector<uint32_t> >( new std::vector<uint32_t>(mapDimensions) );
         this->_nodeWidth = nodeWidth;
+        this->_nodeCount = nodeWeights.size();
         cl_int err = 0;
-        this->_clNodeWeights = clCreateBuffer(context,CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR,(size_t)nodeWeights.size()*sizeof(double),(void*)nodeWeights.data(),&err);
+        // because i can't cound on the device having cl_khr_fp64
+        std::vector<float> floatNodeWeights(nodeWeights.begin(), nodeWeights.end());
+        this->_clNodeWeights = clCreateBuffer(context,CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR,(size_t)floatNodeWeights.size()*sizeof(float),(void*)floatNodeWeights.data(),&err);
         if (err!=CL_SUCCESS) {
             Util::OpenCLExceptionType except;
-            except.msg = except.msg + "unable to clCreateBuffer clNodeWeights; ";
+            except.msg = except.msg + "unable to clCreateBuffer _clNodeWeights; ";
+            throw except;
+        }
+        this->_clMapDimensions = clCreateBuffer(context,CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,(size_t)mapDimensions.size()*sizeof(uint32_t),(void*)mapDimensions.data(),&err);
+        if (err!=CL_SUCCESS) {
+            Util::OpenCLExceptionType except;
+            except.msg = except.msg + "unable to clCreateBuffer _clMapDimensions; ";
             throw except;
         }
     }
@@ -46,23 +56,32 @@ public:
         if(_clNodeWeights!=0) {
             clReleaseMemObject(_clNodeWeights);
         }
+        if(_clNodeWeights!=0) {
+            clReleaseMemObject(_clMapDimensions);
+        }
     }
-    const std::vector<int>& mapDimensions() {
-        return _mapDimensions;
-    }
-    const int nodeWdith() {
+    const int nodeWidth() {
         return _nodeWidth;
     }
-    const cl_mem getClNodeWeights() {
+    const uint64_t nodeCount() {
+        return _nodeCount;
+    }
+    const std::vector<uint32_t>& mapDimensions() {
+        return *_mapDimensions.get();
+    }
+    const cl_mem clNodeWeights() {
         return _clNodeWeights;
+    }
+    const cl_mem clMapDimensions() {
+        return _clMapDimensions;
     }
 };
 
 class KohonenSOMSampleData {
 private:
     cl_mem _clData = 0;
-    uint _width = 0;
-    uint _count = 0;
+    uint32_t _width = 0;
+    uint32_t _count = 0;
 public:
     KohonenSOMSampleData(const boost::compute::context &context, 
             const std::vector<double> &sampleData, 
@@ -72,10 +91,12 @@ public:
         this->_width = sampleWidth;
         this->_count = sampleCount;
         cl_int err = 0;
-        this->_clData = clCreateBuffer(context,CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,(size_t)sampleData.size()*sizeof(double),(void*)sampleData.data(),&err);
+        // because i can't cound on the device having cl_khr_fp64
+        std::vector<float> floatSampleData(sampleData.begin(), sampleData.end());
+        this->_clData = clCreateBuffer(context,CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,(size_t)floatSampleData.size()*sizeof(double),(void*)floatSampleData.data(),&err);
         if (err!=CL_SUCCESS) {
             Util::OpenCLExceptionType except;
-            except.msg = "unable to clCreateBuffer clData; ";
+            except.msg = "unable to clCreateBuffer _clData; ";
             throw except;
         }
     }
@@ -84,20 +105,27 @@ public:
             clReleaseMemObject(this->_clData);
         }
     }
+    cl_mem clData() { return this->_clData; }
     uint width() { return this->_width; }
     uint count() { return this->_count; }
 };
 
 class KohonenSOMResult {
 private:
-    std::vector<std::map<int,double>> _result;
+    boost::shared_ptr<std::vector<std::vector<uint32_t>>> _indexes;
+    boost::shared_ptr<std::vector<float>> _distances;
 public:
-    KohonenSOMResult(const boost::compute::context &context, const KohonenSOMDataPtr &data) {
+    KohonenSOMResult(const boost::compute::context &context, const KohonenSOMSampleDataPtr &data) {
+        _indexes = boost::shared_ptr< std::vector<std::vector<uint32_t>> >( new std::vector<std::vector<uint32_t>>(data->count()) );
+        _distances = boost::shared_ptr< std::vector<float> >( new std::vector<float>(data->count()) );
     }
     ~KohonenSOMResult() {
     }
-    std::vector<std::map<int,double>> result() {
-        return std::vector<std::map<int,double>>();
+    std::vector<std::vector<uint32_t>>& indexes() {
+        return *_indexes.get();
+    }
+    std::vector<float>& distances() {
+        return *_distances.get();
     }
 };
 
@@ -122,7 +150,7 @@ public:
     /**
      * @return For each sample, in order, a map of node indices, up to max nodes, and the distance from the weights at that nodes index.
      */
-    KohonenSOMResultPtr map(const KohonenSOMDataPtr &data, const KohonenSOMSampleDataPtr &sampleData, uint maxNodes);
+    KohonenSOMResultPtr map(const KohonenSOMDataPtr &data, const KohonenSOMSampleDataPtr &sampleData);
     /**
      * Updates map node weights using the result passed in
      */

@@ -28,15 +28,31 @@ void OpenCL::deviceInfo(cl_device_id id, OpenCLDeviceInfoType &thisDeviceInfo) {
     memset(&thisDeviceInfo,0,sizeof(OpenCLDeviceInfoType));
     
     thisDeviceInfo.id = id;
-        LOG(severity_level::normal) << "device id                          :" << thisDeviceInfo.id;
-        
+        LOG(severity_level::normal) << "Device Id                          : " << thisDeviceInfo.id;
+    
+    thisDeviceInfo.type = thisDevice.get_info<cl_device_type>(CL_DEVICE_TYPE);
+    tmpString = "";
+    if(thisDeviceInfo.type & CL_DEVICE_TYPE_CPU) {
+        tmpString+="CPU";
+    }
+    if(thisDeviceInfo.type & CL_DEVICE_TYPE_GPU) {
+        tmpString+=std::string(tmpString.length()>0?",":"")+std::string("CPU");
+    };
+    if(thisDeviceInfo.type & CL_DEVICE_TYPE_ACCELERATOR) {
+        tmpString+=std::string(tmpString.length()>0?",":"")+std::string("ACCELERATOR");
+    }
+    if(thisDeviceInfo.type & CL_DEVICE_TYPE_DEFAULT) {
+        tmpString+=std::string(tmpString.length()>0?",":"")+std::string("DEFAULT");
+    }
+        LOG(severity_level::normal) << "CL_DEVICE_TYPEs                    : " << tmpString;
+    
     // verify device availability CL_DEVICE_AVAILABLE
     thisDeviceInfo.available = thisDevice.get_info<cl_bool>(CL_DEVICE_AVAILABLE);
-        LOG(severity_level::normal) << "CL_DEVICE_AVAILABLE                :" << thisDeviceInfo.available;
+        LOG(severity_level::normal) << "CL_DEVICE_AVAILABLE                : " << thisDeviceInfo.available;
         
     // verify device has a compiler CL_DEVICE_COMPILER_AVAILABLE
     thisDeviceInfo.compilerAvailable = thisDevice.get_info<cl_bool>(CL_DEVICE_COMPILER_AVAILABLE);
-        LOG(severity_level::normal) << "CL_DEVICE_COMPILER_AVAILABLE       :" << thisDeviceInfo.compilerAvailable;
+        LOG(severity_level::normal) << "CL_DEVICE_COMPILER_AVAILABLE       : " << thisDeviceInfo.compilerAvailable;
         
     // verify device supports full profile CL_DEVICE_PROFILE
     tmpString = thisDevice.get_info<std::string>(CL_DEVICE_PROFILE);
@@ -45,7 +61,7 @@ void OpenCL::deviceInfo(cl_device_id id, OpenCLDeviceInfoType &thisDeviceInfo) {
     } else {
         thisDeviceInfo.fullProfile = true;
     }
-        LOG(severity_level::normal) << "CL_DEVICE_PROFILE                  :" << tmpString;
+        LOG(severity_level::normal) << "CL_DEVICE_PROFILE                  : " << tmpString;
         
     // verify that device supports "OpenCL 1.1" CL_DEVICE_VERSION
     tmpString = thisDevice.get_info<std::string>(CL_DEVICE_VERSION);
@@ -54,19 +70,19 @@ void OpenCL::deviceInfo(cl_device_id id, OpenCLDeviceInfoType &thisDeviceInfo) {
     } else {
         thisDeviceInfo.supportsVer1_1 = false;
     }
-        LOG(severity_level::normal) << "CL_DEVICE_VERSION                  :" << tmpString;
-    thisDeviceInfo.extensions = boost::shared_ptr<std::string>( new std::string( thisDevice.get_info<std::string>(CL_DEVICE_EXTENSIONS) ) );
-        LOG(severity_level::normal) << "CL_DEVICE_EXTENSIONS               :" << *thisDeviceInfo.extensions.get();    
+        LOG(severity_level::normal) << "CL_DEVICE_VERSION                  : " << tmpString;
+    tmpString = thisDeviceInfo.extensions = thisDevice.get_info<std::string>(CL_DEVICE_EXTENSIONS);
+        LOG(severity_level::normal) << "CL_DEVICE_EXTENSIONS               : " << thisDeviceInfo.extensions;
     thisDeviceInfo.localMemSize = thisDevice.get_info<cl_ulong>(CL_DEVICE_LOCAL_MEM_SIZE);
-        LOG(severity_level::normal) << "CL_DEVICE_LOCAL_MEM_SIZE           :" << thisDeviceInfo.localMemSize;
+        LOG(severity_level::normal) << "CL_DEVICE_LOCAL_MEM_SIZE           : " << thisDeviceInfo.localMemSize;
     thisDeviceInfo.globalMemSize = thisDevice.get_info<cl_ulong>(CL_DEVICE_GLOBAL_MEM_SIZE);
-        LOG(severity_level::normal) << "CL_DEVICE_GLOBAL_MEM_SIZE          :" << thisDeviceInfo.globalMemSize;
+        LOG(severity_level::normal) << "CL_DEVICE_GLOBAL_MEM_SIZE          : " << thisDeviceInfo.globalMemSize;
     thisDeviceInfo.globalMemCacheSize = thisDevice.get_info<cl_ulong>(CL_DEVICE_GLOBAL_MEM_CACHE_SIZE);
-        LOG(severity_level::normal) << "CL_DEVICE_GLOBAL_MEM_CACHE_SIZE    :" << thisDeviceInfo.globalMemCacheSize;
+        LOG(severity_level::normal) << "CL_DEVICE_GLOBAL_MEM_CACHE_SIZE    : " << thisDeviceInfo.globalMemCacheSize;
     thisDeviceInfo.maxConstantBufferSize = thisDevice.get_info<cl_ulong>(CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE);
-        LOG(severity_level::normal) << "CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE :" << thisDeviceInfo.maxConstantBufferSize;
+        LOG(severity_level::normal) << "CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE : " << thisDeviceInfo.maxConstantBufferSize;
     thisDeviceInfo.computeUnits = thisDevice.get_info<cl_uint>(CL_DEVICE_MAX_COMPUTE_UNITS);
-        LOG(severity_level::normal) << "CL_DEVICE_MAX_COMPUTE_UNITS        :" << thisDeviceInfo.computeUnits;
+        LOG(severity_level::normal) << "CL_DEVICE_MAX_COMPUTE_UNITS        : " << thisDeviceInfo.computeUnits;
     memset(&thisDeviceInfo.maxWorkItemSizes,0,sizeof(size_t)*3);
     /*
     clGetDeviceInfo(cl_device_id    // device ,
@@ -76,7 +92,7 @@ void OpenCL::deviceInfo(cl_device_id id, OpenCLDeviceInfoType &thisDeviceInfo) {
                 size_t *        // param_value_size_ret ) CL_API_SUFFIX__VERSION_1_0;
     */
     clGetDeviceInfo(thisDeviceInfo.id,CL_DEVICE_MAX_WORK_ITEM_SIZES,(size_t)(sizeof(size_t)*3),(void*)&thisDeviceInfo.maxWorkItemSizes,NULL);
-        LOG(severity_level::normal) << "CL_DEVICE_MAX_ITEM_SIZES           :" << NLPGraph::Util::String::str(thisDeviceInfo.maxWorkItemSizes,3);
+        LOG(severity_level::normal) << "CL_DEVICE_MAX_ITEM_SIZES           : " << NLPGraph::Util::String::str(thisDeviceInfo.maxWorkItemSizes,3);
 }
 
 bool OpenCL::bestDeviceInfo(OpenCLDeviceInfoType &bestDevice) {
@@ -115,7 +131,7 @@ bool OpenCL::bestDeviceInfo(OpenCLDeviceInfoType &bestDevice) {
                 continue;
             }
             
-            if(thisDeviceInfo.computeUnits > bestDevice.computeUnits) {
+            if( thisDeviceInfo.type&CL_DEVICE_TYPE_CPU && thisDeviceInfo.computeUnits > bestDevice.computeUnits ) {
                 memcpy(&bestDevice,&thisDeviceInfo,sizeof(OpenCLDeviceInfoType));
                 ret = true;
             }
