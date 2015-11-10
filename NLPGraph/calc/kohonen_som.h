@@ -85,8 +85,8 @@ private:
 public:
     KohonenSOMSampleData(const boost::compute::context &context, 
             const std::vector<double> &sampleData, 
-            const uint sampleWidth,
-            const uint sampleCount) {
+            const uint32_t sampleWidth,
+            const uint32_t sampleCount) {
             
         this->_width = sampleWidth;
         this->_count = sampleCount;

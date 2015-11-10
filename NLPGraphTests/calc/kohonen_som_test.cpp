@@ -49,7 +49,44 @@ BOOST_AUTO_TEST_CASE( calc_test )
     // flip to on, if you're interested in fixing an issue in the cl code
     alg.clLogOn = true;
     
+    /*
+    KohonenSOMData(const boost::compute::context &context, 
+            const std::vector<double> &nodeWeights, // product(mapDimensions) * nodeWidth
+            const std::vector<uint32_t> &mapDimensions, 
+            const int nodeWidth)
+            */
+    double weights[] = {
+        1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0,9.0,
+        11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,19.0,
+        21.0,22.0,23.0,24.0,25.0,26.0,27.0,28.0,29.0,
+    };
+    std::vector<double> vWeights( weights, weights+sizeof(weights)/sizeof(double) );
+    uint32_t dimensions[] = {3,3};
+    std::vector<uint32_t> vDims( dimensions, dimensions+sizeof(weights)/sizeof(uint32_t) );
+    KohonenSOMDataPtr data(new KohonenSOMData(
+        bContext,
+        vWeights,
+        vDims,
+        3
+    ));
     
+    /*
+    KohonenSOMSampleData(const boost::compute::context &context, 
+            const std::vector<double> &sampleData, 
+            const uint sampleWidth,
+            const uint sampleCount)
+            */
+    double samples[] = {11.0,12.0,13.0,27.0,28.0,29.0};
+    std::vector<double> vSampleData(samples, samples+sizeof(samples)/sizeof(double));
+    KohonenSOMSampleDataPtr sampleData(new KohonenSOMSampleData(
+        bContext,
+        vSampleData,
+        (uint32_t)3,
+        (uint32_t)2
+    ));
+            
+    // KohonenSOMResultPtr map(const KohonenSOMDataPtr &data, const KohonenSOMSampleDataPtr &sampleData);
+    KohonenSOMResultPtr result = alg.map(data,sampleData);        
 }
     
 BOOST_AUTO_TEST_SUITE_END()

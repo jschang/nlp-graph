@@ -32,7 +32,7 @@ namespace Calc {
 const char *kKohonenSOMOpenCLHeader = "";
 const char *kKohonenSOMOpenCLSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
     
-    inline float _calc_sample_distance(__global float* weights, ulong startIdx, uint nodeWidth, __constant float* sample, __constant ulong sampleIdx) {
+    inline float _calc_sample_distance(__global float* weights, ulong startIdx, uint nodeWidth, __constant float* sample, ulong sampleIdx) {
         float accum = 0.0f;
         float diff = 0.0f;
         uint i = 0;
@@ -77,7 +77,7 @@ const char *kKohonenSOMOpenCLSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
             uint nodeWidth,               // the number of weights per node
             ulong nodeCount,              // the total number of weights
             __constant float* sampleData, // sample, of nodeWidth wide
-            __constant ulong sampleIdx,
+            ulong sampleIdx,
             __global float* output        // the output distance of each node to the sample
         ) {
         size_t nodeIndex = get_global_id(0);
@@ -85,7 +85,7 @@ const char *kKohonenSOMOpenCLSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
         if(startIdx>=nodeCount) {
             return;
         }
-        output[nodeIndex] = _calc_sample_distance(weights,startIdx,nodeWidth,sample,sampleIdx);
+        output[nodeIndex] = _calc_sample_distance(weights,startIdx,nodeWidth,sampleData,sampleIdx);
     }
     
     __kernel void calc_kohonen_som_update_weights(
@@ -95,7 +95,7 @@ const char *kKohonenSOMOpenCLSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
             uint dimCount,                 // the number of dimensions
             __constant uint* dimSizes,     // the size of each dimension
             __constant float *sampleData,  // the sample to use for updating the bmu and surrounding units
-            __constant ulong sampleIndex,
+            ulong sampleIdx,
             __constant uint* bmuCoords,    // the coordinates of the best matching unit, from which we derive offset
             float learningRate,            // calculated on the CPU as per step
             float radius                   // calculated on the CPU as per step
