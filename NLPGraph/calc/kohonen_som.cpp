@@ -82,9 +82,10 @@ const char *kKohonenSOMOpenCLSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
         ) {
         size_t nodeIndex = get_global_id(0);
         ulong startIdx = nodeIndex * nodeWidth;
-        if(startIdx>=nodeCount) {
+        if(nodeIndex>=nodeCount) {
             return;
         }
+        //_calc_sample_distance(__global float* weights, ulong startIdx, uint nodeWidth, __constant float* sample, ulong sampleIdx)
         output[nodeIndex] = _calc_sample_distance(weights,startIdx,nodeWidth,sampleData,sampleIdx);
     }
     
@@ -179,67 +180,72 @@ KohonenSOMResultPtr KohonenSOM::map(const KohonenSOMDataPtr &data, const Kohonen
     std::vector<float> output(data->nodeCount());
     cl_int err = 0;
     cl_mem clOutputData = clCreateBuffer(m_context,CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR,outputSize,(void*)output.data(),&err);
-        if (err!=CL_SUCCESS) {
-            Util::OpenCLExceptionType except;
-            except.msg = "unable to clCreateBuffer clOutputData; ";
-            throw except;
-        }
+    if (err!=CL_SUCCESS) {
+        Util::OpenCLExceptionType except;
+        except.msg = "unable to clCreateBuffer clOutputData; ";
+        throw except;
+    }
     const float zero = 0;
     
     KohonenSOMResultPtr result = KohonenSOMResultPtr(new KohonenSOMResult(m_context,sampleData));
     
-    for(uint32_t sampleIdx=0; sampleIdx<sampleData->count(); sampleIdx++) {
-    
-        err = clEnqueueFillBuffer(m_commandQueue,clOutputData,&zero,sizeof(float),0,outputSize,0,nullptr,nullptr);
-        if(err!=CL_SUCCESS) {
-            OpenCLExceptionType except;
-            except.msg = except.msg + "Unable to zero clOutputData; ";
+    try {
+        for(uint32_t sampleIdx=0; sampleIdx < sampleData->count(); sampleIdx++) {
+        
+            err = clEnqueueFillBuffer(m_commandQueue,clOutputData,&zero,sizeof(float),0,outputSize,0,NULL,NULL);
+            if(err!=CL_SUCCESS) {
+                OpenCLExceptionType except;
+                except.msg = except.msg + "Unable to zero clOutputData; ";
+            }
+            
+            m_mappingKernel.set_arg(0,data->clNodeWeights());
+            m_mappingKernel.set_arg(1,data->nodeWidth());
+            m_mappingKernel.set_arg(2,data->nodeCount());
+            m_mappingKernel.set_arg(3,sampleData->clData());
+            m_mappingKernel.set_arg(4,sampleIdx);
+            m_mappingKernel.set_arg(5,clOutputData);
+            
+            m_commandQueue.enqueue_1d_range_kernel(m_mappingKernel, 0, data->nodeCount(), 1);
+            
+            // find the minimum distance in clOutputData
+            err = clEnqueueReadBuffer(m_commandQueue, clOutputData, true, 0, outputSize, output.data(), 0, NULL, NULL);
+            if(err!=CL_SUCCESS) {
+                OpenCLExceptionType except;
+                except.msg = except.msg + "Unable to read logBuf; ";
+            }
+            
+            uint64_t idxOfBMU = 0;
+            float lowest = -1.0f;
+            for(uint64_t i=0;i<output.size();i++) {
+                LOG_I << "Sample Index: " << sampleIdx << ", Index " << i << " distance: " << output[i];
+                if(output[i]<lowest || lowest<0.0f) {
+                    lowest = output[i];
+                    idxOfBMU = i;
+                }
+            }
+            
+            // convert that offset to an nd index vector
+            // reversed so, processed as xy, then y
+            std::vector<uint32_t> thisCoords(data->mapDimensions()->size());
+            uint64_t trim = idxOfBMU, multi = 0;
+            for(int64_t i = data->mapDimensions()->size()-1; i>=0; i--) {
+                multi = 1;
+                for(int64_t j=i-1; j>=0; j--) {
+                    multi *= (*data->mapDimensions())[j];
+                }
+                thisCoords[i] = trim / multi;
+                trim = trim % multi; 
+            }
+            
+            // add that to the result set we're building
+            (*result->distances())[sampleIdx] = lowest;
+            (*result->indexes())[sampleIdx] = std::vector<uint32_t>(thisCoords);
         }
-        
-        m_mappingKernel.set_arg(0,data->clNodeWeights());
-        m_mappingKernel.set_arg(1,data->nodeWidth());
-        m_mappingKernel.set_arg(2,data->nodeCount());
-        m_mappingKernel.set_arg(3,sampleData->clData());
-        m_mappingKernel.set_arg(4,sampleIdx);
-        m_mappingKernel.set_arg(5,clOutputData);
-        
-        m_commandQueue.enqueue_1d_range_kernel(m_mappingKernel, 0, data->nodeCount(), 1);
-        
-        // find the minimum distance in clOutputData
-        err = clEnqueueReadBuffer(m_commandQueue, clOutputData, true, 0, outputSize, output.data(), 0, NULL, NULL);
-        if(err!=CL_SUCCESS) {
-            OpenCLExceptionType except;
-            except.msg = except.msg + "Unable to read logBuf; ";
-        }
+    } catch(...) {
         clReleaseMemObject(clOutputData);
-        
-        uint64_t idxOfBMU = 0;
-        float lowest = -1.0f;
-        for(uint64_t i=0;i<output.size();i++) {
-            if(output[i]<lowest || lowest<0.0f) {
-                lowest = output[i];
-                idxOfBMU = i;
-            }
-        }
-        
-        // convert that offset to an nd index vector
-        // reversed so, processed as xy, then y
-        std::vector<uint32_t> thisCoords(data->mapDimensions().size());
-        uint64_t trim = idxOfBMU, multi = 0;
-        for(uint64_t i = data->mapDimensions().size()-1; i>=0; i--) {
-            multi = 1;
-            for(uint64_t j=i-1; j>=0; j--) {
-                multi *= data->mapDimensions()[j];
-            }
-            thisCoords[i] = trim / multi;
-            trim = trim % multi; 
-        }
-        
-        // add that to the result set we're building
-        result->distances()[sampleIdx] = lowest;
-        result->indexes()[sampleIdx] = std::vector<uint32_t>(thisCoords);
+        throw;
     }
-
+    clReleaseMemObject(clOutputData);
     return result;
 }
 

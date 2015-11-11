@@ -60,9 +60,11 @@ BOOST_AUTO_TEST_CASE( calc_test )
         11.0,12.0,13.0,14.0,15.0,16.0,17.0,18.0,19.0,
         21.0,22.0,23.0,24.0,25.0,26.0,27.0,28.0,29.0,
     };
-    std::vector<double> vWeights( weights, weights+sizeof(weights)/sizeof(double) );
+    std::vector<double> vWeights( weights, weights+(sizeof(weights)/sizeof(double)) );
+    LOG << "Weights size: " << vWeights.size();
     uint32_t dimensions[] = {3,3};
-    std::vector<uint32_t> vDims( dimensions, dimensions+sizeof(weights)/sizeof(uint32_t) );
+    std::vector<uint32_t> vDims( dimensions, dimensions+(sizeof(dimensions)/sizeof(uint32_t)) );
+    LOG << "Dimensions size: " << vDims.size();
     KohonenSOMDataPtr data(new KohonenSOMData(
         bContext,
         vWeights,
@@ -76,17 +78,28 @@ BOOST_AUTO_TEST_CASE( calc_test )
             const uint sampleWidth,
             const uint sampleCount)
             */
-    double samples[] = {11.0,12.0,13.0,27.0,28.0,29.0};
-    std::vector<double> vSampleData(samples, samples+sizeof(samples)/sizeof(double));
+    double samples[] = {12.0,12.0,13.0,28.0,28.0,29.0};
+    std::vector<double> vSampleData(samples, samples+(sizeof(samples)/sizeof(double)));
+    LOG << "Samples size: " << vSampleData.size();
     KohonenSOMSampleDataPtr sampleData(new KohonenSOMSampleData(
         bContext,
         vSampleData,
-        (uint32_t)3,
-        (uint32_t)2
+        3
     ));
             
     // KohonenSOMResultPtr map(const KohonenSOMDataPtr &data, const KohonenSOMSampleDataPtr &sampleData);
-    KohonenSOMResultPtr result = alg.map(data,sampleData);        
+    KohonenSOMResultPtr result = alg.map(data,sampleData);     
+    LOG << "Result distances size: " << result->distances()->size();
+    for(int i = 0; i<result->distances()->size(); i++) {
+        LOG << "Size " << i << ": " << (*result->distances())[i];
+    }
+    LOG << "Result bmus size: " << result->indexes()->size();
+    for(int i = 0; i<result->distances()->size(); i++) {
+        std::ostringstream accum;
+        for(int j=0; j<(*result->indexes())[i].size(); j++)
+            accum << "," << (*result->indexes())[i][j];
+        LOG << "Size " << i << ": " << accum.str();
+    }
 }
     
 BOOST_AUTO_TEST_SUITE_END()

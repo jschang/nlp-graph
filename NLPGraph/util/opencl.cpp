@@ -71,8 +71,9 @@ void OpenCL::deviceInfo(cl_device_id id, OpenCLDeviceInfoType &thisDeviceInfo) {
         thisDeviceInfo.supportsVer1_1 = false;
     }
         LOG(severity_level::normal) << "CL_DEVICE_VERSION                  : " << tmpString;
-    tmpString = thisDeviceInfo.extensions = thisDevice.get_info<std::string>(CL_DEVICE_EXTENSIONS);
-        LOG(severity_level::normal) << "CL_DEVICE_EXTENSIONS               : " << thisDeviceInfo.extensions;
+    tmpString = thisDevice.get_info<std::string>(CL_DEVICE_EXTENSIONS);
+    thisDeviceInfo.extensions = boost::shared_ptr<std::string>(new std::string(tmpString));
+        LOG(severity_level::normal) << "CL_DEVICE_EXTENSIONS               : " << (*thisDeviceInfo.extensions);
     thisDeviceInfo.localMemSize = thisDevice.get_info<cl_ulong>(CL_DEVICE_LOCAL_MEM_SIZE);
         LOG(severity_level::normal) << "CL_DEVICE_LOCAL_MEM_SIZE           : " << thisDeviceInfo.localMemSize;
     thisDeviceInfo.globalMemSize = thisDevice.get_info<cl_ulong>(CL_DEVICE_GLOBAL_MEM_SIZE);

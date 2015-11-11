@@ -9,7 +9,7 @@
 #ifndef kohonen_som_h
 #define kohonen_som_h
 
-
+#import <numeric>
 #include "../nlpgraph.h"
 #include "../util/logger.h"
 #include "../util/opencl.h"
@@ -35,7 +35,7 @@ public:
             
         this->_mapDimensions = boost::shared_ptr< std::vector<uint32_t> >( new std::vector<uint32_t>(mapDimensions) );
         this->_nodeWidth = nodeWidth;
-        this->_nodeCount = nodeWeights.size();
+        this->_nodeCount = nodeWeights.size()/nodeWidth;
         cl_int err = 0;
         // because i can't cound on the device having cl_khr_fp64
         std::vector<float> floatNodeWeights(nodeWeights.begin(), nodeWeights.end());
@@ -66,8 +66,8 @@ public:
     const uint64_t nodeCount() {
         return _nodeCount;
     }
-    const std::vector<uint32_t>& mapDimensions() {
-        return *_mapDimensions.get();
+    const std::vector<uint32_t>* mapDimensions() {
+        return _mapDimensions.get();
     }
     const cl_mem clNodeWeights() {
         return _clNodeWeights;
@@ -85,11 +85,10 @@ private:
 public:
     KohonenSOMSampleData(const boost::compute::context &context, 
             const std::vector<double> &sampleData, 
-            const uint32_t sampleWidth,
-            const uint32_t sampleCount) {
+            const uint32_t sampleWidth) {
             
         this->_width = sampleWidth;
-        this->_count = sampleCount;
+        this->_count = sampleData.size()/sampleWidth;
         cl_int err = 0;
         // because i can't cound on the device having cl_khr_fp64
         std::vector<float> floatSampleData(sampleData.begin(), sampleData.end());
@@ -121,11 +120,11 @@ public:
     }
     ~KohonenSOMResult() {
     }
-    std::vector<std::vector<uint32_t>>& indexes() {
-        return *_indexes.get();
+    std::vector<std::vector<uint32_t>>* indexes() {
+        return _indexes.get();
     }
-    std::vector<float>& distances() {
-        return *_distances.get();
+    std::vector<float>* distances() {
+        return _distances.get();
     }
 };
 
