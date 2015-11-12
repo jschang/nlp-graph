@@ -553,7 +553,7 @@ LevensteinDamerau::LevensteinDamerau(const boost::compute::context &context)
         memcpy(source+headerSize, kLevensteinDamerauOpenCLSupprtSource, supportSize);
         memcpy(source+headerSize+supportSize, kLevensteinDamerauOpenCLSource, sourceSize);
         
-        LOG_I << "Source:\n" << source;
+        // LOG_I << "Source:\n" << source;
         
         // I would have used link, but NVIDIA doesn't support OpenCL 1.2
         // and this will prolly end up running on AWS hardware a bunch

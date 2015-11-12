@@ -38,8 +38,8 @@ public:
         this->_nodeCount = nodeWeights.size()/nodeWidth;
         cl_int err = 0;
         // because i can't cound on the device having cl_khr_fp64
-        std::vector<float> floatNodeWeights(nodeWeights.begin(), nodeWeights.end());
-        this->_clNodeWeights = clCreateBuffer(context,CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR,(size_t)floatNodeWeights.size()*sizeof(float),(void*)floatNodeWeights.data(),&err);
+        std::vector<cl_float> floatNodeWeights(nodeWeights.begin(), nodeWeights.end());
+        this->_clNodeWeights = clCreateBuffer(context,CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR,(size_t)floatNodeWeights.size()*sizeof(double),(void*)floatNodeWeights.data(),&err);
         if (err!=CL_SUCCESS) {
             Util::OpenCLExceptionType except;
             except.msg = except.msg + "unable to clCreateBuffer _clNodeWeights; ";
@@ -59,6 +59,25 @@ public:
         if(_clNodeWeights!=0) {
             clReleaseMemObject(_clMapDimensions);
         }
+    }
+    void fromClMem(const boost::compute::command_queue &commandQueue, std::vector<double> &weights) {
+        size_t wc = _nodeCount;
+        float *result = new float[wc];
+        try {
+            // find the minimum distance in clOutputData
+            cl_int err = clEnqueueReadBuffer(commandQueue, _clNodeWeights, true, 0, wc*sizeof(float), result, 0, NULL, NULL);
+            if(err!=CL_SUCCESS) {
+                Util::OpenCLExceptionType except;
+                except.msg = except.msg + "Unable to read logBuf; ";
+                throw except;
+            }
+            weights.clear();
+            std::copy(result,&result[wc],weights.begin());
+        } catch(...) {
+            free(result);
+            throw;
+        }
+        free(result);
     }
     const int nodeWidth() {
         return _nodeWidth;
@@ -92,7 +111,7 @@ public:
         cl_int err = 0;
         // because i can't cound on the device having cl_khr_fp64
         std::vector<float> floatSampleData(sampleData.begin(), sampleData.end());
-        this->_clData = clCreateBuffer(context,CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,(size_t)floatSampleData.size()*sizeof(double),(void*)floatSampleData.data(),&err);
+        this->_clData = clCreateBuffer(context,CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,(size_t)floatSampleData.size()*sizeof(float),(void*)floatSampleData.data(),&err);
         if (err!=CL_SUCCESS) {
             Util::OpenCLExceptionType except;
             except.msg = "unable to clCreateBuffer _clData; ";
@@ -113,18 +132,56 @@ class KohonenSOMResult {
 private:
     boost::shared_ptr<std::vector<std::vector<uint32_t>>> _indexes;
     boost::shared_ptr<std::vector<float>> _distances;
+    cl_mem _clDistances = 0;
+    cl_mem _clIndexes = 0;
 public:
     KohonenSOMResult(const boost::compute::context &context, const KohonenSOMSampleDataPtr &data) {
         _indexes = boost::shared_ptr< std::vector<std::vector<uint32_t>> >( new std::vector<std::vector<uint32_t>>(data->count()) );
         _distances = boost::shared_ptr< std::vector<float> >( new std::vector<float>(data->count()) );
     }
     ~KohonenSOMResult() {
+        this->freeClMem();
+    }
+    void freeClMem() {
+        if(_clDistances!=0) {
+            clReleaseMemObject(_clDistances);
+            _clDistances = 0;
+        }
+        if(_clIndexes!=0) {
+            clReleaseMemObject(_clIndexes);
+            _clIndexes = 0;
+        }
     }
     std::vector<std::vector<uint32_t>>* indexes() {
         return _indexes.get();
     }
     std::vector<float>* distances() {
         return _distances.get();
+    }
+    void toClMem(const boost::compute::context &context) {
+        cl_int err = 0;
+        if(_clDistances!=0) {
+            this->_clDistances = clCreateBuffer(context,CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,(size_t)_distances->size()*sizeof(float),(void*)_distances->data(),&err);
+            if (err!=CL_SUCCESS) {
+                Util::OpenCLExceptionType except;
+                except.msg = "unable to clCreateBuffer _clDistances; ";
+                throw except;
+            }
+        }
+        if(_clIndexes!=0) {
+            this->_clIndexes = clCreateBuffer(context,CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,(size_t)_indexes->size()*sizeof(float),(void*)_indexes->data(),&err);
+            if (err!=CL_SUCCESS) {
+                Util::OpenCLExceptionType except;
+                except.msg = "unable to clCreateBuffer _clIndexes; ";
+                throw except;
+            }
+        }
+    }
+    cl_mem clDistances() {
+        return _clDistances;
+    }
+    cl_mem clIndexes() {
+        return _clIndexes;
     }
 };
 
@@ -142,6 +199,9 @@ public:
 public:
     KohonenSOM(const boost::compute::context &context);
     ~KohonenSOM();
+    const boost::compute::command_queue& commandQueue() {
+        return m_commandQueue;
+    }
     /**
      * Convenience wrapper that simply iterates over map and updateWeights.
      */

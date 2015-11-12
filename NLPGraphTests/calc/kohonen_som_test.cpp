@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
             const uint sampleWidth,
             const uint sampleCount)
             */
-    double samples[] = {12.0,12.0,13.0,28.0,28.0,29.0};
+    double samples[] = {12.0,12.0,13.0,29.0,28.0,29.0};
     std::vector<double> vSampleData(samples, samples+(sizeof(samples)/sizeof(double)));
     LOG << "Samples size: " << vSampleData.size();
     KohonenSOMSampleDataPtr sampleData(new KohonenSOMSampleData(
@@ -91,15 +91,26 @@ BOOST_AUTO_TEST_CASE( calc_test )
     KohonenSOMResultPtr result = alg.map(data,sampleData);     
     LOG << "Result distances size: " << result->distances()->size();
     for(int i = 0; i<result->distances()->size(); i++) {
-        LOG << "Size " << i << ": " << (*result->distances())[i];
+        LOG << "distances[" << i << "] : " << (*result->distances())[i];
     }
     LOG << "Result bmus size: " << result->indexes()->size();
     for(int i = 0; i<result->distances()->size(); i++) {
         std::ostringstream accum;
         for(int j=0; j<(*result->indexes())[i].size(); j++)
             accum << "," << (*result->indexes())[i][j];
-        LOG << "Size " << i << ": " << accum.str();
+        LOG << "indexes[" << i << "] : " << accum.str();
     }
+    
+    alg.updateWeights(data,sampleData,result);
+    
+    std::vector<double> newWeights;
+    data->fromClMem(alg.commandQueue(),newWeights);
+
+    std::ostringstream accum;
+    for(int i = 0; i<newWeights.size(); i++) {
+        accum << "," << newWeights[i];
+    }
+    LOG << "new weights: " << accum.str();
 }
     
 BOOST_AUTO_TEST_SUITE_END()

@@ -58,12 +58,13 @@ const char *kKohonenSOMOpenCLSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
         } 
     }
     
-    inline float _calc_map_coord_distance(uint dimCount, __constant uint* bmuCoords, uint* thisCoords) {
+    inline float _calc_map_coord_distance(uint dimCount, ulong sampleIdx, __constant uint* bmuCoords, uint* thisCoords) {
         float accum = 0.0f;
         uint i = 0;
         int diff = 0;
+        ulong startBmuIdx = dimCount * sampleIdx;
         for(i = 0; i < dimCount; i++) {
-            diff = bmuCoords[i] - thisCoords[i];
+            diff = bmuCoords[startBmuIdx+i] - thisCoords[i];
             diff *= diff; 
             accum += (float)diff; // THIS line, only, causes CL_DEVICE_NOT_AVAILABLE !!!
         }
@@ -95,7 +96,7 @@ const char *kKohonenSOMOpenCLSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
             uint nodeWidth,                // the number of weights per node
             uint dimCount,                 // the number of dimensions
             __constant uint* dimSizes,     // the size of each dimension
-            __constant float *sampleData,  // the sample to use for updating the bmu and surrounding units
+            __constant float* sampleData,
             ulong sampleIdx,
             __constant uint* bmuCoords,    // the coordinates of the best matching unit, from which we derive offset
             float learningRate,            // calculated on the CPU as per step
@@ -114,7 +115,7 @@ const char *kKohonenSOMOpenCLSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
             thisCoords[0] = nodeIndex;
         }
         
-        float distance = _calc_map_coord_distance(dimCount, bmuCoords, thisCoords);
+        float distance = _calc_map_coord_distance(dimCount, sampleIdx, bmuCoords, thisCoords);
         if(distance<radius) {
             float influence = exp( (-1*distance)/(2*pow(radius,2.0f)) );
             for(uint i=0;i<dimCount;i++) {
@@ -144,7 +145,7 @@ KohonenSOM::KohonenSOM(const boost::compute::context &context)
         //memcpy(source+headerSize, kLevensteinDamerauOpenCLSupprtSource, supportSize);
         memcpy(source+headerSize+supportSize, kKohonenSOMOpenCLSource, sourceSize);
 
-        LOG_I << "Source:\n" << source;
+        // LOG_I << "Source:\n" << source;
         
         // I would have used link, but NVIDIA doesn't support OpenCL 1.2
         // and this will prolly end up running on AWS hardware a bunch
@@ -166,16 +167,6 @@ void KohonenSOM::train(const KohonenSOMDataPtr &data, const KohonenSOMSampleData
 
 KohonenSOMResultPtr KohonenSOM::map(const KohonenSOMDataPtr &data, const KohonenSOMSampleDataPtr &sampleData) {
 
-    /*
-        __kernel void calc_kohonen_som_distances(
-            // map data
-            __global float* weights,      // weights
-            uint nodeWidth,               // the number of weights per node
-            ulong nodeCount,              // the total number of weights
-            __constant float* sample,     // sample, of nodeWidth wide
-            __global float* output        // the output distance of each node to the sample
-        )
-    */
     size_t outputSize = (size_t)data->nodeCount()*sizeof(float);
     std::vector<float> output(data->nodeCount());
     cl_int err = 0;
@@ -212,12 +203,13 @@ KohonenSOMResultPtr KohonenSOM::map(const KohonenSOMDataPtr &data, const Kohonen
             if(err!=CL_SUCCESS) {
                 OpenCLExceptionType except;
                 except.msg = except.msg + "Unable to read logBuf; ";
+                throw except;
             }
             
             uint64_t idxOfBMU = 0;
             float lowest = -1.0f;
             for(uint64_t i=0;i<output.size();i++) {
-                LOG_I << "Sample Index: " << sampleIdx << ", Index " << i << " distance: " << output[i];
+                // LOG_I << "Sample Index: " << sampleIdx << ", Index " << i << " distance: " << output[i];
                 if(output[i]<lowest || lowest<0.0f) {
                     lowest = output[i];
                     idxOfBMU = i;
@@ -250,6 +242,25 @@ KohonenSOMResultPtr KohonenSOM::map(const KohonenSOMDataPtr &data, const Kohonen
 }
 
 void KohonenSOM::updateWeights(const KohonenSOMDataPtr &data, const KohonenSOMSampleDataPtr &sampleData, const KohonenSOMResultPtr &result) {
+    
+    cl_float learningRate = 1.0;
+    cl_float radius = 3.0;
+
+    result->toClMem(m_context);
+    for(uint32_t sampleIdx=0; sampleIdx < result->distances()->size(); sampleIdx++) {
+        
+        m_weightUpdateKernel.set_arg(0,data->clNodeWeights());
+        m_weightUpdateKernel.set_arg(1,data->nodeWidth());
+        m_weightUpdateKernel.set_arg(2,(uint32_t)data->mapDimensions()->size());
+        m_weightUpdateKernel.set_arg(3,data->clMapDimensions());
+        m_weightUpdateKernel.set_arg(4,sampleData->clData());
+        m_weightUpdateKernel.set_arg(5,sampleIdx);
+        m_weightUpdateKernel.set_arg(6,result->clIndexes());
+        m_weightUpdateKernel.set_arg(7,learningRate);
+        m_weightUpdateKernel.set_arg(8,radius);
+        
+        m_commandQueue.enqueue_1d_range_kernel(m_weightUpdateKernel, 0, data->nodeCount(), 1);
+    }
 }
         
 }}
