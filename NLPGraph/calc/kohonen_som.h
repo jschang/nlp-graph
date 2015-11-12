@@ -39,7 +39,7 @@ public:
         cl_int err = 0;
         // because i can't cound on the device having cl_khr_fp64
         std::vector<cl_float> floatNodeWeights(nodeWeights.begin(), nodeWeights.end());
-        this->_clNodeWeights = clCreateBuffer(context,CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR,(size_t)floatNodeWeights.size()*sizeof(double),(void*)floatNodeWeights.data(),&err);
+        this->_clNodeWeights = clCreateBuffer(context,CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR,(size_t)floatNodeWeights.size()*sizeof(float),(void*)floatNodeWeights.data(),&err);
         if (err!=CL_SUCCESS) {
             Util::OpenCLExceptionType except;
             except.msg = except.msg + "unable to clCreateBuffer _clNodeWeights; ";
@@ -152,12 +152,6 @@ public:
             _clIndexes = 0;
         }
     }
-    std::vector<std::vector<uint32_t>>* indexes() {
-        return _indexes.get();
-    }
-    std::vector<float>* distances() {
-        return _distances.get();
-    }
     void toClMem(const boost::compute::context &context) {
         cl_int err = 0;
         if(_clDistances!=0) {
@@ -169,13 +163,35 @@ public:
             }
         }
         if(_clIndexes!=0) {
-            this->_clIndexes = clCreateBuffer(context,CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,(size_t)_indexes->size()*sizeof(float),(void*)_indexes->data(),&err);
-            if (err!=CL_SUCCESS) {
-                Util::OpenCLExceptionType except;
-                except.msg = "unable to clCreateBuffer _clIndexes; ";
-                throw except;
+            uint32_t dimCount = (*_indexes.get())[0].size();
+            uint32_t *indexes = new uint32_t[_indexes->size()*dimCount];
+            try {
+                for(int i = 0; i<_indexes->size(); i++) {
+                    for(int j = 0; j<dimCount; j++) {
+                        indexes[(i*dimCount)+j] = (*_indexes.get())[i][j];
+                    }
+                }
+                this->_clIndexes = clCreateBuffer(
+                            context,
+                            CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,
+                            (size_t)_indexes->size()*dimCount*sizeof(uint32_t),(void*)indexes,&err);
+                if (err!=CL_SUCCESS) {
+                    Util::OpenCLExceptionType except;
+                    except.msg = "unable to clCreateBuffer _clIndexes; ";
+                    throw except;
+                }
+                free(indexes);
+            } catch(...) {
+                free(indexes);
+                throw;
             }
         }
+    }
+    std::vector<std::vector<uint32_t>>* indexes() {
+        return _indexes.get();
+    }
+    std::vector<float>* distances() {
+        return _distances.get();
     }
     cl_mem clDistances() {
         return _clDistances;

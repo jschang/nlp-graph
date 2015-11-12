@@ -63,11 +63,16 @@ const char *kKohonenSOMOpenCLSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
         uint i = 0;
         int diff = 0;
         ulong startBmuIdx = dimCount * sampleIdx;
+        printf("b{%u,1}",startBmuIdx);
         for(i = 0; i < dimCount; i++) {
+            printf("b{%u,2}",startBmuIdx);
             diff = bmuCoords[startBmuIdx+i] - thisCoords[i];
-            diff *= diff; 
+            printf("b{%u,2}",startBmuIdx);
+            diff *= diff;
+            printf("b{%u,2}",startBmuIdx); 
             accum += (float)diff; // THIS line, only, causes CL_DEVICE_NOT_AVAILABLE !!!
         }
+        printf("here5");
         accum = pow(accum,.5f);
         return accum;
     }
@@ -86,7 +91,6 @@ const char *kKohonenSOMOpenCLSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
         if(nodeIndex>=nodeCount) {
             return;
         }
-        //_calc_sample_distance(__global float* weights, ulong startIdx, uint nodeWidth, __constant float* sample, ulong sampleIdx)
         output[nodeIndex] = _calc_sample_distance(weights,startIdx,nodeWidth,sampleData,sampleIdx);
     }
     
@@ -118,8 +122,14 @@ const char *kKohonenSOMOpenCLSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
         float distance = _calc_map_coord_distance(dimCount, sampleIdx, bmuCoords, thisCoords);
         if(distance<radius) {
             float influence = exp( (-1*distance)/(2*pow(radius,2.0f)) );
-            for(uint i=0;i<dimCount;i++) {
-                weights[startIdx+i] = weights[startIdx+i] + ( influence * learningRate * (sampleData[(sampleIdx*nodeWidth)+i] - weights[startIdx+i]) );
+            for(uint i=0;i<nodeWidth;i++) {
+                weights[startIdx+i] 
+                    = weights[startIdx+i] 
+                    + ( influence * learningRate * 
+                        ( sampleData[(sampleIdx*nodeWidth)+i] 
+                          - weights[startIdx+i]
+                        ) 
+                    );
             }
         }
     }    
@@ -251,7 +261,7 @@ void KohonenSOM::updateWeights(const KohonenSOMDataPtr &data, const KohonenSOMSa
         
         m_weightUpdateKernel.set_arg(0,data->clNodeWeights());
         m_weightUpdateKernel.set_arg(1,data->nodeWidth());
-        m_weightUpdateKernel.set_arg(2,(uint32_t)data->mapDimensions()->size());
+        m_weightUpdateKernel.set_arg(2,(cl_uint)data->mapDimensions()->size());
         m_weightUpdateKernel.set_arg(3,data->clMapDimensions());
         m_weightUpdateKernel.set_arg(4,sampleData->clData());
         m_weightUpdateKernel.set_arg(5,sampleIdx);
