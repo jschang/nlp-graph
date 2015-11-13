@@ -61,7 +61,7 @@ public:
         }
     }
     void fromClMem(const boost::compute::command_queue &commandQueue, std::vector<double> &weights) {
-        size_t wc = _nodeCount;
+        size_t wc = _nodeCount*_nodeWidth;
         float *result = new float[wc];
         try {
             // find the minimum distance in clOutputData
@@ -72,7 +72,8 @@ public:
                 throw except;
             }
             weights.clear();
-            std::copy(result,&result[wc],weights.begin());
+            weights.resize(wc);
+            std::copy(result,result+wc,weights.begin());
         } catch(...) {
             free(result);
             throw;
@@ -154,7 +155,7 @@ public:
     }
     void toClMem(const boost::compute::context &context) {
         cl_int err = 0;
-        if(_clDistances!=0) {
+        if(_clDistances==0) {
             this->_clDistances = clCreateBuffer(context,CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR,(size_t)_distances->size()*sizeof(float),(void*)_distances->data(),&err);
             if (err!=CL_SUCCESS) {
                 Util::OpenCLExceptionType except;
@@ -162,7 +163,7 @@ public:
                 throw except;
             }
         }
-        if(_clIndexes!=0) {
+        if(_clIndexes==0) {
             uint32_t dimCount = (*_indexes.get())[0].size();
             uint32_t *indexes = new uint32_t[_indexes->size()*dimCount];
             try {
