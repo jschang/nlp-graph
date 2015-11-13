@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         LOG << "indexes[" << i << "] : " << accum.str();
     }
     
-    alg.updateWeights(data,sampleData,result);
+    alg.updateWeights(data,sampleData,result,3,1);
     
     std::vector<double> newWeights;
     data->fromClMem(alg.commandQueue(),newWeights);

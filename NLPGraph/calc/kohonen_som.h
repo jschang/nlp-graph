@@ -230,7 +230,7 @@ public:
     /**
      * Updates map node weights using the result passed in
      */
-    void updateWeights(const KohonenSOMDataPtr &data, const KohonenSOMSampleDataPtr &sampleData, const KohonenSOMResultPtr &result);
+    void updateWeights(const KohonenSOMDataPtr &data, const KohonenSOMSampleDataPtr &sampleData, const KohonenSOMResultPtr &result, double radius, double learningRate);
 };
 
 }}

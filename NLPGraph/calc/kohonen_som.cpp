@@ -246,10 +246,10 @@ KohonenSOMResultPtr KohonenSOM::map(const KohonenSOMDataPtr &data, const Kohonen
     return result;
 }
 
-void KohonenSOM::updateWeights(const KohonenSOMDataPtr &data, const KohonenSOMSampleDataPtr &sampleData, const KohonenSOMResultPtr &result) {
+void KohonenSOM::updateWeights(const KohonenSOMDataPtr &data, const KohonenSOMSampleDataPtr &sampleData, const KohonenSOMResultPtr &result, double radius, double learningRate) {
     
-    cl_float learningRate = 1.0;
-    cl_float radius = 3.0;
+    cl_float clLearningRate = learningRate;
+    cl_float clRadius = radius;
 
     result->toClMem(m_context);
     for(uint32_t sampleIdx=0; sampleIdx < result->distances()->size(); sampleIdx++) {
@@ -261,8 +261,8 @@ void KohonenSOM::updateWeights(const KohonenSOMDataPtr &data, const KohonenSOMSa
         m_weightUpdateKernel.set_arg(4,sampleData->clData());
         m_weightUpdateKernel.set_arg(5,sampleIdx);
         m_weightUpdateKernel.set_arg(6,result->clIndexes());
-        m_weightUpdateKernel.set_arg(7,learningRate);
-        m_weightUpdateKernel.set_arg(8,radius);
+        m_weightUpdateKernel.set_arg(7,clLearningRate);
+        m_weightUpdateKernel.set_arg(8,clRadius);
         
         m_commandQueue.enqueue_1d_range_kernel(m_weightUpdateKernel, 0, data->nodeCount(), 1);
     }
