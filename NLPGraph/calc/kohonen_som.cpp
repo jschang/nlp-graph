@@ -63,16 +63,11 @@ const char *kKohonenSOMOpenCLSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
         uint i = 0;
         int diff = 0;
         ulong startBmuIdx = dimCount * sampleIdx;
-        printf("b{%u,1}",startBmuIdx);
         for(i = 0; i < dimCount; i++) {
-            printf("b{%u,2}",startBmuIdx);
             diff = bmuCoords[startBmuIdx+i] - thisCoords[i];
-            printf("b{%u,2}",startBmuIdx);
             diff *= diff;
-            printf("b{%u,2}",startBmuIdx); 
             accum += (float)diff; // THIS line, only, causes CL_DEVICE_NOT_AVAILABLE !!!
         }
-        printf("here5");
         accum = pow(accum,.5f);
         return accum;
     }
