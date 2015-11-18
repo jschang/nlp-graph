@@ -3,24 +3,40 @@ if (BUILD_NLPGRAPH_LIB)
     project(NLPGraphLib)
 
     add_library (NLPGraphLib
+    
+        ./context.cpp
+        ./context.h
+        ./nlpgraph.h
+
         ./calc/kohonen_som.cpp
         ./calc/kohonen_som.h
         ./calc/levenstein_damerau.cpp
         ./calc/levenstein_damerau.h
-        ./context.cpp
-        ./context.h
+
+        ./neural/neuron.cpp
+        ./neural/neuron.h
+        ./neural/synapse.cpp
+        ./neural/synapse.h
+        ./neural/network_runner.cpp
+        ./neural/network_runner.h
+        ./neural/network_trainer.cpp
+        ./neural/network_trainer.h
+        ./neural/neural.h
+
         ./dao/model.h
         ./dao/model_exception.h
+        ./dao/symbol_provider.h
+        
         ./dao/postgres/model_postgres.cpp
         ./dao/postgres/model_postgres.h
         ./dao/postgres/symbol_provider_postgres.cpp
         ./dao/postgres/symbol_provider_postgres.h
-        ./dao/symbol_provider.h
+        
         ./dto/input_channel.h
         ./dto/recollection.h
         ./dto/recollection_exception.h
         ./dto/symbol.h
-        ./nlpgraph.h
+        
         ./util/math.cpp
         ./util/math.h
         ./util/string.cpp
@@ -45,6 +61,17 @@ if (BUILD_NLPGRAPH_LIB)
         ./calc/kohonen_som.h
         ./calc/levenstein_damerau.cpp
         ./calc/levenstein_damerau.h
+    )
+    source_group(src\\neural FILES
+        ./neural/neuron.cpp
+        ./neural/neuron.h
+        ./neural/synapse.cpp
+        ./neural/synapse.h
+        ./neural/network_runner.cpp
+        ./neural/network_runner.h
+        ./neural/network_trainer.cpp
+        ./neural/network_trainer.h
+        ./neural/neural.h
     )
     source_group(src\\dao FILES
         ./dao/model.h
