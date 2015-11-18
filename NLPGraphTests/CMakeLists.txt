@@ -7,11 +7,12 @@ if (BUILD_NLPGRAPH_TESTS)
     link_directories(${NLPGraph_SOURCE_DIR}/NLPGraph)
     
     add_executable (NLPGraphTests
-        ./calc/levenstein_damerau_test.cpp
-        ./calc/kohonen_som_test.cpp
-        ./dao/postgres/model_postgres_test.cpp
         ./nlpgraph_tests.cpp
         ./nlpgraph_tests.h
+        ./calc/levenstein_damerau_test.cpp
+        ./calc/kohonen_som_test.cpp
+        ./neural/network_test.cpp
+        ./dao/postgres/model_postgres_test.cpp
         ./util/opencl_test.cpp
         ./util/resource_pool_test.cpp
     )
@@ -23,6 +24,9 @@ if (BUILD_NLPGRAPH_TESTS)
     source_group(src\\calc FILES 
         ./calc/levenstein_damerau_test.cpp
         ./calc/kohonen_som_test.cpp
+    )
+    source_group(src\\neural FILES 
+        ./neural/network_test.cpp
     )
     source_group(src\\dao\\postgres FILES 
         ./dao/postgres/model_postgres_test.cpp
