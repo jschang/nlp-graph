@@ -1,13 +1,13 @@
 //
-//  network_runner.h
+//  network.h
 //  NLPGraph
 //
 //  Created by Jonathan Schang on 11/18/15.
 //
 //
 
-#ifndef network_runner_h
-#define network_runner_h
+#ifndef network_h
+#define network_h
 
 #import <numeric>
 #include "../nlpgraph.h"
@@ -17,10 +17,11 @@
 namespace NLPGraph {
     namespace Neural {
     
-class NetworkRunner {
+class Network {
 private:
+public:
 };
 
 }}
 
-#endif /* network_runner_h */
+#endif /* network_h */

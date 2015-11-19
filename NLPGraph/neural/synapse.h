@@ -18,6 +18,20 @@ namespace NLPGraph {
     namespace Neural {
     
 class Synapse {
+private:
+    double _weight;
+    NeuronPtr _inNeuron;
+    NeuronPtr _outNeuron;
+public:
+    double weight() {
+        return _weight;
+    }
+    NeuronPtr inNeuron() {
+        return _inNeuron;
+    }
+    NeuronPtr outNeuron() {
+        return _outNeuron;
+    }
 };
 
 }}

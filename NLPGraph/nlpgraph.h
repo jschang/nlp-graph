@@ -13,11 +13,13 @@
 #include <boost/log/common.hpp>
 
 namespace NLPGraph {
-namespace Neuron {
+namespace Neural {
     class Neuron;
     class Synapse;
+    class Network;
     typedef boost::shared_ptr<Neuron> NeuronPtr;
     typedef boost::shared_ptr<Synapse> SynapsePtr;
+    typedef boost::shared_ptr<Network> NetworkPtr;
 };
 namespace Calc {
     class LevensteinDamerauData;

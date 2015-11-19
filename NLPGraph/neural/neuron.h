@@ -18,6 +18,20 @@ namespace NLPGraph {
     namespace Neural {
     
 class Neuron {
+private:
+    double _threshold;
+    std::vector<SynapsePtr> _outputSynapses;
+    std::vector<SynapsePtr> _inputSynapses;
+public:
+    double threshold() {
+        return _threshold;
+    }
+    std::vector<SynapsePtr>& outputSynapses() {
+        return _outputSynapses;
+    }
+    std::vector<SynapsePtr>& inputSynapses() {
+        return _inputSynapses;
+    }
 };
 
 }}

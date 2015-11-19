@@ -17,6 +17,8 @@ if (BUILD_NLPGRAPH_LIB)
         ./neural/neuron.h
         ./neural/synapse.cpp
         ./neural/synapse.h
+        ./neural/network.cpp
+        ./neural/network.h
         ./neural/network_runner.cpp
         ./neural/network_runner.h
         ./neural/network_trainer.cpp
@@ -67,6 +69,8 @@ if (BUILD_NLPGRAPH_LIB)
         ./neural/neuron.h
         ./neural/synapse.cpp
         ./neural/synapse.h
+        ./neural/network.cpp
+        ./neural/network.h
         ./neural/network_runner.cpp
         ./neural/network_runner.h
         ./neural/network_trainer.cpp
