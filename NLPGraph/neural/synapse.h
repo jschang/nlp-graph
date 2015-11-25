@@ -19,20 +19,19 @@ namespace NLPGraph {
     
 class Synapse {
 private:
+    uint64_t _id;
     double _weight;
     NeuronPtr _inNeuron;
     NeuronPtr _outNeuron;
 public:
-    double weight() {
-        return _weight;
-    }
-    NeuronPtr inNeuron() {
-        return _inNeuron;
-    }
-    NeuronPtr outNeuron() {
-        return _outNeuron;
-    }
+    uint64_t id(uint64_t id);
+    double weight(double weight);
+    NeuronPtr inNeuron(const NeuronPtr &inNeuron);
+    NeuronPtr outNeuron(const NeuronPtr &outNeuron);
 };
+
+const SynapsePtr kNullSynapse(nullptr);
+const std::vector<SynapsePtr> kNullSynapses = std::vector<SynapsePtr>();
 
 }}
 

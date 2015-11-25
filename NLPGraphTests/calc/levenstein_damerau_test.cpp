@@ -29,19 +29,19 @@ struct Fixture {
     }
 };
 
+LoggerType logger = LoggerType(boost::log::keywords::channel="nlpgraph_calc_levenstein_damerau");
+
 BOOST_AUTO_TEST_SUITE( nlpgraph_calc_levenstein_damerau ) 
 
 BOOST_AUTO_TEST_CASE( calc_test )
 {       
-    LoggerType logger(boost::log::keywords::channel="nlpgraph_calc_levenstein_damerau");
-
     // get the best device
-    OpenCLDeviceInfoType deviceInfo;
+    OpenCLDeviceInfoType deviceInfo = OpenCLDeviceInfoType();
     OpenCL::bestDeviceInfo(deviceInfo);
+    OpenCL::log(deviceInfo);
     
     // spin up a context
-    context bContext;
-    bContext = context(OpenCL::contextWithDeviceInfo(deviceInfo));    
+    context bContext = context(OpenCL::contextWithDeviceInfo(deviceInfo));    
     
     // fire up the calculator
     LevensteinDamerau alg(bContext);
@@ -227,10 +227,8 @@ BOOST_AUTO_TEST_CASE( calc_test )
 
 BOOST_AUTO_TEST_CASE( stress_test ) {
 
-    LoggerType logger(boost::log::keywords::channel="nlpgraph_calc_levenstein_damerau");
-
     // get the best device
-    OpenCLDeviceInfoType deviceInfo;
+    OpenCLDeviceInfoType deviceInfo = OpenCLDeviceInfoType();
     OpenCL::bestDeviceInfo(deviceInfo);
     
     // spin up a context
@@ -282,7 +280,7 @@ BOOST_AUTO_TEST_CASE( stress_test ) {
         LOG << "needle:" << NLPGraph::Util::String::str(needle,testWidth);
         LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,testWidth*testSize);
         timespec start = TimeHelper::getTimeStruct();
-        LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
+        LevensteinDamerauDataPtr dataPtr(new LevensteinDamerauData(
             testWidth, testSize, needle, haystack));
         alg.calculate(dataPtr);
         timespec end = TimeHelper::getTimeStruct();
@@ -299,11 +297,9 @@ BOOST_AUTO_TEST_CASE( stress_test ) {
 BOOST_AUTO_TEST_CASE( perf_test ) {
 
     return;
-    
-    LoggerType logger(boost::log::keywords::channel="nlpgraph_calc_levenstein_damerau");
 
     // get the best device
-    OpenCLDeviceInfoType deviceInfo;
+    OpenCLDeviceInfoType deviceInfo = OpenCLDeviceInfoType();
     OpenCL::bestDeviceInfo(deviceInfo);
     
     // spin up a context

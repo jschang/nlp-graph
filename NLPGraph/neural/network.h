@@ -19,7 +19,11 @@ namespace NLPGraph {
     
 class Network {
 private:
+    std::map<uint64_t,NeuronPtr> _neurons;
+    std::map<uint64_t,SynapsePtr> _synapses;
 public:
+    NeuronPtr& neuron(uint64_t id, const NeuronPtr& neuron);
+    SynapsePtr& synapse(uint64_t id, const SynapsePtr& synapse);
 };
 
 }}

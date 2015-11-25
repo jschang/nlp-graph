@@ -40,22 +40,26 @@ typedef struct OpenCLException : boost::exception, std::exception {
     const char *what() const noexcept { return msg.c_str(); };
 } OpenCLExceptionType;
 
-typedef struct OpenCLDeviceInfo {
-    cl_device_id id;
-    cl_platform_id platformId;
-    cl_device_type type;            // CL_DEVICE_TYPE
-    cl_ulong globalMemCacheSize;    // CL_DEVICE_GLOBAL_MEM_CACHE_SIZE
-    cl_ulong globalMemSize;         // CL_DEVICE_GLOBAL_MEM_SIZE
-    cl_ulong localMemSize;          // CL_DEVICE_LOCAL_MEM_SIZE
-    cl_ulong maxConstantBufferSize; // CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE
-    cl_bool available;              // CL_DEVICE_AVAILABLE
-    cl_bool compilerAvailable;      // CL_DEVICE_COMPILER_AVAILABLE
-    cl_uint computeUnits;           // CL_DEVICE_MAX_COMPUTE_UNITS
-    cl_bool fullProfile;            // CL_DEVICE_PROFILE
-    cl_bool supportsVer1_1;         // CL_DRIVER_VERSION
-    size_t maxWorkItemSizes[3];     // CL_DEVICE_MAX_WORK_ITEM_SIZES
+class OpenCLDeviceInfo {
+public:
+    cl_device_id id = 0;
+    cl_platform_id platformId = 0;
+    cl_device_type type = 0;                  // CL_DEVICE_TYPE
+    cl_ulong globalMemCacheSize = 0;          // CL_DEVICE_GLOBAL_MEM_CACHE_SIZE
+    cl_ulong globalMemSize = 0;               // CL_DEVICE_GLOBAL_MEM_SIZE
+    cl_ulong localMemSize = 0;                // CL_DEVICE_LOCAL_MEM_SIZE
+    cl_ulong maxConstantBufferSize = 0;       // CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE
+    cl_bool available = 0;                    // CL_DEVICE_AVAILABLE
+    cl_bool compilerAvailable = 0;            // CL_DEVICE_COMPILER_AVAILABLE
+    cl_uint computeUnits = 0;                 // CL_DEVICE_MAX_COMPUTE_UNITS
+    cl_bool fullProfile = 0;                  // CL_DEVICE_PROFILE
+    cl_bool supportsVer1_1 = 0;               // CL_DRIVER_VERSION
+    size_t maxWorkItemSizes[3] = {0,0,0};     // CL_DEVICE_MAX_WORK_ITEM_SIZES
     boost::shared_ptr<std::string> extensions;
-} OpenCLDeviceInfoType;
+    OpenCLDeviceInfo(){}
+    ~OpenCLDeviceInfo(){}
+};
+typedef OpenCLDeviceInfo OpenCLDeviceInfoType;
 
 class OpenCL {
 public:
@@ -63,6 +67,7 @@ public:
     static bool bestDeviceInfo(OpenCLDeviceInfoType &bestDevice);
     static cl_context contextWithDeviceInfo(OpenCLDeviceInfoType &deviceInfo);
     static boost::compute::program createAndBuildProgram(std::string src, boost::compute::context ctx);
+    static void log(OpenCLDeviceInfo &thisDeviceInfo);
 public:
     static void default_error_handler (
         const char *errinfo, const void *private_info, 

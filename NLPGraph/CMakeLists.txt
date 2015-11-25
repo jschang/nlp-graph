@@ -10,8 +10,17 @@ if (BUILD_NLPGRAPH_LIB)
 
         ./calc/kohonen_som.cpp
         ./calc/kohonen_som.h
+        ./calc/kohonen_som/kohonen_som_data.cpp
+        ./calc/kohonen_som/kohonen_som_sample_data.cpp
+        ./calc/kohonen_som/kohonen_som_result.cpp
+        ./calc/kohonen_som/kohonen_som_data.h
+        ./calc/kohonen_som/kohonen_som_sample_data.h
+        ./calc/kohonen_som/kohonen_som_result.h
+        
         ./calc/levenstein_damerau.cpp
         ./calc/levenstein_damerau.h
+        ./calc/levenstein_damerau/levenstein_damerau_data.cpp
+        ./calc/levenstein_damerau/levenstein_damerau_data.h
 
         ./neural/neuron.cpp
         ./neural/neuron.h
@@ -21,8 +30,12 @@ if (BUILD_NLPGRAPH_LIB)
         ./neural/network.h
         ./neural/network_runner.cpp
         ./neural/network_runner.h
+        ./neural/network_run_data.cpp
+        ./neural/network_run_data.h
         ./neural/network_trainer.cpp
         ./neural/network_trainer.h
+        ./neural/network_training_data.cpp
+        ./neural/network_training_data.h
         ./neural/neural.h
 
         ./dao/model.h
@@ -64,6 +77,18 @@ if (BUILD_NLPGRAPH_LIB)
         ./calc/levenstein_damerau.cpp
         ./calc/levenstein_damerau.h
     )
+    source_group(src\\calc\\kohonen_som FILES
+        ./calc/kohonen_som/kohonen_som_data.cpp
+        ./calc/kohonen_som/kohonen_som_data.h
+        ./calc/kohonen_som/kohonen_som_sample_data.cpp
+        ./calc/kohonen_som/kohonen_som_sample_data.h
+        ./calc/kohonen_som/kohonen_som_result.cpp
+        ./calc/kohonen_som/kohonen_som_result.h
+    )
+    source_group(src\\calc\\levenstein_damerau FILES
+        ./calc/levenstein_damerau/levenstein_damerau_data.cpp
+        ./calc/levenstein_damerau/levenstein_damerau_data.h
+    )
     source_group(src\\neural FILES
         ./neural/neuron.cpp
         ./neural/neuron.h
@@ -73,8 +98,12 @@ if (BUILD_NLPGRAPH_LIB)
         ./neural/network.h
         ./neural/network_runner.cpp
         ./neural/network_runner.h
+        ./neural/network_run_data.cpp
+        ./neural/network_run_data.h
         ./neural/network_trainer.cpp
         ./neural/network_trainer.h
+        ./neural/network_training_data.cpp
+        ./neural/network_training_data.h
         ./neural/neural.h
     )
     source_group(src\\dao FILES

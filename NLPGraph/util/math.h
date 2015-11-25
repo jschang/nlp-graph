@@ -55,6 +55,9 @@ private:
     Math() {}
 public:
     
+    inline static int isEqual(double a, double b, double epsilon=.0000001) {
+        return std::abs(a-b) < epsilon;
+    }
     template <class T>
     static GeneratorIntegerPtr<T> maxRandGen() {
         // initialize the overly complicated initialization for random numbers

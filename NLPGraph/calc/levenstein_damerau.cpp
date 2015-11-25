@@ -13,8 +13,8 @@
 #include <boost/compute.hpp>
 #include <exception>
 
-#define LOG_E BOOST_LOG_SEV(m_logger,severity_level::critical) << __PRETTY_FUNCTION__ << " "
-#define LOG_I BOOST_LOG_SEV(m_logger,severity_level::normal) << __PRETTY_FUNCTION__ << " "
+#define LOG_E BOOST_LOG_SEV((*m_logger),severity_level::critical) << __PRETTY_FUNCTION__ << " "
+#define LOG_I BOOST_LOG_SEV((*m_logger),severity_level::normal) << __PRETTY_FUNCTION__ << " "
 
 using namespace NLPGraph::Util;
 
@@ -531,13 +531,17 @@ const uint64_t OP_DELETE    = 2;
 const uint64_t OP_REPEAT    = 3;
 const uint64_t OP_TRANSPOSE = 4;
 
-LevensteinDamerau::LevensteinDamerau(const boost::compute::context &context) 
-        : m_logger(boost::log::keywords::channel="NLPGraph::Calc::LevensteinDamerau") {
-    m_context = context;
+LevensteinDamerau::LevensteinDamerau(const boost::compute::context &context) {
+
+    m_logger.reset(new Util::LoggerType(boost::log::keywords::channel="NLPGraph::Calc::LevensteinDamerau"));
+    
+    m_context.reset(new boost::compute::context(context));
+    
     clLogOn = false;
     clLogErrorOnly = 0;
-    boost::compute::device dev(m_context.get_device());
-    m_commandQueue = boost::compute::command_queue(m_context, dev);
+    boost::compute::device dev = boost::compute::device(m_context->get_device());
+    
+    m_commandQueue.reset(new boost::compute::command_queue(*m_context, dev));
     
     int headerSize = sizeof(char)*strlen(kLevensteinDamerauOpenCLHeader);
     int sourceSize = sizeof(char)*strlen(kLevensteinDamerauOpenCLSource);
@@ -557,8 +561,9 @@ LevensteinDamerau::LevensteinDamerau(const boost::compute::context &context)
         
         // I would have used link, but NVIDIA doesn't support OpenCL 1.2
         // and this will prolly end up running on AWS hardware a bunch
-        m_program = OpenCL::createAndBuildProgram(source,m_context);
-        m_kernel = boost::compute::kernel(m_program, "calc_levenstein_damerau");
+        boost::compute::program p = OpenCL::createAndBuildProgram(source,*m_context);
+        m_program.reset(new boost::compute::program(p));
+        m_kernel.reset(new boost::compute::kernel(*m_program, "calc_levenstein_damerau"));
         
         delete source;
     } catch(...) {
@@ -568,7 +573,7 @@ LevensteinDamerau::LevensteinDamerau(const boost::compute::context &context)
 }
 LevensteinDamerau::~LevensteinDamerau() {
 }
-int LevensteinDamerau::reconstruct(const LevensteinDamerauDataPtr &data) {
+int LevensteinDamerau::reconstruct(LevensteinDamerauDataPtr data) {
 
     data->zeroHaystack();
     // foreach operations
@@ -621,7 +626,7 @@ int LevensteinDamerau::reconstruct(const LevensteinDamerauDataPtr &data) {
     }        
     return 0;
 }
-int LevensteinDamerau::calculate(const LevensteinDamerauDataPtr &data) {
+int LevensteinDamerau::calculate(LevensteinDamerauDataPtr data) {
 
     uint width              = data->getNeedleWidth();
     uint haystackSize       = data->getHaystackSize();
@@ -645,18 +650,18 @@ int LevensteinDamerau::calculate(const LevensteinDamerauDataPtr &data) {
     LOG_I << "needle        : " << NLPGraph::Util::String::str(needle,width);
     LOG_I << "haystack:     : " << NLPGraph::Util::String::str(haystack,width*haystackSize);
 
-    boost::compute::vector<uint64_t> device_needle(width, m_context);
+    boost::compute::vector<uint64_t> device_needle(width, *(m_context.get()));
     std::vector<uint64_t> host_needle(needle, needle+width);
-    copy(host_needle.begin(), host_needle.end(), device_needle.begin(), m_commandQueue);
+    copy(host_needle.begin(), host_needle.end(), device_needle.begin(), *m_commandQueue);
     
-    boost::compute::vector<uint64_t> device_haystack(haystackSize*width ,m_context);
+    boost::compute::vector<uint64_t> device_haystack(haystackSize*width, *m_context);
     std::vector<uint64_t> host_haystack(haystack, haystack+(haystackSize*width));
-    boost::compute::copy(host_haystack.begin(), host_haystack.end(), device_haystack.begin(), m_commandQueue);
+    boost::compute::copy(host_haystack.begin(), host_haystack.end(), device_haystack.begin(), *m_commandQueue);
     
-    boost::compute::vector<uint64_t> device_distances(haystackSize, (const uint64_t)&zero, m_commandQueue);
+    boost::compute::vector<uint64_t> device_distances(haystackSize, (const uint64_t)&zero, *m_commandQueue);
     int64_t host_distances[haystackSize*sizeof(int64_t)];
     memset(host_distances,0,haystackSize*sizeof(int64_t));
-    cl_mem deviceDistancesBuf = clCreateBuffer(m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(int64_t)*haystackSize,&host_distances,&errcode);
+    cl_mem deviceDistancesBuf = clCreateBuffer(*m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(int64_t)*haystackSize,&host_distances,&errcode);
     if(errcode!=CL_SUCCESS) {
         except.msg = except.msg + "unable to clCreateBuffer deviceDistancesBuf; ";
         throw except;
@@ -665,7 +670,7 @@ int LevensteinDamerau::calculate(const LevensteinDamerauDataPtr &data) {
     int operationsCount = haystackSize * (width * 3);
     uint64_t host_operations[operationsCount * sizeof(uint64_t)];
     memset(&host_operations,0,operationsCount * sizeof(uint64_t));
-    cl_mem deviceOperationsBuf = clCreateBuffer(m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(uint64_t)*operationsCount,&host_operations,&errcode);
+    cl_mem deviceOperationsBuf = clCreateBuffer(*m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(uint64_t)*operationsCount,&host_operations,&errcode);
     if(errcode!=CL_SUCCESS) {
         except.msg = except.msg + "unable to clCreateBuffer deviceOperationsBuf; ";
         throw except;
@@ -674,7 +679,7 @@ int LevensteinDamerau::calculate(const LevensteinDamerauDataPtr &data) {
     uint logLength = 50000;
     char log[logLength];
     memset(&log,0,sizeof(char)*logLength);
-    cl_mem logBuf = clCreateBuffer(m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(char)*logLength,&log,&errcode);
+    cl_mem logBuf = clCreateBuffer(*m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(char)*logLength,&log,&errcode);
     if(errcode!=CL_SUCCESS) {
         except.msg = except.msg + "unable to clCreateBuffer logBuf; ";
         throw except;
@@ -683,29 +688,29 @@ int LevensteinDamerau::calculate(const LevensteinDamerauDataPtr &data) {
     uint flags =   (clLogOn        ? CL_LOG_ON         : 0) 
     	         | (clLogErrorOnly ? CL_LOG_ERROR_ONLY : 0);
     	
-    m_kernel.set_arg(0,flags);
-    m_kernel.set_arg(1,width);
-    m_kernel.set_arg(2,device_needle);
-    m_kernel.set_arg(3,device_haystack);
-    m_kernel.set_arg(4,deviceDistancesBuf);
-    m_kernel.set_arg(5,deviceOperationsBuf);
-    m_kernel.set_arg(6,logBuf);
-    m_kernel.set_arg(7,logLength);
-    m_kernel.set_arg(8,haystackSize);
+    m_kernel->set_arg(0,flags);
+    m_kernel->set_arg(1,width);
+    m_kernel->set_arg(2,device_needle);
+    m_kernel->set_arg(3,device_haystack);
+    m_kernel->set_arg(4,deviceDistancesBuf);
+    m_kernel->set_arg(5,deviceOperationsBuf);
+    m_kernel->set_arg(6,logBuf);
+    m_kernel->set_arg(7,logLength);
+    m_kernel->set_arg(8,haystackSize);
     
-    m_commandQueue.enqueue_1d_range_kernel(m_kernel, 0, haystackSize, 1);
+    m_commandQueue->enqueue_1d_range_kernel(*m_kernel, 0, haystackSize, 1);
     
-    errcode = clEnqueueReadBuffer(m_commandQueue, logBuf, true, 0, sizeof(char)*logLength, log, 0, NULL, NULL);
+    errcode = clEnqueueReadBuffer(*m_commandQueue, logBuf, true, 0, sizeof(char)*logLength, log, 0, NULL, NULL);
     if(errcode!=CL_SUCCESS) {
         OpenCLExceptionType except;
         except.msg = except.msg + "Unable to read logBuf; ";
     }
-    errcode = clEnqueueReadBuffer(m_commandQueue, deviceDistancesBuf, true, 0, sizeof(uint64_t)*haystackSize, distancesOut, 0, NULL, NULL);
+    errcode = clEnqueueReadBuffer(*m_commandQueue, deviceDistancesBuf, true, 0, sizeof(uint64_t)*haystackSize, distancesOut, 0, NULL, NULL);
     if(errcode!=CL_SUCCESS) {
         OpenCLExceptionType except;
         except.msg = except.msg + "Unable to read deviceDistancesBuf; ";
     }
-    errcode = clEnqueueReadBuffer(m_commandQueue, deviceOperationsBuf, true, 0, sizeof(uint64_t)*operationsCount, operationsOut, 0, NULL, NULL);
+    errcode = clEnqueueReadBuffer(*m_commandQueue, deviceOperationsBuf, true, 0, sizeof(uint64_t)*operationsCount, operationsOut, 0, NULL, NULL);
     if(errcode!=CL_SUCCESS) {
         OpenCLExceptionType except;
         except.msg = except.msg + "Unable to read deviceOperationsBuf; ";

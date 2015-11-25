@@ -18,6 +18,15 @@ namespace NLPGraph {
     namespace Neural {
     
 class NetworkTrainer {
+private:
+    std::vector<NetworkPtr> _networks;
+public:
+    /**
+     * Adds a network for training.  All networks
+     * must have the same number of outputs and inputs,
+     * or an exception will be thrown.
+     */
+    void addNetwork(NetworkPtr network);
 };
 
 }}

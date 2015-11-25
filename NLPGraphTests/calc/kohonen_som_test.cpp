@@ -36,7 +36,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
     LoggerType logger(boost::log::keywords::channel="nlpgraph_calc_kohonen_som");
     
     // get the best device
-    OpenCLDeviceInfoType deviceInfo;
+    OpenCLDeviceInfo deviceInfo;
     OpenCL::bestDeviceInfo(deviceInfo);
     
     // spin up a context
