@@ -14,6 +14,7 @@
 #include "../util/logger.h"
 #include "../util/opencl.h"
 
+#include "constant.h"
 #include "neuron.h"
 #include "synapse.h"
 #include "network.h"

@@ -7,6 +7,8 @@ if (BUILD_NLPGRAPH_LIB)
         ./context.cpp
         ./context.h
         ./nlpgraph.h
+        
+        ./math/generator.h
 
         ./calc/kohonen_som.cpp
         ./calc/kohonen_som.h
@@ -37,6 +39,7 @@ if (BUILD_NLPGRAPH_LIB)
         ./neural/network_training_data.cpp
         ./neural/network_training_data.h
         ./neural/neural.h
+        ./neural/constant.h
 
         ./dao/model.h
         ./dao/model_exception.h
@@ -71,6 +74,9 @@ if (BUILD_NLPGRAPH_LIB)
         ./context.h
         ./nlpgraph.h
     )
+    source_group(src\\math FILES
+        ./math/generator.h
+    )
     source_group(src\\calc FILES
         ./calc/kohonen_som.cpp
         ./calc/kohonen_som.h
@@ -96,6 +102,7 @@ if (BUILD_NLPGRAPH_LIB)
         ./neural/synapse.h
         ./neural/network.cpp
         ./neural/network.h
+        ./neural/constant.h
         ./neural/network_runner.cpp
         ./neural/network_runner.h
         ./neural/network_run_data.cpp

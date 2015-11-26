@@ -11,6 +11,7 @@
 
 #import <numeric>
 #include "../nlpgraph.h"
+#include "constant.h"
 #include "../util/logger.h"
 #include "../util/opencl.h"
 
@@ -24,14 +25,11 @@ private:
     NeuronPtr _inNeuron;
     NeuronPtr _outNeuron;
 public:
-    uint64_t id(uint64_t id);
-    double weight(double weight);
-    NeuronPtr inNeuron(const NeuronPtr &inNeuron);
-    NeuronPtr outNeuron(const NeuronPtr &outNeuron);
+    uint64_t id(uint64_t id = 0);
+    double weight(double weight = -99999.999);
+    NeuronPtr inNeuron(const NeuronPtr &inNeuron = kNullNeuron);
+    NeuronPtr outNeuron(const NeuronPtr &outNeuron = kNullNeuron);
 };
-
-const SynapsePtr kNullSynapse(nullptr);
-const std::vector<SynapsePtr> kNullSynapses = std::vector<SynapsePtr>();
 
 }}
 

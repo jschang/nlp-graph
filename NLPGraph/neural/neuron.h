@@ -11,6 +11,7 @@
 
 #import <numeric>
 #include "../nlpgraph.h"
+#include "constant.h"
 #include "../util/logger.h"
 #include "../util/opencl.h"
 
@@ -24,13 +25,11 @@ private:
     std::vector<SynapsePtr> _outputSynapses;
     std::vector<SynapsePtr> _inputSynapses;
 public:
-    uint64_t id(uint64_t id);
-    double threshold(double threshold);
-    std::vector<SynapsePtr>& outputSynapses(const std::vector<SynapsePtr>& outputSynapses);
-    std::vector<SynapsePtr>& inputSynapses(const std::vector<SynapsePtr>& inputSynapses);
+    uint64_t id(uint64_t id = 0);
+    double threshold(double threshold = -99999.999);
+    std::vector<SynapsePtr> outputSynapses(const std::vector<SynapsePtr>& outputSynapses = kNullSynapses);
+    std::vector<SynapsePtr> inputSynapses(const std::vector<SynapsePtr>& inputSynapses = kNullSynapses);
 };
-
-const NeuronPtr kNullNeuron(nullptr);
 
 }}
 

@@ -22,8 +22,12 @@ private:
     std::map<uint64_t,NeuronPtr> _neurons;
     std::map<uint64_t,SynapsePtr> _synapses;
 public:
-    NeuronPtr& neuron(uint64_t id, const NeuronPtr& neuron);
-    SynapsePtr& synapse(uint64_t id, const SynapsePtr& synapse);
+    NeuronPtr neuron(uint64_t id, const NeuronPtr& neuron);
+    SynapsePtr synapse(uint64_t id, const SynapsePtr& synapse);
+    
+    std::vector<uint64_t> layerAfterIds(std::vector<uint64_t> layer);
+    
+    static NetworkPtr newNetworkFullyConnected(const uint32_t dims[], const uint32_t dimCount);
 };
 
 }}

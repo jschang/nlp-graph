@@ -243,9 +243,9 @@ BOOST_AUTO_TEST_CASE( stress_test ) {
     uint testSize = 1;
     uint testWidth = 10;
     
-    NLPGraph::Util::GeneratorIntegerPtr<uint64_t> getRand = NLPGraph::Util::Math::rangeRandGen<uint64_t>(1000,9999);
-    NLPGraph::Util::GeneratorRealPtr getChance = NLPGraph::Util::Math::rangeRandGen(0.0f,1.0f);
-    NLPGraph::Util::GeneratorIntegerPtr<uint> getNeedleWidth = NLPGraph::Util::Math::rangeRandGen<uint>(0,testWidth);
+    NLPGraph::Math::GeneratorIntegerPtr<uint64_t> getRand = NLPGraph::Util::Math::rangeRandGen<uint64_t>(1000,9999);
+    NLPGraph::Math::GeneratorRealPtr getChance = NLPGraph::Util::Math::rangeRandGen(0.0f,1.0f);
+    NLPGraph::Math::GeneratorIntegerPtr<uint> getNeedleWidth = NLPGraph::Util::Math::rangeRandGen<uint>(0,testWidth);
     
     uint64_t *needle = (uint64_t *)malloc(sizeof(uint64_t)*testSize);
     uint64_t *haystack = new uint64_t[testWidth*testSize];
@@ -306,7 +306,7 @@ BOOST_AUTO_TEST_CASE( perf_test ) {
     context bContext;
     bContext = context(OpenCL::contextWithDeviceInfo(deviceInfo)); 
     
-    NLPGraph::Util::GeneratorIntegerPtr<uint64_t> getRand = NLPGraph::Util::Math::rangeRandGen<uint64_t>(1000,9999);   
+    NLPGraph::Math::GeneratorIntegerPtr<uint64_t> getRand = NLPGraph::Util::Math::rangeRandGen<uint64_t>(1000,9999);   
     
     // fire up the calculator
     LevensteinDamerau alg(bContext);

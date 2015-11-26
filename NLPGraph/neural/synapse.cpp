@@ -9,26 +9,29 @@ using namespace NLPGraph;
 
 namespace NLPGraph {
     namespace Neural {
+
+extern const SynapsePtr kNullSynapse(nullptr);
+extern const std::vector<SynapsePtr> kNullSynapses = std::vector<SynapsePtr>();
     
-uint64_t Synapse::id(uint64_t id = 0) {
+uint64_t Synapse::id(uint64_t id) {
     if(id!=0) {
         _id = id;
     }
     return _id;
 }
-double Synapse::weight(double weight = -99999.999) {
+double Synapse::weight(double weight) {
     if(!Util::Math::isEqual(weight,-99999.999)) {
         _weight = weight;
     }
     return _weight;
 }
-NeuronPtr Synapse::inNeuron(const NeuronPtr &inNeuron = kNullNeuron) {
+NeuronPtr Synapse::inNeuron(const NeuronPtr &inNeuron) {
     if(inNeuron.get()!=nullptr) {
         _inNeuron = inNeuron;
     }
     return _inNeuron;
 }
-NeuronPtr Synapse::outNeuron(const NeuronPtr &outNeuron = kNullNeuron) {
+NeuronPtr Synapse::outNeuron(const NeuronPtr &outNeuron) {
     if(outNeuron.get()!=nullptr) {
         _outNeuron = outNeuron;
     }
