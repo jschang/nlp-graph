@@ -36,7 +36,9 @@ std::vector<uint64_t> Network::layerAfterIds(std::vector<uint64_t> layer) {
 
 NetworkPtr Network::newNetworkFullyConnected(const uint32_t dims[], const uint32_t dimCount) {
     if(dimCount<2) {
-        return NetworkPtr(nullptr);
+        NLPGraphExceptionType exc;
+        exc.msg = "Requires at least 2 layers";
+        throw exc;
     }
     std::vector<std::vector<NeuronPtr>> neuronsByLayer;
     for(int dimIdx=0; dimIdx<dimCount; dimIdx++) {
@@ -44,9 +46,9 @@ NetworkPtr Network::newNetworkFullyConnected(const uint32_t dims[], const uint32
         for(int neuronIdx=0; neuronIdx<dims[dimIdx]; neuronIdx++) {
             NeuronPtr newNeuron(new Neuron());
             neuronsByLayer[dimIdx].push_back(newNeuron);
+            
         }
     }
-    
 }
 
 }}

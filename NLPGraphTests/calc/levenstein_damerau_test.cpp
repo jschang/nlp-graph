@@ -29,12 +29,12 @@ struct Fixture {
     }
 };
 
-LoggerType logger = LoggerType(boost::log::keywords::channel="nlpgraph_calc_levenstein_damerau");
-
 BOOST_AUTO_TEST_SUITE( nlpgraph_calc_levenstein_damerau ) 
 
 BOOST_AUTO_TEST_CASE( calc_test )
-{       
+{   
+    LoggerType logger = LoggerType(boost::log::keywords::channel="nlpgraph_calc_levenstein_damerau");
+    
     // get the best device
     OpenCLDeviceInfoType deviceInfo = OpenCLDeviceInfoType();
     OpenCL::bestDeviceInfo(deviceInfo);
@@ -227,6 +227,8 @@ BOOST_AUTO_TEST_CASE( calc_test )
 
 BOOST_AUTO_TEST_CASE( stress_test ) {
 
+    LoggerType logger = LoggerType(boost::log::keywords::channel="nlpgraph_calc_levenstein_damerau");
+
     // get the best device
     OpenCLDeviceInfoType deviceInfo = OpenCLDeviceInfoType();
     OpenCL::bestDeviceInfo(deviceInfo);
@@ -296,7 +298,7 @@ BOOST_AUTO_TEST_CASE( stress_test ) {
 
 BOOST_AUTO_TEST_CASE( perf_test ) {
 
-    return;
+    LoggerType logger = LoggerType(boost::log::keywords::channel="nlpgraph_calc_levenstein_damerau");
 
     // get the best device
     OpenCLDeviceInfoType deviceInfo = OpenCLDeviceInfoType();

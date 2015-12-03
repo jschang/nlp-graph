@@ -1,7 +1,9 @@
 #include "../util/math.h"
+#include "../math/function_1d.h"
 #include "neural.h"
 
 using namespace NLPGraph;
+using namespace NLPGraph::Math;
 
 namespace NLPGraph {
     namespace Neural {
@@ -20,17 +22,23 @@ double Neuron::threshold(double threshold) {
     }
     return _threshold;
 }
-std::vector<SynapsePtr> Neuron::outputSynapses(const std::vector<SynapsePtr>& outputSynapses) {
+std::vector<SynapsePtr>& Neuron::outputSynapses(const std::vector<SynapsePtr>& outputSynapses) {
     if(outputSynapses.size()!=0) {
         _outputSynapses = outputSynapses;
     }
     return _outputSynapses;
 }
-std::vector<SynapsePtr> Neuron::inputSynapses(const std::vector<SynapsePtr>& inputSynapses) {
+std::vector<SynapsePtr>& Neuron::inputSynapses(const std::vector<SynapsePtr>& inputSynapses) {
     if(inputSynapses.size()!=0) {
         _inputSynapses = inputSynapses;
     }
     return _inputSynapses;
+}
+Function1DPtr& Neuron::activator(Function1DPtr func) {
+    if(func.get()!=nullptr) {
+        _activator = func;
+    }
+    return _activator;
 }
 
 }}

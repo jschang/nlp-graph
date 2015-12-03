@@ -24,11 +24,13 @@ private:
     double _threshold;
     std::vector<SynapsePtr> _outputSynapses;
     std::vector<SynapsePtr> _inputSynapses;
+    NLPGraph::Math::Function1DPtr _activator;
 public:
     uint64_t id(uint64_t id = 0);
     double threshold(double threshold = -99999.999);
-    std::vector<SynapsePtr> outputSynapses(const std::vector<SynapsePtr>& outputSynapses = kNullSynapses);
-    std::vector<SynapsePtr> inputSynapses(const std::vector<SynapsePtr>& inputSynapses = kNullSynapses);
+    std::vector<SynapsePtr>& outputSynapses(const std::vector<SynapsePtr>& outputSynapses = kNullSynapses);
+    std::vector<SynapsePtr>& inputSynapses(const std::vector<SynapsePtr>& inputSynapses = kNullSynapses);
+    NLPGraph::Math::Function1DPtr& activator(NLPGraph::Math::Function1DPtr func = NLPGraph::Math::Function1DPtr(nullptr));
 };
 
 }}

@@ -645,89 +645,124 @@ int LevensteinDamerau::calculate(LevensteinDamerauDataPtr data) {
     OpenCLExceptionType except;
     except.msg = "";
     
+    int64_t * host_distances   = 0;
+    uint64_t * host_operations = 0;
+    char * log                 = 0;
+    cl_mem deviceOperationsBuf = 0;
+    cl_mem logBuf              = 0;
+    cl_mem deviceDistancesBuf  = 0;
+    
     LOG_I << "width         : " << width;
     LOG_I << "haystackSize  : " << haystackSize;
     LOG_I << "needle        : " << NLPGraph::Util::String::str(needle,width);
     LOG_I << "haystack:     : " << NLPGraph::Util::String::str(haystack,width*haystackSize);
 
-    boost::compute::vector<uint64_t> device_needle(width, *(m_context.get()));
-    std::vector<uint64_t> host_needle(needle, needle+width);
-    copy(host_needle.begin(), host_needle.end(), device_needle.begin(), *m_commandQueue);
+    try {
     
-    boost::compute::vector<uint64_t> device_haystack(haystackSize*width, *m_context);
-    std::vector<uint64_t> host_haystack(haystack, haystack+(haystackSize*width));
-    boost::compute::copy(host_haystack.begin(), host_haystack.end(), device_haystack.begin(), *m_commandQueue);
+        boost::compute::vector<uint64_t> device_needle(width, *(m_context.get()));
+        std::vector<uint64_t> host_needle(needle, needle+width);
+        copy(host_needle.begin(), host_needle.end(), device_needle.begin(), *m_commandQueue);
+        
+        boost::compute::vector<uint64_t> device_haystack(haystackSize*width, *m_context);
+        std::vector<uint64_t> host_haystack(haystack, haystack+(haystackSize*width));
+        boost::compute::copy(host_haystack.begin(), host_haystack.end(), device_haystack.begin(), *m_commandQueue);
+        
+        boost::compute::vector<uint64_t> device_distances(haystackSize, (const uint64_t)&zero, *m_commandQueue);
+        host_distances = new int64_t[haystackSize];
+        if(!host_distances) {
+            except.msg = except.msg + "unable to allocate host_operations; ";
+            throw except;
+        }
+        memset(host_distances, 0, haystackSize*sizeof(int64_t));
+        deviceDistancesBuf = clCreateBuffer(*m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(int64_t)*haystackSize,&host_distances,&errcode);
+        if(errcode!=CL_SUCCESS) {
+            except.msg = except.msg + "unable to clCreateBuffer deviceDistancesBuf; ";
+            throw except;
+        }
+        
+        int operationsCount = haystackSize * (width * 3);
+        host_operations = new uint64_t[operationsCount];
+        if(!host_operations) {
+            except.msg = except.msg + "unable to allocate host_operations; ";
+            throw except;
+        }
+        memset(host_operations, 0, operationsCount * sizeof(uint64_t));
+        deviceOperationsBuf = clCreateBuffer(*m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(uint64_t)*operationsCount,&host_operations,&errcode);
+        if(errcode!=CL_SUCCESS) {
+            except.msg = except.msg + "unable to clCreateBuffer deviceOperationsBuf; ";
+            throw except;
+        }
+        
+        uint logLength = 50000;
+        log = new char[logLength];
+        if(!log) {
+            except.msg = except.msg + "unable to allocate log; ";
+            throw except;
+        }
+        memset(log, 0, sizeof(char) * logLength);
+        logBuf = clCreateBuffer(*m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(char)*logLength,&log,&errcode);
+        if(errcode!=CL_SUCCESS) {
+            except.msg = except.msg + "unable to clCreateBuffer logBuf; ";
+            throw except;
+        }
+        
+        uint flags =   (clLogOn        ? CL_LOG_ON         : 0) 
+                     | (clLogErrorOnly ? CL_LOG_ERROR_ONLY : 0);
+            
+        m_kernel->set_arg(0,flags);
+        m_kernel->set_arg(1,width);
+        m_kernel->set_arg(2,device_needle);
+        m_kernel->set_arg(3,device_haystack);
+        m_kernel->set_arg(4,deviceDistancesBuf);
+        m_kernel->set_arg(5,deviceOperationsBuf);
+        m_kernel->set_arg(6,logBuf);
+        m_kernel->set_arg(7,logLength);
+        m_kernel->set_arg(8,haystackSize);
+        
+        m_commandQueue->enqueue_1d_range_kernel(*m_kernel, 0, haystackSize, 1);
+        
+        errcode = clEnqueueReadBuffer(*m_commandQueue, logBuf, true, 0, sizeof(char)*logLength, log, 0, NULL, NULL);
+        if(errcode!=CL_SUCCESS) {
+            OpenCLExceptionType except;
+            except.msg = except.msg + "Unable to read logBuf; ";
+        }
+        errcode = clEnqueueReadBuffer(*m_commandQueue, deviceDistancesBuf, true, 0, sizeof(uint64_t)*haystackSize, distancesOut, 0, NULL, NULL);
+        if(errcode!=CL_SUCCESS) {
+            OpenCLExceptionType except;
+            except.msg = except.msg + "Unable to read deviceDistancesBuf; ";
+        }
+        errcode = clEnqueueReadBuffer(*m_commandQueue, deviceOperationsBuf, true, 0, sizeof(uint64_t)*operationsCount, operationsOut, 0, NULL, NULL);
+        if(errcode!=CL_SUCCESS) {
+            OpenCLExceptionType except;
+            except.msg = except.msg + "Unable to read deviceOperationsBuf; ";
+        }
+        
+        if(clLogOn) {
+            LOG_I << "Run log:\n" << log;
+        }
+        
+        if(except.msg.length()>0) {
+            throw except;
+        }
+        
+        delete host_distances;
+        delete host_operations;
+        delete log;
+        clReleaseMemObject(deviceOperationsBuf);
+        clReleaseMemObject(deviceDistancesBuf);
+        clReleaseMemObject(logBuf);
+
+    } catch(...) {
     
-    boost::compute::vector<uint64_t> device_distances(haystackSize, (const uint64_t)&zero, *m_commandQueue);
-    int64_t host_distances[haystackSize*sizeof(int64_t)];
-    memset(host_distances,0,haystackSize*sizeof(int64_t));
-    cl_mem deviceDistancesBuf = clCreateBuffer(*m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(int64_t)*haystackSize,&host_distances,&errcode);
-    if(errcode!=CL_SUCCESS) {
-        except.msg = except.msg + "unable to clCreateBuffer deviceDistancesBuf; ";
-        throw except;
-    }
-    
-    int operationsCount = haystackSize * (width * 3);
-    uint64_t host_operations[operationsCount * sizeof(uint64_t)];
-    memset(&host_operations,0,operationsCount * sizeof(uint64_t));
-    cl_mem deviceOperationsBuf = clCreateBuffer(*m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(uint64_t)*operationsCount,&host_operations,&errcode);
-    if(errcode!=CL_SUCCESS) {
-        except.msg = except.msg + "unable to clCreateBuffer deviceOperationsBuf; ";
-        throw except;
-    }
-    
-    uint logLength = 50000;
-    char log[logLength];
-    memset(&log,0,sizeof(char)*logLength);
-    cl_mem logBuf = clCreateBuffer(*m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(char)*logLength,&log,&errcode);
-    if(errcode!=CL_SUCCESS) {
-        except.msg = except.msg + "unable to clCreateBuffer logBuf; ";
-        throw except;
-    }
-    
-    uint flags =   (clLogOn        ? CL_LOG_ON         : 0) 
-    	         | (clLogErrorOnly ? CL_LOG_ERROR_ONLY : 0);
-    	
-    m_kernel->set_arg(0,flags);
-    m_kernel->set_arg(1,width);
-    m_kernel->set_arg(2,device_needle);
-    m_kernel->set_arg(3,device_haystack);
-    m_kernel->set_arg(4,deviceDistancesBuf);
-    m_kernel->set_arg(5,deviceOperationsBuf);
-    m_kernel->set_arg(6,logBuf);
-    m_kernel->set_arg(7,logLength);
-    m_kernel->set_arg(8,haystackSize);
-    
-    m_commandQueue->enqueue_1d_range_kernel(*m_kernel, 0, haystackSize, 1);
-    
-    errcode = clEnqueueReadBuffer(*m_commandQueue, logBuf, true, 0, sizeof(char)*logLength, log, 0, NULL, NULL);
-    if(errcode!=CL_SUCCESS) {
-        OpenCLExceptionType except;
-        except.msg = except.msg + "Unable to read logBuf; ";
-    }
-    errcode = clEnqueueReadBuffer(*m_commandQueue, deviceDistancesBuf, true, 0, sizeof(uint64_t)*haystackSize, distancesOut, 0, NULL, NULL);
-    if(errcode!=CL_SUCCESS) {
-        OpenCLExceptionType except;
-        except.msg = except.msg + "Unable to read deviceDistancesBuf; ";
-    }
-    errcode = clEnqueueReadBuffer(*m_commandQueue, deviceOperationsBuf, true, 0, sizeof(uint64_t)*operationsCount, operationsOut, 0, NULL, NULL);
-    if(errcode!=CL_SUCCESS) {
-        OpenCLExceptionType except;
-        except.msg = except.msg + "Unable to read deviceOperationsBuf; ";
-    }
-    
-    clReleaseMemObject(logBuf);
-    clReleaseMemObject(deviceDistancesBuf);
-    clReleaseMemObject(deviceOperationsBuf);
-    
-    if(clLogOn) {
-        LOG_I << "Run log:\n" << log;
-    }
-    
-    if(except.msg.length()>0) {
-        throw except;
-    }
-    
+        if(!host_distances)      delete host_distances;
+        if(!host_operations)     delete host_operations;
+        if(!log)                 delete log;
+        if(!deviceOperationsBuf) clReleaseMemObject(deviceOperationsBuf);
+        if(!deviceDistancesBuf)  clReleaseMemObject(deviceDistancesBuf);
+        if(!logBuf)              clReleaseMemObject(logBuf);
+        
+        throw;
+    }    
     return result;
 }
 

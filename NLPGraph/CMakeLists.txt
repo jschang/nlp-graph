@@ -9,6 +9,12 @@ if (BUILD_NLPGRAPH_LIB)
         ./nlpgraph.h
         
         ./math/generator.h
+        ./math/function_1d.h
+        
+        ./math/function/tanh.h
+        ./math/function/tanh.cpp
+        ./math/function/logistic.h
+        ./math/function/logistic.cpp
 
         ./calc/kohonen_som.cpp
         ./calc/kohonen_som.h
@@ -76,6 +82,13 @@ if (BUILD_NLPGRAPH_LIB)
     )
     source_group(src\\math FILES
         ./math/generator.h
+        ./math/function_1d.h
+    )
+    source_group(src\\math\\function FILES
+        ./math/function/tanh.h
+        ./math/function/tanh.cpp
+        ./math/function/logistic.h
+        ./math/function/logistic.cpp
     )
     source_group(src\\calc FILES
         ./calc/kohonen_som.cpp

@@ -21,6 +21,14 @@ namespace Neural {
     typedef boost::shared_ptr<Synapse> SynapsePtr;
     typedef boost::shared_ptr<Network> NetworkPtr;
 };
+namespace Math {
+    class Function1D;
+    typedef boost::shared_ptr<Function1D> Function1DPtr;
+    namespace Function {
+        class TanH;
+        class Logistic;
+    }
+}
 namespace Calc {
     class LevensteinDamerauData;
     typedef boost::shared_ptr<LevensteinDamerauData> LevensteinDamerauDataPtr;

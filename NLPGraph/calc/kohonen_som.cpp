@@ -175,22 +175,26 @@ KohonenSOMResultPtr KohonenSOM::map(const KohonenSOMDataPtr &data, const Kohonen
     size_t outputSize = (size_t)data->nodeCount()*sizeof(float);
     std::vector<float> output(data->nodeCount());
     cl_int err = 0;
-    cl_mem clOutputData = clCreateBuffer(m_context,CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR,outputSize,(void*)output.data(),&err);
-    if (err!=CL_SUCCESS) {
-        Util::OpenCLExceptionType except;
-        except.msg = "unable to clCreateBuffer clOutputData; ";
-        throw except;
-    }
+    cl_mem clOutputData =0;
     const float zero = 0;
+    
+    OpenCLExceptionType except;
+    except.msg = "";
     
     KohonenSOMResultPtr result = KohonenSOMResultPtr(new KohonenSOMResult(m_context,sampleData));
     
     try {
+        clOutputData = clCreateBuffer(m_context,CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR,outputSize,(void*)output.data(),&err);
+        if (err!=CL_SUCCESS) {
+            Util::OpenCLExceptionType except;
+            except.msg = "unable to clCreateBuffer clOutputData; ";
+            throw except;
+        }
+
         for(uint32_t sampleIdx=0; sampleIdx < sampleData->count(); sampleIdx++) {
         
             err = clEnqueueFillBuffer(m_commandQueue,clOutputData,&zero,sizeof(float),0,outputSize,0,NULL,NULL);
             if(err!=CL_SUCCESS) {
-                OpenCLExceptionType except;
                 except.msg = except.msg + "Unable to zero clOutputData; ";
             }
             
@@ -238,11 +242,13 @@ KohonenSOMResultPtr KohonenSOM::map(const KohonenSOMDataPtr &data, const Kohonen
             (*result->distances())[sampleIdx] = lowest;
             (*result->indexes())[sampleIdx] = std::vector<uint32_t>(thisCoords);
         }
-    } catch(...) {
+        
         clReleaseMemObject(clOutputData);
+        
+    } catch(...) {
+        if(clOutputData!=0) clReleaseMemObject(clOutputData);
         throw;
     }
-    clReleaseMemObject(clOutputData);
     return result;
 }
 
