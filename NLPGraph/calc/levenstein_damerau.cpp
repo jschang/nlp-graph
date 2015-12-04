@@ -571,8 +571,6 @@ LevensteinDamerau::LevensteinDamerau(const boost::compute::context &context) {
         throw;
     }
 }
-LevensteinDamerau::~LevensteinDamerau() {
-}
 int LevensteinDamerau::reconstruct(LevensteinDamerauDataPtr data) {
 
     data->zeroHaystack();
@@ -668,43 +666,12 @@ int LevensteinDamerau::calculate(LevensteinDamerauDataPtr data) {
         boost::compute::copy(host_haystack.begin(), host_haystack.end(), device_haystack.begin(), *m_commandQueue);
         
         boost::compute::vector<uint64_t> device_distances(haystackSize, (const uint64_t)&zero, *m_commandQueue);
-        host_distances = new int64_t[haystackSize];
-        if(!host_distances) {
-            except.msg = except.msg + "unable to allocate host_operations; ";
-            throw except;
-        }
-        memset(host_distances, 0, haystackSize*sizeof(int64_t));
-        deviceDistancesBuf = clCreateBuffer(*m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(int64_t)*haystackSize,&host_distances,&errcode);
-        if(errcode!=CL_SUCCESS) {
-            except.msg = except.msg + "unable to clCreateBuffer deviceDistancesBuf; ";
-            throw except;
-        }
-        
         int operationsCount = haystackSize * (width * 3);
-        host_operations = new uint64_t[operationsCount];
-        if(!host_operations) {
-            except.msg = except.msg + "unable to allocate host_operations; ";
-            throw except;
-        }
-        memset(host_operations, 0, operationsCount * sizeof(uint64_t));
-        deviceOperationsBuf = clCreateBuffer(*m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(uint64_t)*operationsCount,&host_operations,&errcode);
-        if(errcode!=CL_SUCCESS) {
-            except.msg = except.msg + "unable to clCreateBuffer deviceOperationsBuf; ";
-            throw except;
-        }
-        
         uint logLength = 50000;
-        log = new char[logLength];
-        if(!log) {
-            except.msg = except.msg + "unable to allocate log; ";
-            throw except;
-        }
-        memset(log, 0, sizeof(char) * logLength);
-        logBuf = clCreateBuffer(*m_context,CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR,sizeof(char)*logLength,&log,&errcode);
-        if(errcode!=CL_SUCCESS) {
-            except.msg = except.msg + "unable to clCreateBuffer logBuf; ";
-            throw except;
-        }
+        
+        OpenCL::alloc<int64_t>(*m_context,haystackSize,(int64_t **)&host_distances,(cl_mem*)&deviceDistancesBuf,(int)CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR);
+        OpenCL::alloc<uint64_t>(*m_context,operationsCount,(uint64_t **)&host_operations,(cl_mem*)&deviceOperationsBuf,(int)CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR);
+        OpenCL::alloc<char>(*m_context,logLength,(char **)&log,(cl_mem*)&logBuf,(int)CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR);
         
         uint flags =   (clLogOn        ? CL_LOG_ON         : 0) 
                      | (clLogErrorOnly ? CL_LOG_ERROR_ONLY : 0);
@@ -721,21 +688,9 @@ int LevensteinDamerau::calculate(LevensteinDamerauDataPtr data) {
         
         m_commandQueue->enqueue_1d_range_kernel(*m_kernel, 0, haystackSize, 1);
         
-        errcode = clEnqueueReadBuffer(*m_commandQueue, logBuf, true, 0, sizeof(char)*logLength, log, 0, NULL, NULL);
-        if(errcode!=CL_SUCCESS) {
-            OpenCLExceptionType except;
-            except.msg = except.msg + "Unable to read logBuf; ";
-        }
-        errcode = clEnqueueReadBuffer(*m_commandQueue, deviceDistancesBuf, true, 0, sizeof(uint64_t)*haystackSize, distancesOut, 0, NULL, NULL);
-        if(errcode!=CL_SUCCESS) {
-            OpenCLExceptionType except;
-            except.msg = except.msg + "Unable to read deviceDistancesBuf; ";
-        }
-        errcode = clEnqueueReadBuffer(*m_commandQueue, deviceOperationsBuf, true, 0, sizeof(uint64_t)*operationsCount, operationsOut, 0, NULL, NULL);
-        if(errcode!=CL_SUCCESS) {
-            OpenCLExceptionType except;
-            except.msg = except.msg + "Unable to read deviceOperationsBuf; ";
-        }
+        OpenCL::read<char>(*m_commandQueue, logLength, log, logBuf);
+        OpenCL::read<int64_t>(*m_commandQueue, haystackSize, distancesOut, deviceDistancesBuf);
+        OpenCL::read<uint64_t>(*m_commandQueue, operationsCount, operationsOut, deviceOperationsBuf);
         
         if(clLogOn) {
             LOG_I << "Run log:\n" << log;

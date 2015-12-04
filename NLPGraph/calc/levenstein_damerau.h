@@ -24,15 +24,11 @@ private:
     boost::shared_ptr<boost::compute::program>       m_program;
     boost::shared_ptr<boost::compute::command_queue> m_commandQueue;
     boost::shared_ptr<Util::LoggerType>              m_logger;
-    uint64_t*                     m_needle;
-    uint64_t**                    m_haystack;
-    unsigned int                  m_haystackSize;
 public:
     bool clLogOn;
     bool clLogErrorOnly;
 public:
     LevensteinDamerau(const boost::compute::context &context);
-    ~LevensteinDamerau();
     int calculate(LevensteinDamerauDataPtr data);
     int reconstruct(LevensteinDamerauDataPtr data);
 };

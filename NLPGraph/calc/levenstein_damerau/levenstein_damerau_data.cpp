@@ -68,16 +68,14 @@ void LevensteinDamerauData::alloc(uint needleWidth, uint haystackSize) {
     m_operationsSize = haystackSize * this->getOperationWidth();
     
     m_needle = new uint64_t[needleWidth];
-    this->zeroNeedle();
-    
     m_haystack = new uint64_t[needleWidth*haystackSize];
-    this->zeroHaystack();
-    
     m_distances = new int64_t[haystackSize];
-    this->zeroDistances();
-    
     m_operations = new uint64_t[m_operationsSize];
-    this->zeroOperations();
+
+    this->zeroNeedle();
+    this->zeroHaystack();
+    this->zeroDistances();
+    this->zeroOperations();    
 }
 
 }}
