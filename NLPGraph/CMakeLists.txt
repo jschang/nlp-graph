@@ -29,6 +29,8 @@ if (BUILD_NLPGRAPH_LIB)
         ./calc/levenstein_damerau.h
         ./calc/levenstein_damerau/levenstein_damerau_data.cpp
         ./calc/levenstein_damerau/levenstein_damerau_data.h
+        ./calc/levenstein_damerau/levenstein_damerau_reconstruct_data.cpp
+        ./calc/levenstein_damerau/levenstein_damerau_reconstruct_data.h
 
         ./neural/neuron.cpp
         ./neural/neuron.h
@@ -107,6 +109,8 @@ if (BUILD_NLPGRAPH_LIB)
     source_group(src\\calc\\levenstein_damerau FILES
         ./calc/levenstein_damerau/levenstein_damerau_data.cpp
         ./calc/levenstein_damerau/levenstein_damerau_data.h
+        ./calc/levenstein_damerau/levenstein_damerau_reconstruct_data.cpp
+        ./calc/levenstein_damerau/levenstein_damerau_reconstruct_data.h
     )
     source_group(src\\neural FILES
         ./neural/neuron.cpp

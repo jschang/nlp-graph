@@ -273,7 +273,22 @@ inline char* itoa(levenstein_damerau_type *self, long inNum, int base) {
 /* KERNEL SOURCE */
 /* ************* */
 const char *kLevensteinDamerauOpenCLSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
-    
+
+inline void add_op(levenstein_damerau_type *self, ulong op, ulong needleIdx, ulong haystackCur) {
+    return;
+//    self->operationsOut[self->operationsOutIdx++] = op;
+//    self->operationsOut[self->operationsOutIdx++] = needleIdx;
+//    self->operationsOut[self->operationsOutIdx++] = haystackCur;
+}
+
+inline void replace_op(levenstein_damerau_type *self, ulong op, ulong needleIdx, ulong haystackCur) {
+    return;
+//    self->operationsOutIdx -= 3;
+//    self->operationsOut[self->operationsOutIdx++] = op;
+//    self->operationsOut[self->operationsOutIdx++] = needleIdx;
+//    self->operationsOut[self->operationsOutIdx++] = haystackCur;
+}
+
 __kernel void calc_levenstein_damerau(
         uint flags,
         uint widthIn,           // needle and each in haystack width
@@ -397,11 +412,7 @@ __kernel void calc_levenstein_damerau(
                             // 1010 - possible insertion
                             ac(&self,0," - 1010 - repetition in haystack, match restored; n:BA, h:AA\n");
                             self.haystackIdx--;
-                            
-                            self.operationsOutIdx -= 3;
-                            self.operationsOut[self.operationsOutIdx++] = OP_REPEAT;
-                            self.operationsOut[self.operationsOutIdx++] = self.needleIdx;
-                            self.operationsOut[self.operationsOutIdx++] = self.haystackCur;
+                            replace_op(&self, OP_REPEAT, self.needleIdx, self.haystackCur);
                         }
                     } else { 
                         if(self.needleLast == self.haystackLast) {
@@ -425,25 +436,15 @@ __kernel void calc_levenstein_damerau(
                             return;
                         } else {
                             ac(&self,0," - 0110 - recognizing transposition; n:AB, h:BA\n");
-                            //self.distanceTotal--;
-                            
                             // and change the last operation to a transpose    
-                            self.operationsOutIdx -= 3;
-                            self.operationsOut[self.operationsOutIdx++] = OP_TRANSPOSE;
-                            self.operationsOut[self.operationsOutIdx++] = self.needleIdx-1;
-                            self.operationsOut[self.operationsOutIdx++] = 0;
+                            replace_op(&self, OP_TRANSPOSE, self.needleIdx-1, 0);
                         }
                     } else {
                         if(self.needleLast == self.haystackLast) {
                             self.currentLocation = self.currentLocation | 1;
                             ac(&self,0," - 0101 - current is repetition in haystack, rewind needle to match haystack; n:AB, h:AA\n");
-                            //self.distanceTotal++; // not sure if i need...wouldn't last have inc at break
                             self.needleIdx--;
-                            
-                            self.operationsOutIdx-=3;
-                            self.operationsOut[self.operationsOutIdx++] = OP_REPEAT;
-                            self.operationsOut[self.operationsOutIdx++] = self.needleIdx;
-                            self.operationsOut[self.operationsOutIdx++] = 0;
+                            replace_op(&self, OP_REPEAT, self.needleIdx, 0);
                             break;
                         } else {
                             ac(&self,0," - 0100 - last was insertion in haystack, rewind needle to match haystack; n:AB, h:CA\n");
@@ -453,36 +454,21 @@ __kernel void calc_levenstein_damerau(
                         }
                     }
                 } else {
-                /*
-                __constant ulong OP_INSERT    = 1;
-                __constant ulong OP_DELETE    = 2;
-                __constant ulong OP_REPEAT    = 3;
-                __constant ulong OP_TRANSPOSE = 4;
-                */
                     if(self.needleCur == self.haystackLast) {
                         self.currentLocation = self.currentLocation | 1 << 1;
                         if(self.needleLast == self.haystackLast) {
                             self.currentLocation = self.currentLocation | 1;
                             ac(&self,0," - 0011 - replacement or deletion; n:AA, h:AB\n");
                             self.distanceTotal++;
-                            
-                            self.operationsOut[self.operationsOutIdx++] = OP_INSERT;
-                            self.operationsOut[self.operationsOutIdx++] = self.needleIdx;
-                            self.operationsOut[self.operationsOutIdx++] = self.haystackCur;
+                            add_op(&self,OP_INSERT,self.needleIdx,self.haystackCur);
                         } else {
                             // 0010 - restore match, last was actually ommission in haystack
                             ac(&self,0," - 0010 - restore match, last was actually ommission in haystack\n");
-                            
                             self.haystackIdx--;   // need to rewind the haystack
                             self.haystackCur = self.haystackIn[ ( self.widthIn * self.haystackRowIdx ) + self.haystackIdx ];
                             self.haystackLast = self.haystackIdx != 0 ? self.haystackIn[ ( self.widthIn * self.haystackRowIdx ) + self.haystackIdx - 1] : 0;
-                            //self.distanceTotal--; // and our distance wouldn't be accurate now either
-                        
                             // and change the last operation to a delete    
-                            self.operationsOutIdx -= 3;
-                            self.operationsOut[self.operationsOutIdx++] = OP_DELETE;
-                            self.operationsOut[self.operationsOutIdx++] = self.needleIdx-1;
-                            self.operationsOut[self.operationsOutIdx++] = 0;
+                            replace_op(&self,OP_DELETE,self.needleIdx-1,0);
                             break;
                         }
                     } else {
@@ -490,17 +476,11 @@ __kernel void calc_levenstein_damerau(
                             self.currentLocation = self.currentLocation | 1;
                             ac(&self,0," - 0001 - break match, replacement;  n:AC, h:AB\n");
                             self.distanceTotal++;
-                            
-                            self.operationsOut[self.operationsOutIdx++] = OP_INSERT;
-                            self.operationsOut[self.operationsOutIdx++] = self.needleIdx;
-                            self.operationsOut[self.operationsOutIdx++] = self.haystackCur;
+                            add_op(&self,OP_INSERT,self.needleIdx,self.haystackCur);
                         } else {
                             ac(&self,0," - 0000 - continue broken match, replacement; n:AB, h:CD\n");
                             self.distanceTotal++;
-                            
-                            self.operationsOut[self.operationsOutIdx++] = OP_INSERT;
-                            self.operationsOut[self.operationsOutIdx++] = self.needleIdx;
-                            self.operationsOut[self.operationsOutIdx++] = self.haystackCur;
+                            add_op(&self,OP_INSERT,self.needleIdx,self.haystackCur);
                         }
                     }
                 }
@@ -521,6 +501,54 @@ __kernel void calc_levenstein_damerau(
     aci(&self,0,"distanceTotal:  ",self.distanceTotal);
     self.distancesOut[self.haystackRowIdx] = self.distanceTotal;
 }
+
+__kernel void recons_levenstein_damerau(
+        uint flags,
+        uint widthIn,                 // the width of each haystack sequence
+        uint operationsWidth,         // the width of each operations sequence
+        uint haystackSize,            // the number of sequences we're reconstructing
+        __global ulong *haystackIn,   // source ids that the operations will transform
+        __global ulong *operationsIn, // the operations to transform the haystack element into the needle
+        __global ulong *resultOut     // reconstructed sequences using operations  
+) {
+    ulong opIdxStart = operationsWidth * get_global_id(0);
+    ulong haystackIdx = widthIn * get_global_id(0);
+    //ulong resultIdx = widthIn * get_global_id(0);
+    
+    uint curHayIdx = haystackIdx;
+    do {
+        uint breakOut = 0;
+        for( uint curOpIdx = opIdxStart, curOpIdxEnd = curOpIdx + operationsWidth; 
+                curOpIdx < curOpIdxEnd; curOpIdx+=3 ) {
+            ulong curOp     = operationsIn[curOpIdx+opIdxStart];
+            ulong needleIdx = operationsIn[curOpIdx+opIdxStart+1];
+            ulong optInsId  = operationsIn[curOpIdx+opIdxStart+2];
+            if(curOp==OP_INSERT) {
+                // take current in needle and put here, increment haystackIdx and needleIdx
+                resultOut[curHayIdx] = optInsId;
+                curHayIdx++;
+            } else if(curOp==OP_DELETE) {
+            } else if(curOp==OP_REPEAT) {
+                // take current in needle and put here, increment only haystackIdx
+                resultOut[curHayIdx] = haystackIn[needleIdx];
+                curHayIdx++;
+            } else if(curOp==OP_TRANSPOSE) {
+                // take next needle and put it current
+                resultOut[curHayIdx] = haystackIn[needleIdx+1];
+                // take current needle and put it next
+                resultOut[curHayIdx+1] = haystackIn[needleIdx];
+                // increment haystack by 2
+                curHayIdx+=2;
+            } else {
+                breakOut = true;
+            }
+            if (breakOut) {
+                break;
+            }
+        }
+    } while(false); // so we can escape the switch statement
+}
+
 );
 
 const uint CL_LOG_ON         = 0b00000001;
@@ -563,7 +591,8 @@ LevensteinDamerau::LevensteinDamerau(const boost::compute::context &context) {
         // and this will prolly end up running on AWS hardware a bunch
         boost::compute::program p = OpenCL::createAndBuildProgram(source,*m_context);
         m_program.reset(new boost::compute::program(p));
-        m_kernel.reset(new boost::compute::kernel(*m_program, "calc_levenstein_damerau"));
+        m_kernelCalc.reset(new boost::compute::kernel(*m_program, "calc_levenstein_damerau"));
+        m_kernelRecons.reset(new boost::compute::kernel(*m_program, "recons_levenstein_damerau"));
         
         delete source;
     } catch(...) {
@@ -571,83 +600,91 @@ LevensteinDamerau::LevensteinDamerau(const boost::compute::context &context) {
         throw;
     }
 }
-int LevensteinDamerau::reconstruct(LevensteinDamerauDataPtr data) {
+int LevensteinDamerau::reconstruct(LevensteinDamerauReconstructDataPtr data) {
 
-    data->zeroHaystack();
-    // foreach operations
-    for (
-        long opIdxStart = 0, opIdxEnd = data->getOperationsSize(), haystackIdx = 0; 
-        opIdxStart < opIdxEnd; 
-        opIdxStart += data->getOperationWidth(), haystackIdx += data->getNeedleWidth()
-    ) {
-        uint curHayIdx = haystackIdx;
-        do {
-            bool breakOut = false;
-            for( uint curOpIdx = opIdxStart, curOpIdxEnd = curOpIdx+data->getOperationWidth(); 
-                    curOpIdx < curOpIdxEnd; curOpIdx+=3 ) {
-                uint64_t curOp = data->getOperations()[curOpIdx+opIdxStart];
-                uint64_t needleIdx = data->getOperations()[curOpIdx+opIdxStart+1];
-                uint64_t optInsId = data->getOperations()[curOpIdx+opIdxStart+2];
-                switch (curOp) {
-                    //__constant ulong OP_INSERT    = 1;
-                    case OP_INSERT:
-                        // take current in needle and put here, increment haystackIdx and needleIdx
-                        data->getHaystack()[curHayIdx] = optInsId;
-                        curHayIdx++;
-                        break;
-                    case OP_DELETE:
-                        // do nothing, needleIdx will be in the next op
-                        break;
-                    case OP_REPEAT:
-                        // take current in needle and put here, increment only haystackIdx
-                        data->getHaystack()[curHayIdx] = data->getNeedle()[needleIdx];
-                        curHayIdx++;
-                        break;
-                    case OP_TRANSPOSE:
-                        // take next needle and put it current
-                        data->getHaystack()[curHayIdx] = data->getNeedle()[needleIdx+1];
-                        // take current needle and put it next
-                        data->getHaystack()[curHayIdx+1] = data->getNeedle()[needleIdx];
-                        // increment haystack by 2
-                        curHayIdx+=2;
-                        break;
-                    default:
-                    case 0:
-                        breakOut = true;
-                        break;
-                }
-                if (breakOut) {
-                    break;
-                }
-            }
-        } while(false); // so we can escape the switch statement
-    }        
-    return 0;
-}
-int LevensteinDamerau::calculate(LevensteinDamerauDataPtr data) {
+    data->zeroResult();
 
-    uint width              = data->getNeedleWidth();
-    uint haystackSize       = data->getHaystackSize();
-    uint64_t* needle        = data->getNeedle();
     uint64_t* haystack      = data->getHaystack();
-    int64_t* distancesOut   = data->getDistances();
-    uint64_t* operationsOut = data->getOperations();
+    uint64_t* operations    = data->getOperations();
     
-    data->zeroOperations();
-    data->zeroDistances();
-
-    int result = 0;
-    uint64_t zero = 0;
-    cl_int errcode = 0;
+    int      result          = 0;
     
     OpenCLExceptionType except;
     except.msg = "";
     
-    int64_t * host_distances   = 0;
-    uint64_t * host_operations = 0;
-    char * log                 = 0;
     cl_mem deviceOperationsBuf = 0;
+    cl_mem deviceHaystackBuf   = 0;
+    cl_mem resultsBuf          = 0;
+    
+    try {
+        
+        OpenCL::alloc <int64_t>(*m_context, data->getHaystackSize(),   (int64_t **) &haystack,   
+                (cl_mem*)&deviceHaystackBuf,  (int)CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR);
+                
+        OpenCL::alloc<uint64_t>(*m_context, data->getOperationsSize(),(uint64_t **) &operations, 
+                (cl_mem*)&deviceOperationsBuf,(int)CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR);
+        
+        uint flags =   (clLogOn        ? CL_LOG_ON         : 0) 
+                     | (clLogErrorOnly ? CL_LOG_ERROR_ONLY : 0);
+                     
+        m_kernelRecons->set_arg(0,flags);
+        m_kernelRecons->set_arg(1,data->getNeedleWidth());
+        m_kernelRecons->set_arg(2,data->getOperationWidth());
+        m_kernelRecons->set_arg(3,data->getHaystackCount());
+        m_kernelRecons->set_arg(4,deviceHaystackBuf);
+        m_kernelRecons->set_arg(5,deviceOperationsBuf);
+        m_kernelRecons->set_arg(6,resultsBuf);
+        
+        m_commandQueue->enqueue_1d_range_kernel(*m_kernelRecons, 0, data->getHaystackCount(), 1);
+        
+        OpenCL::read<uint64_t>(*m_commandQueue, data->getHaystackSize(), data->getResult(), resultsBuf);
+        
+        if(clLogOn) {
+            LOG_I << "Run log:\n" << log;
+        }
+        
+        if(except.msg.length()>0) {
+            throw except;
+        }
+        
+        clReleaseMemObject (deviceOperationsBuf);
+        clReleaseMemObject (deviceHaystackBuf);
+        clReleaseMemObject (resultsBuf);
+
+    } catch(...) {
+    
+        if(!deviceOperationsBuf) clReleaseMemObject (deviceOperationsBuf);
+        if(!deviceHaystackBuf)   clReleaseMemObject (deviceHaystackBuf);
+        if(!resultsBuf)          clReleaseMemObject (resultsBuf);
+        
+        throw;
+    }    
+    return result;
+}
+int LevensteinDamerau::calculate(LevensteinDamerauDataPtr data) {
+
+    uint      width         = data->getNeedleWidth();
+    uint      haystackSize  = data->getHaystackSize();
+    uint64_t* needle        = data->getNeedle();
+    uint64_t* haystack      = data->getHaystack();
+     int64_t* distancesOut  = data->getDistances();
+    uint64_t* operationsOut = data->getOperations();
+    
+    data->zeroOperations();
+    data->zeroDistances();
+    
+    int operationsCount = kLevensteinOperationsWidth * haystackSize * width;
+    uint logLength      = kLevensteinLogLength;
+
+    int result = 0;
+    uint64_t zero = 0;
+    
+    OpenCLExceptionType except;
+    except.msg = "";
+    
+    char * log                 = 0;
     cl_mem logBuf              = 0;
+    cl_mem deviceOperationsBuf = 0;
     cl_mem deviceDistancesBuf  = 0;
     
     LOG_I << "width         : " << width;
@@ -657,39 +694,36 @@ int LevensteinDamerau::calculate(LevensteinDamerauDataPtr data) {
 
     try {
     
-        boost::compute::vector<uint64_t> device_needle(width, *(m_context.get()));
-        std::vector<uint64_t> host_needle(needle, needle+width);
-        copy(host_needle.begin(), host_needle.end(), device_needle.begin(), *m_commandQueue);
+        boost::compute::vector<uint64_t> device_needle   ( width,              *m_context );
+        boost::compute::vector<uint64_t> device_haystack ( haystackSize*width, *m_context );
         
-        boost::compute::vector<uint64_t> device_haystack(haystackSize*width, *m_context);
-        std::vector<uint64_t> host_haystack(haystack, haystack+(haystackSize*width));
+        std::vector<uint64_t> host_needle   (needle,   needle+width );
+        std::vector<uint64_t> host_haystack (haystack, haystack+(haystackSize*width) );
+        
+        boost::compute::copy(host_needle.begin(),   host_needle.end(),   device_needle.begin(),   *m_commandQueue);
         boost::compute::copy(host_haystack.begin(), host_haystack.end(), device_haystack.begin(), *m_commandQueue);
         
-        boost::compute::vector<uint64_t> device_distances(haystackSize, (const uint64_t)&zero, *m_commandQueue);
-        int operationsCount = haystackSize * (width * 3);
-        uint logLength = 50000;
-        
-        OpenCL::alloc<int64_t>(*m_context,haystackSize,(int64_t **)&host_distances,(cl_mem*)&deviceDistancesBuf,(int)CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR);
-        OpenCL::alloc<uint64_t>(*m_context,operationsCount,(uint64_t **)&host_operations,(cl_mem*)&deviceOperationsBuf,(int)CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR);
-        OpenCL::alloc<char>(*m_context,logLength,(char **)&log,(cl_mem*)&logBuf,(int)CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR);
+        OpenCL::alloc    <char>(*m_context, logLength,      (char **)    &log,          (cl_mem*)&logBuf,             (int)CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR);
+        OpenCL::alloc <int64_t>(*m_context, haystackSize,   (int64_t **) &distancesOut, (cl_mem*)&deviceDistancesBuf, (int)CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR);
+        OpenCL::alloc<uint64_t>(*m_context, operationsCount,(uint64_t **)&operationsOut,(cl_mem*)&deviceOperationsBuf,(int)CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR);
         
         uint flags =   (clLogOn        ? CL_LOG_ON         : 0) 
                      | (clLogErrorOnly ? CL_LOG_ERROR_ONLY : 0);
             
-        m_kernel->set_arg(0,flags);
-        m_kernel->set_arg(1,width);
-        m_kernel->set_arg(2,device_needle);
-        m_kernel->set_arg(3,device_haystack);
-        m_kernel->set_arg(4,deviceDistancesBuf);
-        m_kernel->set_arg(5,deviceOperationsBuf);
-        m_kernel->set_arg(6,logBuf);
-        m_kernel->set_arg(7,logLength);
-        m_kernel->set_arg(8,haystackSize);
+        m_kernelCalc->set_arg(0,flags);
+        m_kernelCalc->set_arg(1,width);
+        m_kernelCalc->set_arg(2,device_needle);
+        m_kernelCalc->set_arg(3,device_haystack);
+        m_kernelCalc->set_arg(4,deviceDistancesBuf);
+        m_kernelCalc->set_arg(5,deviceOperationsBuf);
+        m_kernelCalc->set_arg(6,logBuf);
+        m_kernelCalc->set_arg(7,logLength);
+        m_kernelCalc->set_arg(8,haystackSize);
         
-        m_commandQueue->enqueue_1d_range_kernel(*m_kernel, 0, haystackSize, 1);
+        m_commandQueue->enqueue_1d_range_kernel(*m_kernelCalc, 0, haystackSize, 1);
         
-        OpenCL::read<char>(*m_commandQueue, logLength, log, logBuf);
-        OpenCL::read<int64_t>(*m_commandQueue, haystackSize, distancesOut, deviceDistancesBuf);
+        OpenCL::read    <char>(*m_commandQueue, logLength,       log,           logBuf);
+        OpenCL::read <int64_t>(*m_commandQueue, haystackSize,    distancesOut,  deviceDistancesBuf);
         OpenCL::read<uint64_t>(*m_commandQueue, operationsCount, operationsOut, deviceOperationsBuf);
         
         if(clLogOn) {
@@ -700,21 +734,17 @@ int LevensteinDamerau::calculate(LevensteinDamerauDataPtr data) {
             throw except;
         }
         
-        delete host_distances;
-        delete host_operations;
         delete log;
-        clReleaseMemObject(deviceOperationsBuf);
-        clReleaseMemObject(deviceDistancesBuf);
-        clReleaseMemObject(logBuf);
+        clReleaseMemObject (deviceOperationsBuf);
+        clReleaseMemObject (deviceDistancesBuf);
+        clReleaseMemObject (logBuf);
 
     } catch(...) {
     
-        if(!host_distances)      delete host_distances;
-        if(!host_operations)     delete host_operations;
         if(!log)                 delete log;
-        if(!deviceOperationsBuf) clReleaseMemObject(deviceOperationsBuf);
-        if(!deviceDistancesBuf)  clReleaseMemObject(deviceDistancesBuf);
-        if(!logBuf)              clReleaseMemObject(logBuf);
+        if(!deviceOperationsBuf) clReleaseMemObject (deviceOperationsBuf);
+        if(!deviceDistancesBuf)  clReleaseMemObject (deviceDistancesBuf);
+        if(!logBuf)              clReleaseMemObject (logBuf);
         
         throw;
     }    

@@ -32,6 +32,8 @@ namespace Math {
 namespace Calc {
     class LevensteinDamerauData;
     typedef boost::shared_ptr<LevensteinDamerauData> LevensteinDamerauDataPtr;
+    class LevensteinDamerauReconstructData;
+    typedef boost::shared_ptr<LevensteinDamerauReconstructData> LevensteinDamerauReconstructDataPtr;
     class KohonenSOMData;
     class KohonenSOMSampleData;
     class KohonenSOMResult;

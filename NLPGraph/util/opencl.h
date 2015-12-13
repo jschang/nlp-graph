@@ -79,7 +79,9 @@ public:
 
 template<class T>
 void OpenCL::read(cl_command_queue q, size_t size, T *ptr, cl_mem buf) {
+
     cl_int errcode = 0;
+    
     errcode = clEnqueueReadBuffer(q, buf, true, 0, sizeof(T)*size, ptr, 0, NULL, NULL);
     if(errcode!=CL_SUCCESS) {
         OpenCLExceptionType except;
@@ -89,24 +91,27 @@ void OpenCL::read(cl_command_queue q, size_t size, T *ptr, cl_mem buf) {
 };
 
 template<class T>
-void OpenCL::alloc(cl_context c, size_t size, T **ptr, cl_mem *buf, int clFlags) {
+void OpenCL::alloc(cl_context ctx, size_t size, T **ptr, cl_mem *buf, int clFlags) {
 
     cl_int errcode = 0;
     
-    *ptr = new T[size];
-    if(!*ptr) {
-        OpenCLExceptionType except;
-        except.msg = "unable to allocate host ptr";
-        throw except;
+    if(ptr && !*ptr) {
+        *ptr = new T[size];
+        if(!*ptr) {
+            OpenCLExceptionType except;
+            except.msg = "unable to allocate host ptr";
+            throw except;
+        }
+        memset(*ptr, 0, size * sizeof(T));
     }
     
-    memset(*ptr, 0, size * sizeof(T));
-    
-    *buf = clCreateBuffer(c,clFlags,sizeof(T)*size,&ptr,&errcode);
-    if(errcode!=CL_SUCCESS) {
-        OpenCLExceptionType except;
-        except.msg = "unable to allocate cl mem object";
-        throw except;
+    if(buf && !*buf) {
+        *buf = clCreateBuffer(ctx,clFlags,sizeof(T)*size,*ptr,&errcode);
+        if(errcode!=CL_SUCCESS) {
+            OpenCLExceptionType except;
+            except.msg = "unable to allocate cl_mem object";
+            throw except;
+        }
     }
 };
 
