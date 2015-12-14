@@ -64,6 +64,8 @@ BOOST_AUTO_TEST_CASE( calc_test )
                 (uint64_t*)&haystack[0]
             ));
         alg.calculate(dataPtr);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 4,
@@ -72,8 +74,6 @@ BOOST_AUTO_TEST_CASE( calc_test )
                 (uint64_t*)&needle[0]
             ));
         alg.reconstruct(reconPtr);
-        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
-        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
         LOG << "recreation:" << NLPGraph::Util::String::str(reconPtr->getResult(),4);
         BOOST_CHECK(dataPtr->getDistances()[0] == 0);
     }
@@ -88,8 +88,17 @@ BOOST_AUTO_TEST_CASE( calc_test )
         alg.calculate(dataPtr);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
         LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        LOG << "recreation:" << NLPGraph::Util::String::str(dataPtr->getHaystack(),4);
         BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+        LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
+            new LevensteinDamerauReconstructData(
+                4,
+                1,
+                dataPtr->getOperations(),
+                (uint64_t*)&needle[0]
+            ));
+        alg.reconstruct(reconPtr);
+        LOG << "recreation:" << NLPGraph::Util::String::str(reconPtr->getResult(),4);
+        BOOST_CHECK_EQUAL_COLLECTIONS(haystack,haystack+4,reconPtr->getResult(),reconPtr->getResult()+4);
     }
     { // transposition requires 1 edits
         LOG << "Testing single transposition - left edge";
@@ -102,8 +111,17 @@ BOOST_AUTO_TEST_CASE( calc_test )
         alg.calculate(dataPtr);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
         LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        LOG << "recreation:" << NLPGraph::Util::String::str(dataPtr->getHaystack(),4);
         BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+        LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
+            new LevensteinDamerauReconstructData(
+                4,
+                1,
+                dataPtr->getOperations(),
+                (uint64_t*)&needle[0]
+            ));
+        alg.reconstruct(reconPtr);
+        LOG << "recreation:" << NLPGraph::Util::String::str(reconPtr->getResult(),4);
+        BOOST_CHECK_EQUAL_COLLECTIONS(haystack,haystack+4,reconPtr->getResult(),reconPtr->getResult()+4);
     }
     { // transposition requires 1 edits
         LOG << "Testing single transposition - right edge";
@@ -116,8 +134,17 @@ BOOST_AUTO_TEST_CASE( calc_test )
         alg.calculate(dataPtr);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
         LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        LOG << "recreation:" << NLPGraph::Util::String::str(dataPtr->getHaystack(),4);
         BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+        LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
+            new LevensteinDamerauReconstructData(
+                4,
+                1,
+                dataPtr->getOperations(),
+                (uint64_t*)&needle[0]
+            ));
+        alg.reconstruct(reconPtr);
+        LOG << "recreation:" << NLPGraph::Util::String::str(reconPtr->getResult(),4);
+        BOOST_CHECK_EQUAL_COLLECTIONS(haystack,haystack+4,reconPtr->getResult(),reconPtr->getResult()+4);
     }
     { // single deletion - middle
         LOG << "Testing single deletion - middle";
@@ -130,8 +157,17 @@ BOOST_AUTO_TEST_CASE( calc_test )
         alg.calculate(dataPtr);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
         LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        LOG << "recreation:" << NLPGraph::Util::String::str(dataPtr->getHaystack(),4);
         BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+        LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
+            new LevensteinDamerauReconstructData(
+                4,
+                1,
+                dataPtr->getOperations(),
+                (uint64_t*)&needle[0]
+            ));
+        alg.reconstruct(reconPtr);
+        LOG << "recreation:" << NLPGraph::Util::String::str(reconPtr->getResult(),4);
+        BOOST_CHECK_EQUAL_COLLECTIONS(haystack,haystack+4,reconPtr->getResult(),reconPtr->getResult()+4);
     }
     { // single deletion - left edge
         LOG << "Testing single deletion - left edge";
@@ -144,8 +180,17 @@ BOOST_AUTO_TEST_CASE( calc_test )
         alg.calculate(dataPtr);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
         LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        LOG << "recreation:" << NLPGraph::Util::String::str(dataPtr->getHaystack(),4);
         BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+        LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
+            new LevensteinDamerauReconstructData(
+                4,
+                1,
+                dataPtr->getOperations(),
+                (uint64_t*)&needle[0]
+            ));
+        alg.reconstruct(reconPtr);
+        LOG << "recreation:" << NLPGraph::Util::String::str(reconPtr->getResult(),4);
+        BOOST_CHECK_EQUAL_COLLECTIONS(haystack,haystack+4,reconPtr->getResult(),reconPtr->getResult()+4);
     }
     { // single deletion - right edge
         LOG << "Testing single deletion - right edge";
@@ -158,8 +203,17 @@ BOOST_AUTO_TEST_CASE( calc_test )
         alg.calculate(dataPtr);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
         LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        LOG << "recreation:" << NLPGraph::Util::String::str(dataPtr->getHaystack(),4);
         BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+        LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
+            new LevensteinDamerauReconstructData(
+                4,
+                1,
+                dataPtr->getOperations(),
+                (uint64_t*)&needle[0]
+            ));
+        alg.reconstruct(reconPtr);
+        LOG << "recreation:" << NLPGraph::Util::String::str(reconPtr->getResult(),4);
+        BOOST_CHECK_EQUAL_COLLECTIONS(haystack,haystack+4,reconPtr->getResult(),reconPtr->getResult()+4);
     }
     { // single deletion - middle
         LOG << "Testing single deletion, repetition - middle";
@@ -172,10 +226,19 @@ BOOST_AUTO_TEST_CASE( calc_test )
         alg.calculate(dataPtr);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
         LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        LOG << "recreation:" << NLPGraph::Util::String::str(dataPtr->getHaystack(),4);
+        BOOST_CHECK(dataPtr->getDistances()[0] == 2);
+        LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
+            new LevensteinDamerauReconstructData(
+                4,
+                1,
+                dataPtr->getOperations(),
+                (uint64_t*)&needle[0]
+            ));
+        alg.reconstruct(reconPtr);
+        LOG << "recreation:" << NLPGraph::Util::String::str(reconPtr->getResult(),4);
         // this is actually correct, there is only one operation: "substitution"
         // 2015-08-16 - yeah, but 2 is easier...we'll use two for now: "repetition" and "deletion"
-        BOOST_CHECK(dataPtr->getDistances()[0] == 2);
+        BOOST_CHECK_EQUAL_COLLECTIONS(haystack,haystack+4,reconPtr->getResult(),reconPtr->getResult()+4);
     }
     { // single deletion - middle
         LOG << "Testing single deletion, insertion - middle";
@@ -188,10 +251,19 @@ BOOST_AUTO_TEST_CASE( calc_test )
         alg.calculate(dataPtr);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
         LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        LOG << "recreation:" << NLPGraph::Util::String::str(dataPtr->getHaystack(),4);
+        BOOST_CHECK(dataPtr->getDistances()[0] == 2);
+        LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
+            new LevensteinDamerauReconstructData(
+                4,
+                1,
+                dataPtr->getOperations(),
+                (uint64_t*)&needle[0]
+            ));
+        alg.reconstruct(reconPtr);
+        LOG << "recreation:" << NLPGraph::Util::String::str(reconPtr->getResult(),4);
         // this is actually correct, there is only one operation: "substitution"
         // 2015-08-16 - yeah, but 2 is easier...we'll use two for now: "repetition" and "deletion"
-        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+        BOOST_CHECK_EQUAL_COLLECTIONS(haystack,haystack+4,reconPtr->getResult(),reconPtr->getResult()+4);
     }
     { // single deletion - left edge
         LOG << "Testing single deletion, insertion - left edge";
@@ -204,8 +276,17 @@ BOOST_AUTO_TEST_CASE( calc_test )
         alg.calculate(dataPtr);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
         LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        LOG << "recreation:" << NLPGraph::Util::String::str(dataPtr->getHaystack(),4);
         BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+        LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
+            new LevensteinDamerauReconstructData(
+                4,
+                1,
+                dataPtr->getOperations(),
+                (uint64_t*)&needle[0]
+            ));
+        alg.reconstruct(reconPtr);
+        LOG << "recreation:" << NLPGraph::Util::String::str(reconPtr->getResult(),4);
+        BOOST_CHECK_EQUAL_COLLECTIONS(haystack,haystack+4,reconPtr->getResult(),reconPtr->getResult()+4);
     }
     { // single deletion - right edge
         LOG << "Testing single deletion, insertion - right edge";
@@ -218,8 +299,17 @@ BOOST_AUTO_TEST_CASE( calc_test )
         alg.calculate(dataPtr);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
         LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        LOG << "recreation:" << NLPGraph::Util::String::str(dataPtr->getHaystack(),4);
         BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+        LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
+            new LevensteinDamerauReconstructData(
+                4,
+                1,
+                dataPtr->getOperations(),
+                (uint64_t*)&needle[0]
+            ));
+        alg.reconstruct(reconPtr);
+        LOG << "recreation:" << NLPGraph::Util::String::str(reconPtr->getResult(),4);
+        BOOST_CHECK_EQUAL_COLLECTIONS(haystack,haystack+4,reconPtr->getResult(),reconPtr->getResult()+4);
     }
     { // single deletion - left edge
         LOG << "Testing single deletion, repetition - left edge";
@@ -232,8 +322,17 @@ BOOST_AUTO_TEST_CASE( calc_test )
         alg.calculate(dataPtr);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
         LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        LOG << "recreation:" << NLPGraph::Util::String::str(dataPtr->getHaystack(),4);
-        BOOST_CHECK(dataPtr->getDistances()[0] == 2);
+        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+        LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
+            new LevensteinDamerauReconstructData(
+                4,
+                1,
+                dataPtr->getOperations(),
+                (uint64_t*)&needle[0]
+            ));
+        alg.reconstruct(reconPtr);
+        LOG << "recreation:" << NLPGraph::Util::String::str(reconPtr->getResult(),4);
+        BOOST_CHECK_EQUAL_COLLECTIONS(haystack,haystack+4,reconPtr->getResult(),reconPtr->getResult()+4);
     }
     { // single deletion - right edge
         LOG << "Testing single deletion, repetition - right edge";
@@ -246,13 +345,22 @@ BOOST_AUTO_TEST_CASE( calc_test )
         alg.calculate(dataPtr);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
         LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        LOG << "recreation:" << NLPGraph::Util::String::str(dataPtr->getHaystack(),4);
         BOOST_CHECK(dataPtr->getDistances()[0] == 2);
+        LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
+            new LevensteinDamerauReconstructData(
+                4,
+                1,
+                dataPtr->getOperations(),
+                (uint64_t*)&needle[0]
+            ));
+        alg.reconstruct(reconPtr);
+        LOG << "recreation:" << NLPGraph::Util::String::str(reconPtr->getResult(),4);
+        BOOST_CHECK_EQUAL_COLLECTIONS(haystack,haystack+4,reconPtr->getResult(),reconPtr->getResult()+4);
     }
 }
 
 BOOST_AUTO_TEST_CASE( stress_test ) {
-
+    
     LoggerType logger = LoggerType(boost::log::keywords::channel="nlpgraph_calc_levenstein_damerau");
 
     // get the best device
@@ -323,7 +431,7 @@ BOOST_AUTO_TEST_CASE( stress_test ) {
 }
 
 BOOST_AUTO_TEST_CASE( perf_test ) {
-
+    return;
     LoggerType logger = LoggerType(boost::log::keywords::channel="nlpgraph_calc_levenstein_damerau");
 
     // get the best device
