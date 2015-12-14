@@ -251,7 +251,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         alg.calculate(dataPtr);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
         LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        BOOST_CHECK(dataPtr->getDistances()[0] == 2);
+        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 4,
@@ -322,7 +322,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         alg.calculate(dataPtr);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
         LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+        BOOST_CHECK(dataPtr->getDistances()[0] == 2);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 4,
