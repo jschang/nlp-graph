@@ -35,6 +35,7 @@ __constant ulong OP_INSERT    = 1;
 __constant ulong OP_DELETE    = 2;
 __constant ulong OP_REPEAT    = 3;
 __constant ulong OP_TRANSPOSE = 4;
+__constant ulong OP_REPLACE   = 5;
 
 typedef struct {
     uint flags;
@@ -274,13 +275,39 @@ inline char* itoa(levenstein_damerau_type *self, long inNum, int base) {
 /* ************* */
 const char *kLevensteinDamerauOpenCLSource = BOOST_COMPUTE_STRINGIZE_SOURCE(
 
+inline uint is_last_op(levenstein_damerau_type *self, ulong op) {
+    return self->operationsOut[self->operationsOutIdx-3] == op;
+}
+
 inline void add_op(levenstein_damerau_type *self, ulong op, ulong needleIdx, ulong haystackCur) {
+    if(op==OP_INSERT) {
+        ac(self,0,"\tadd_op:      INSERT\n");
+    } else if(op==OP_DELETE) {
+        ac(self,0,"\tadd_op:      DELETE\n");
+    } else if(op==OP_REPEAT) {
+        ac(self,0,"\tadd_op:      REPEAT\n");
+    } else if(op==OP_TRANSPOSE) {
+        ac(self,0,"\tadd_op:      TRANSPOSE\n");
+    }
+    aci(self,0,"\tneedleIdx:   ",needleIdx);            
+    aci(self,0,"\thaystackCur: ",haystackCur);
     self->operationsOut[self->operationsOutIdx++] = op;
     self->operationsOut[self->operationsOutIdx++] = needleIdx;
     self->operationsOut[self->operationsOutIdx++] = haystackCur;
 }
 
 inline void replace_op(levenstein_damerau_type *self, ulong op, ulong needleIdx, ulong haystackCur) {
+    if(op==OP_INSERT) {
+        ac(self,0,"\treplace_op:  INSERT\n");
+    } else if(op==OP_DELETE) {
+        ac(self,0,"\treplace_op:  DELETE\n");
+    } else if(op==OP_REPEAT) {
+        ac(self,0,"\treplace_op:  REPEAT\n");
+    } else if(op==OP_TRANSPOSE) {
+        ac(self,0,"\treplace_op:  TRANSPOSE\n");
+    }
+    aci(self,0,"\tneedleIdx:   ",needleIdx);            
+    aci(self,0,"\thaystackCur: ",haystackCur);
     self->operationsOutIdx -= 3;
     self->operationsOut[self->operationsOutIdx++] = op;
     self->operationsOut[self->operationsOutIdx++] = needleIdx;
@@ -418,6 +445,9 @@ __kernel void calc_levenstein_damerau(
                             ac(&self,0," - 1001 - continuing match; n:BA, h:BA\n");
                         } else {
                             ac(&self,0," - 1000 - match restored; n:BA, h:CA\n");
+                            if(!is_last_op(&self,OP_TRANSPOSE) && !is_last_op(&self,OP_DELETE)) {
+                                replace_op(&self, OP_REPLACE, self.needleIdx-1, self.haystackLast);
+                            }
                         }
                     }
                 }
@@ -442,7 +472,8 @@ __kernel void calc_levenstein_damerau(
                             self.currentLocation = self.currentLocation | 1;
                             ac(&self,0," - 0101 - current is repetition in haystack, rewind needle to match haystack; n:AB, h:AA\n");
                             self.needleIdx--;
-                            replace_op(&self, OP_REPEAT, self.needleIdx, 0);
+                            // repetition does not replace the last operation...they next will just have the same idx
+                            add_op(&self, OP_REPEAT, self.needleIdx, 0);
                             break;
                         } else {
                             ac(&self,0," - 0100 - last was insertion in haystack, rewind needle to match haystack; n:AB, h:CA\n");
@@ -521,19 +552,21 @@ __kernel void recons_levenstein_damerau(
         if(curOp && curOpHayIdx==curHayIdx) {
             if(curOp==OP_INSERT) {
                 resultOut[curResIdx++] = curOptInsId;
+            } else if(curOp==OP_REPLACE) {
+                resultOut[curResIdx++] = curOptInsId;
+                curHayIdx ++;
             } else if(curOp==OP_DELETE) {
                 curHayIdx ++;
             } else if(curOp==OP_REPEAT) {
-                resultOut[curResIdx++] = haystackIn [ curHayIdx   ];
-                curHayIdx ++;
+                resultOut[curResIdx++] = haystackIn [ curOpHayIdx   ];
             } else if(curOp==OP_TRANSPOSE) {
-                resultOut[curResIdx++] = haystackIn [ curHayIdx+1 ];
-                resultOut[curResIdx++] = haystackIn [ curHayIdx   ];
+                resultOut[curResIdx++] = haystackIn [ curHayIdx + 1 ];
+                resultOut[curResIdx++] = haystackIn [ curHayIdx     ];
                 curHayIdx += 2;
             } 
             curOpIdx += 3;
         } else {
-            resultOut[curResIdx++]     = haystackIn [ curHayIdx++ ];
+            resultOut[curResIdx++]     = haystackIn [ curHayIdx ++  ];
         }
     }
 }
@@ -542,11 +575,6 @@ __kernel void recons_levenstein_damerau(
 
 const uint CL_LOG_ON         = 0b00000001;
 const uint CL_LOG_ERROR_ONLY = 0b00000010;
-
-const uint64_t OP_INSERT    = 1;
-const uint64_t OP_DELETE    = 2;
-const uint64_t OP_REPEAT    = 3;
-const uint64_t OP_TRANSPOSE = 4;
 
 LevensteinDamerau::LevensteinDamerau(const boost::compute::context &context) {
 
