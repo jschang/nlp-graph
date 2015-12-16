@@ -381,7 +381,8 @@ BOOST_AUTO_TEST_CASE( calc_test )
         alg.reconstruct(reconPtr);
         LOG << "haystack:" << NLPGraph::Util::String::str(haystack,4);
         LOG << "recreation:" << NLPGraph::Util::String::str(reconPtr->getResult(),4);
-        BOOST_CHECK_EQUAL_COLLECTIONS(haystack,haystack+4,reconPtr->getResult(),reconPtr->getResult()+4);
+        int res = BOOST_CHECK_EQUAL_COLLECTIONS(haystack,haystack+4,reconPtr->getResult(),reconPtr->getResult()+4);
+        LOG << "result: " << res;
     }
 }
 
@@ -450,6 +451,24 @@ BOOST_AUTO_TEST_CASE( stress_test ) {
         LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),dataPtr->getOperationsSize());
         LOG << "time: " << (end.tv_nsec - start.tv_nsec);
         BOOST_CHECK( dataPtr->getDistances()[0] >= 0 );
+        
+        LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
+            new LevensteinDamerauReconstructData(
+                testWidth,
+                1,
+                dataPtr->getOperations(),
+                (uint64_t*)&needle[0]
+            ));
+        alg.reconstruct(reconPtr);
+        LOG << "haystack:" << NLPGraph::Util::String::str(haystack,testWidth);
+        LOG << "recreation:" << NLPGraph::Util::String::str(reconPtr->getResult(),testWidth);
+        int res = BOOST_CHECK_EQUAL_COLLECTIONS(haystack,haystack+testWidth,reconPtr->getResult(),reconPtr->getResult()+testWidth);
+        LOG << "result: " << res;
+        if(res!=1) {
+            NLPGraph::NLPGraphException exc;
+            exc.msg = "Collection mismatch";
+            throw exc;
+        }
     }
     
     delete needle;
@@ -457,7 +476,7 @@ BOOST_AUTO_TEST_CASE( stress_test ) {
 }
 
 BOOST_AUTO_TEST_CASE( perf_test ) {
-    return;
+
     LoggerType logger = LoggerType(boost::log::keywords::channel="nlpgraph_calc_levenstein_damerau");
 
     // get the best device

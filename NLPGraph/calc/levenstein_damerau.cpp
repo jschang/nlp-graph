@@ -435,16 +435,15 @@ __kernel void calc_levenstein_damerau(
                             return;
                         } else { 
                             // 1010 - possible insertion
-                            ac(&self,0," - 1010 - repetition in haystack, match restored; n:BA, h:AA\n");
-                            self.haystackIdx--;
-                            replace_op(&self, OP_REPEAT, self.needleIdx, self.haystackCur);
+                            ac(&self,0," - 1010 - previous was replacement, match restored; n:BA, h:AA\n");
+                            add_op(&self, OP_REPLACE, self.needleIdx-1, self.haystackLast);
                         }
                     } else { 
                         if(self.needleLast == self.haystackLast) {
                             self.currentLocation = self.currentLocation | 1;
                             ac(&self,0," - 1001 - continuing match; n:BA, h:BA\n");
                         } else {
-                            ac(&self,0," - 1000 - match restored; n:BA, h:CA\n");
+                            ac(&self,0," - 1000 - match restored, last is likely a replacement; n:BA, h:CA\n");
                             if(!is_last_op(&self,OP_TRANSPOSE) && !is_last_op(&self,OP_DELETE)) {
                                 replace_op(&self, OP_REPLACE, self.needleIdx-1, self.haystackLast);
                             }
