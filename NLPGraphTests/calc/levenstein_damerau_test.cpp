@@ -58,6 +58,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t haystack[] = {1,2,3,4};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(
             new LevensteinDamerauData(
+                bContext,
                 width, 
                 haystackSize, 
                 (uint64_t*)&needle[0], 
@@ -65,19 +66,19 @@ BOOST_AUTO_TEST_CASE( calc_test )
             ));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
-        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
-        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->operations(),4*3);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 4,
                 1,
-                dataPtr->getOperations(),
+                dataPtr->operations(),
                 (uint64_t*)&needle[0]
             ));
         alg.reconstruct(reconPtr);
         LOG << "haystack:" << NLPGraph::Util::String::str(haystack,4);
         LOG << "recreation:" << NLPGraph::Util::String::str(reconPtr->getResult(),4);
-        BOOST_CHECK(dataPtr->getDistances()[0] == 0);
+        BOOST_CHECK(dataPtr->distances()[0] == 0);
     }
     { // transposition requires 1 edits
         LOG << "Testing single transposition - middle";
@@ -86,17 +87,17 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,3,2,4};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            width, haystackSize, needle, haystack));
+            bContext, width, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
-        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
-        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->operations(),4*3);
+        BOOST_CHECK(dataPtr->distances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 4,
                 1,
-                dataPtr->getOperations(),
+                dataPtr->operations(),
                 (uint64_t*)&needle[0]
             ));
         alg.reconstruct(reconPtr);
@@ -111,17 +112,17 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {2,1,3,4};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            width, haystackSize, needle, haystack));
+            bContext, width, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
-        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
-        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->operations(),4*3);
+        BOOST_CHECK(dataPtr->distances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 4,
                 1,
-                dataPtr->getOperations(),
+                dataPtr->operations(),
                 (uint64_t*)&needle[0]
             ));
         alg.reconstruct(reconPtr);
@@ -136,17 +137,17 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,4,3};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            width, haystackSize, needle, haystack));
+            bContext, width, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
-        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
-        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->operations(),4*3);
+        BOOST_CHECK(dataPtr->distances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 4,
                 1,
-                dataPtr->getOperations(),
+                dataPtr->operations(),
                 (uint64_t*)&needle[0]
             ));
         alg.reconstruct(reconPtr);
@@ -161,17 +162,17 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,4,0};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            width, haystackSize, needle, haystack));
+            bContext, width, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
-        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
-        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->operations(),4*3);
+        BOOST_CHECK(dataPtr->distances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 4,
                 1,
-                dataPtr->getOperations(),
+                dataPtr->operations(),
                 (uint64_t*)&needle[0]
             ));
         alg.reconstruct(reconPtr);
@@ -186,17 +187,17 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {2,3,4,0};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            width, haystackSize, needle, haystack));
+            bContext, width, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
-        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
-        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->operations(),4*3);
+        BOOST_CHECK(dataPtr->distances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 4,
                 1,
-                dataPtr->getOperations(),
+                dataPtr->operations(),
                 (uint64_t*)&needle[0]
             ));
         alg.reconstruct(reconPtr);
@@ -211,17 +212,17 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,3,0};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            width, haystackSize, needle, haystack));
+            bContext, width, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
-        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
-        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->operations(),4*3);
+        BOOST_CHECK(dataPtr->distances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 4,
                 1,
-                dataPtr->getOperations(),
+                dataPtr->operations(),
                 (uint64_t*)&needle[0]
             ));
         alg.reconstruct(reconPtr);
@@ -236,17 +237,17 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,2,4};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            width, haystackSize, needle, haystack));
+            bContext, width, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
-        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
-        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        BOOST_CHECK(dataPtr->getDistances()[0] == 2);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->operations(),4*3);
+        BOOST_CHECK(dataPtr->distances()[0] == 2);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 4,
                 1,
-                dataPtr->getOperations(),
+                dataPtr->operations(),
                 (uint64_t*)&needle[0]
             ));
         alg.reconstruct(reconPtr);
@@ -263,17 +264,17 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,5,4};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            width, haystackSize, needle, haystack));
+            bContext, width, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
-        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
-        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->operations(),4*3);
+        BOOST_CHECK(dataPtr->distances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 4,
                 1,
-                dataPtr->getOperations(),
+                dataPtr->operations(),
                 (uint64_t*)&needle[0]
             ));
         alg.reconstruct(reconPtr);
@@ -290,17 +291,17 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {5,2,3,4};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            width, haystackSize, needle, haystack));
+            bContext, width, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
-        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
-        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->operations(),4*3);
+        BOOST_CHECK(dataPtr->distances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 4,
                 1,
-                dataPtr->getOperations(),
+                dataPtr->operations(),
                 (uint64_t*)&needle[0]
             ));
         alg.reconstruct(reconPtr);
@@ -315,17 +316,17 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,3,5};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            width, haystackSize, needle, haystack));
+            bContext, width, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
-        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
-        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->operations(),4*3);
+        BOOST_CHECK(dataPtr->distances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 4,
                 1,
-                dataPtr->getOperations(),
+                dataPtr->operations(),
                 (uint64_t*)&needle[0]
             ));
         alg.reconstruct(reconPtr);
@@ -340,17 +341,17 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {2,2,3,4};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            width, haystackSize, needle, haystack));
+            bContext, width, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
-        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
-        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        BOOST_CHECK(dataPtr->getDistances()[0] == 2);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->operations(),4*3);
+        BOOST_CHECK(dataPtr->distances()[0] == 2);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 4,
                 1,
-                dataPtr->getOperations(),
+                dataPtr->operations(),
                 (uint64_t*)&needle[0]
             ));
         alg.reconstruct(reconPtr);
@@ -365,17 +366,17 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,4,4};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            width, haystackSize, needle, haystack));
+            bContext, width, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
-        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
-        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),4*3);
-        BOOST_CHECK(dataPtr->getDistances()[0] == 2);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->operations(),4*3);
+        BOOST_CHECK(dataPtr->distances()[0] == 2);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 4,
                 1,
-                dataPtr->getOperations(),
+                dataPtr->operations(),
                 (uint64_t*)&needle[0]
             ));
         alg.reconstruct(reconPtr);
@@ -422,16 +423,16 @@ BOOST_AUTO_TEST_CASE( stress_test_crosshooks_recreation_tests ) {
         uint64_t *needle = (uint64_t*)&pairs[i];
         uint64_t *haystack = (uint64_t*)&pairs[i+1];
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            width, haystackSize, needle, haystack));
+            bContext, width, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
-        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),1);
-        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),width*kLevensteinOperationsWidth);
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->operations(),width*kLevensteinOperationsWidth);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 width,
                 1,
-                dataPtr->getOperations(),
+                dataPtr->operations(),
                 needle
             ));
         alg.reconstruct(reconPtr);
@@ -502,19 +503,19 @@ return;
         LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,testWidth*testSize);
         timespec start = TimeHelper::getTimeStruct();
         LevensteinDamerauDataPtr dataPtr(new LevensteinDamerauData(
-            testWidth, testSize, needle, haystack));
+            bContext, testWidth, testSize, needle, haystack));
         alg.calculate(dataPtr);
         timespec end = TimeHelper::getTimeStruct();
-        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->getDistances(),testSize);
-        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->getOperations(),dataPtr->getOperationsSize());
+        LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),testSize);
+        LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->operations(),dataPtr->operationWidth()*dataPtr->operationsCount());
         LOG << "time: " << (end.tv_nsec - start.tv_nsec);
-        BOOST_CHECK( dataPtr->getDistances()[0] >= 0 );
+        BOOST_CHECK( dataPtr->distances()[0] >= 0 );
         
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 testWidth,
                 1,
-                dataPtr->getOperations(),
+                dataPtr->operations(),
                 (uint64_t*)&needle[0]
             ));
         alg.reconstruct(reconPtr);
@@ -564,13 +565,13 @@ return;
     
     timespec start = TimeHelper::getTimeStruct();
     LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            testWidth, testSize, needle, haystack));
+            bContext, testWidth, testSize, needle, haystack));
     alg.calculate(dataPtr);
     timespec end = TimeHelper::getTimeStruct();
     LOG << "time: " << (end.tv_nsec - start.tv_nsec);
     
-    LOG << dataPtr->getDistances()[0];
-    BOOST_CHECK(dataPtr->getDistances()[0] == 1);
+    LOG << dataPtr->distances()[0];
+    BOOST_CHECK(dataPtr->distances()[0] == 1);
     
     // clean up after self
     delete needle;

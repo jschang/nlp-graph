@@ -691,69 +691,43 @@ int LevensteinDamerau::reconstruct(LevensteinDamerauReconstructDataPtr data) {
     return result;
 }
 int LevensteinDamerau::calculate(LevensteinDamerauDataPtr data) {
-
-    uint      width         = data->getNeedleWidth();
-    uint      haystackSize  = data->getHaystackSize();
-    uint64_t* needle        = data->getNeedle();
-    uint64_t* haystack      = data->getHaystack();
-     int64_t* distancesOut  = data->getDistances();
-    uint64_t* operationsOut = data->getOperations();
     
-    data->zeroOperations();
-    data->zeroDistances();
+    data->zeroOperations(*m_commandQueue);
+    data->zeroDistances(*m_commandQueue);
     
-    int operationsCount = kLevensteinOperationsWidth * haystackSize * width;
     uint logLength      = kLevensteinLogLength;
 
     int result = 0;
-    uint64_t zero = 0;
     
     OpenCLExceptionType except;
     except.msg = "";
     
     char * log                 = 0;
     cl_mem logBuf              = 0;
-    cl_mem deviceOperationsBuf = 0;
-    cl_mem deviceDistancesBuf  = 0;
     
-    LOG_I << "width         : " << width;
-    LOG_I << "haystackSize  : " << haystackSize;
-    LOG_I << "needle        : " << NLPGraph::Util::String::str(needle,width);
-    LOG_I << "haystack:     : " << NLPGraph::Util::String::str(haystack,width*haystackSize);
+    LOG_I << "needleWidth   : " << data->needleWidth();
+    LOG_I << "haystackSize  : " << data->haystackCount();
 
     try {
-    
-        boost::compute::vector<uint64_t> device_needle   ( width,              *m_context );
-        boost::compute::vector<uint64_t> device_haystack ( haystackSize*width, *m_context );
-        
-        std::vector<uint64_t> host_needle   (needle,   needle+width );
-        std::vector<uint64_t> host_haystack (haystack, haystack+(haystackSize*width) );
-        
-        boost::compute::copy(host_needle.begin(),   host_needle.end(),   device_needle.begin(),   *m_commandQueue);
-        boost::compute::copy(host_haystack.begin(), host_haystack.end(), device_haystack.begin(), *m_commandQueue);
-        
-        OpenCL::alloc    <char>(*m_context, logLength,      (char **)    &log,          (cl_mem*)&logBuf,             (int)CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR);
-        OpenCL::alloc <int64_t>(*m_context, haystackSize,   (int64_t **) &distancesOut, (cl_mem*)&deviceDistancesBuf, (int)CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR);
-        OpenCL::alloc<uint64_t>(*m_context, operationsCount,(uint64_t **)&operationsOut,(cl_mem*)&deviceOperationsBuf,(int)CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR);
+        OpenCL::alloc<char>(*m_context, logLength, (char **)&log, (cl_mem*)&logBuf, (int)CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR);
         
         uint flags =   (clLogOn        ? CL_LOG_ON         : 0) 
                      | (clLogErrorOnly ? CL_LOG_ERROR_ONLY : 0);
             
         m_kernelCalc->set_arg(0,flags);
-        m_kernelCalc->set_arg(1,width);
-        m_kernelCalc->set_arg(2,device_needle);
-        m_kernelCalc->set_arg(3,device_haystack);
-        m_kernelCalc->set_arg(4,deviceDistancesBuf);
-        m_kernelCalc->set_arg(5,deviceOperationsBuf);
+        m_kernelCalc->set_arg(1,data->needleWidth());
+        m_kernelCalc->set_arg(2,data->clNeedle());
+        m_kernelCalc->set_arg(3,data->clHaystack());
+        m_kernelCalc->set_arg(4,data->clDistances());
+        m_kernelCalc->set_arg(5,data->clOperations());
         m_kernelCalc->set_arg(6,logBuf);
         m_kernelCalc->set_arg(7,logLength);
-        m_kernelCalc->set_arg(8,haystackSize);
+        m_kernelCalc->set_arg(8,data->haystackCount());
         
-        m_commandQueue->enqueue_1d_range_kernel(*m_kernelCalc, 0, haystackSize, 1);
+        m_commandQueue->enqueue_1d_range_kernel(*m_kernelCalc, 0, data->haystackCount(), 1);
         
-        OpenCL::read    <char>(*m_commandQueue, logLength,       log,           logBuf);
-        OpenCL::read <int64_t>(*m_commandQueue, haystackSize,    distancesOut,  deviceDistancesBuf);
-        OpenCL::read<uint64_t>(*m_commandQueue, operationsCount, operationsOut, deviceOperationsBuf);
+        OpenCL::read<char>(*m_commandQueue, logLength, log, logBuf);
+        data->read(*m_commandQueue);
         
         if(clLogOn) {
             LOG_I << "Run log:\n" << log;
@@ -764,15 +738,11 @@ int LevensteinDamerau::calculate(LevensteinDamerauDataPtr data) {
         }
         
         delete log;
-        clReleaseMemObject (deviceOperationsBuf);
-        clReleaseMemObject (deviceDistancesBuf);
         clReleaseMemObject (logBuf);
 
     } catch(...) {
     
         if(!log)                 delete log;
-        if(!deviceOperationsBuf) clReleaseMemObject (deviceOperationsBuf);
-        if(!deviceDistancesBuf)  clReleaseMemObject (deviceDistancesBuf);
         if(!logBuf)              clReleaseMemObject (logBuf);
         
         throw;

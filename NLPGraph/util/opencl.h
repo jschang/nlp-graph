@@ -68,8 +68,9 @@ public:
     static cl_context contextWithDeviceInfo(OpenCLDeviceInfoType &deviceInfo);
     static boost::compute::program createAndBuildProgram(std::string src, boost::compute::context ctx);
     static void log(OpenCLDeviceInfo &thisDeviceInfo);
-    template<class T> static void read(cl_command_queue q, size_t size, T *ptr, cl_mem buf);
-    template<class T> static void alloc(cl_context c, size_t size, T **ptr, cl_mem *buf, int clFlags);
+    template<class T> static void read(cl_command_queue q, size_t count, T *ptr, cl_mem buf);
+    template<class T> static void write(cl_command_queue q, size_t count, T *ptr, cl_mem buf);
+    template<class T> static void alloc(cl_context c, size_t count, T **ptr, cl_mem *buf, int clFlags);
 public:
     static void default_error_handler (
         const char *errinfo, const void *private_info, 
@@ -78,35 +79,48 @@ public:
 };
 
 template<class T>
-void OpenCL::read(cl_command_queue q, size_t size, T *ptr, cl_mem buf) {
+void OpenCL::read(cl_command_queue q, size_t count, T *ptr, cl_mem buf) {
 
     cl_int errcode = 0;
     
-    errcode = clEnqueueReadBuffer(q, buf, true, 0, sizeof(T)*size, ptr, 0, NULL, NULL);
+    errcode = clEnqueueReadBuffer(q, buf, true, 0, sizeof(T)*count, ptr, 0, NULL, NULL);
     if(errcode!=CL_SUCCESS) {
         OpenCLExceptionType except;
-        except.msg = "Unable to read";
+        except.msg = "Unable to read buffer";
         throw except;
     }
 };
 
 template<class T>
-void OpenCL::alloc(cl_context ctx, size_t size, T **ptr, cl_mem *buf, int clFlags) {
+void OpenCL::write(cl_command_queue q, size_t count, T *ptr, cl_mem buf) {
+
+    cl_int errcode = 0;
+    
+    errcode = clEnqueueWriteBuffer(q, buf, true, 0, sizeof(T)*count, ptr, 0, NULL, NULL);
+    if(errcode!=CL_SUCCESS) {
+        OpenCLExceptionType except;
+        except.msg = "Unable to write buffer";
+        throw except;
+    }
+};
+
+template<class T>
+void OpenCL::alloc(cl_context ctx, size_t count, T **ptr, cl_mem *buf, int clFlags) {
 
     cl_int errcode = 0;
     
     if(ptr && !*ptr) {
-        *ptr = new T[size];
+        *ptr = new T[count];
         if(!*ptr) {
             OpenCLExceptionType except;
             except.msg = "unable to allocate host ptr";
             throw except;
         }
-        memset(*ptr, 0, size * sizeof(T));
+        memset(*ptr, 0, count * sizeof(T));
     }
     
     if(buf && !*buf) {
-        *buf = clCreateBuffer(ctx,clFlags,sizeof(T)*size,*ptr,&errcode);
+        *buf = clCreateBuffer(ctx,clFlags,sizeof(T)*count,*ptr,&errcode);
         if(errcode!=CL_SUCCESS) {
             OpenCLExceptionType except;
             except.msg = "unable to allocate cl_mem object";

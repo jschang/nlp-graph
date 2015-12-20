@@ -12,74 +12,85 @@
 namespace NLPGraph {
 namespace Calc {
 
-LevensteinDamerauData::LevensteinDamerauData(uint needleWidth, uint haystackSize) {
-    this->alloc(needleWidth, haystackSize);
-}
-LevensteinDamerauData::LevensteinDamerauData(uint needleWidth, uint haystackSize, uint64_t* needle, uint64_t* haystack) {
-    this->alloc(needleWidth, haystackSize);
-    memcpy( m_needle,   needle,   sizeof(uint64_t) * needleWidth );
-    memcpy( m_haystack, haystack, sizeof(uint64_t) * needleWidth * haystackSize );
+LevensteinDamerauData::LevensteinDamerauData(cl_context clContext, uint needleWidth, uint haystackCount, uint64_t* needle, uint64_t* haystack) {
+    try {
+        m_needleWidth     = needleWidth;
+        m_haystackCount   = haystackCount;
+        m_operationsCount = haystackCount;
+        Util::OpenCL::alloc<uint64_t>(clContext, this->haystackCount() * this->needleWidth(), &haystack, &_clHaystack, CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR);
+        Util::OpenCL::alloc<uint64_t>(clContext, this->needleWidth(), &needle, &_clNeedle, CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR);
+        Util::OpenCL::alloc <int64_t>(clContext, this->haystackCount(), &_distances, &_clDistances, (int)CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR);
+        Util::OpenCL::alloc<uint64_t>(clContext, this->haystackCount() * this->operationWidth(), &_operations, &_clOperations, (int)CL_MEM_READ_WRITE|CL_MEM_COPY_HOST_PTR);
+    } catch(...) {
+        this->free();
+        throw;
+    }
 }
 LevensteinDamerauData::~LevensteinDamerauData() {
-    delete m_needle;
-    delete m_haystack;
-    delete m_distances;
-    delete m_operations;
+    this->free();
 }
-void LevensteinDamerauData::alloc(uint needleWidth, uint haystackSize) {
-
-    m_needleWidth    = needleWidth;
-    m_haystackSize   = haystackSize;
-    m_operationsSize = haystackSize * this->getOperationWidth();
-    
-    m_needle     = new uint64_t [ needleWidth ];
-    m_haystack   = new uint64_t [ needleWidth * haystackSize ];
-    m_distances  = new  int64_t [ haystackSize ];
-    m_operations = new uint64_t [ m_operationsSize ];
-
-    this->zeroNeedle();
-    this->zeroHaystack();
-    this->zeroDistances();
-    this->zeroOperations();    
-}
-
-void LevensteinDamerauData::zeroNeedle() {
-    memset(m_needle,    0, sizeof(uint64_t) * m_needleWidth );
-}
-void LevensteinDamerauData::zeroHaystack() {
-    memset(m_haystack,  0, sizeof(uint64_t) * m_needleWidth * m_haystackSize );
-}
-void LevensteinDamerauData::zeroOperations() {
-    memset(m_operations,0, sizeof(uint64_t) * m_operationsSize );
-}
-void LevensteinDamerauData::zeroDistances() {
-    memset(m_distances, 0, sizeof(int64_t)  * m_haystackSize );
+void LevensteinDamerauData::free() {
+    if(_clHaystack!=0) {
+        clReleaseMemObject(_clHaystack);
+    }
+    if(_clNeedle!=0) {
+        clReleaseMemObject(_clNeedle);
+    }
+    if(_clOperations!=0) {
+        clReleaseMemObject(_clOperations);
+    }
+    if(_operations!=0) {
+        delete _operations;
+    }
+    if(_clDistances!=0) {
+        clReleaseMemObject(_clDistances);
+    }
+    if(_distances!=0) {
+        delete _distances;
+    }
 }
 
-uint LevensteinDamerauData::getNeedleWidth() {
+uint LevensteinDamerauData::needleWidth() {
     return m_needleWidth;
 }
-uint LevensteinDamerauData::getOperationWidth() {
+uint LevensteinDamerauData::operationWidth() {
     return ( kLevensteinOperationsWidthMultiplier * m_needleWidth );
 }
-uint LevensteinDamerauData::getOperationsSize() {
-    return m_operationsSize;
+uint LevensteinDamerauData::operationsCount() {
+    return m_operationsCount;
 }
-uint LevensteinDamerauData::getHaystackSize() {
-    return m_haystackSize;
+uint LevensteinDamerauData::haystackCount() {
+    return m_haystackCount;
 }
 
-uint64_t* LevensteinDamerauData::getNeedle() {
-    return m_needle;
+void LevensteinDamerauData::zeroDistances(cl_command_queue commandQueue) {
+    memset(_distances,0,sizeof(int64_t) * haystackCount());
+    Util::OpenCL::write<int64_t>(commandQueue, haystackCount(), _distances, _clDistances);
 }
-uint64_t* LevensteinDamerauData::getHaystack() {
-    return m_haystack;
+void LevensteinDamerauData::zeroOperations(cl_command_queue commandQueue) {
+    memset(_operations,0,sizeof(uint64_t) * haystackCount() * operationWidth());
+    Util::OpenCL::write<uint64_t>(commandQueue, haystackCount() * operationWidth(), _operations, _clOperations);
 }
- int64_t* LevensteinDamerauData::getDistances() {
-    return m_distances;
+
+void LevensteinDamerauData::read(cl_command_queue commandQueue) {
+    Util::OpenCL::read<int64_t>(commandQueue, haystackCount(), _distances,  _clDistances);
+    Util::OpenCL::read<uint64_t>(commandQueue, haystackCount() * operationWidth(), _operations, _clOperations);
 }
-uint64_t* LevensteinDamerauData::getOperations() {
-    return m_operations;
+
+uint64_t* LevensteinDamerauData::operations() { return _operations; }
+int64_t* LevensteinDamerauData::distances() { return _distances; }
+
+cl_mem LevensteinDamerauData::clNeedle() {
+    return _clNeedle;
+}
+cl_mem LevensteinDamerauData::clHaystack() {
+    return _clHaystack;
+}
+cl_mem LevensteinDamerauData::clDistances() {
+    return _clDistances;
+}
+cl_mem LevensteinDamerauData::clOperations() {
+    return _clOperations;
 }
 
 }}

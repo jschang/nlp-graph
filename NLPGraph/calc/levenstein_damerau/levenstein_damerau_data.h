@@ -20,43 +20,43 @@ class LevensteinDamerauData {
 
 private:
 
-    uint      m_needleWidth    = 0;
-    uint      m_haystackSize   = 0;
-    uint      m_operationsSize = 0;
+    uint      m_needleWidth     = 0;
+    uint      m_haystackCount   = 0;
+    uint      m_operationsCount = 0;
     
-    uint64_t* m_needle         = 0;
-    uint64_t* m_haystack       = 0;
-    uint64_t* m_operations     = 0;
+    cl_mem _clHaystack   = 0; // uint64_t
+    cl_mem _clNeedle     = 0; // uint64_t
+    cl_mem _clOperations = 0; // int64_t
+    cl_mem _clDistances  = 0; // uint64_t
     
-     int64_t* m_distances      = 0;
-     
-private:
-
-    void alloc(uint needleWidth, uint haystackSize);
+    int64_t  *  _distances = 0;
+    uint64_t * _operations = 0;
     
 public:
 
-    LevensteinDamerauData(uint needleWidth, uint haystackSize);
-    LevensteinDamerauData(uint needleWidth, uint haystackSize, uint64_t* needle, uint64_t* haystack);
+    LevensteinDamerauData(cl_context clContext, uint needleWidth, uint haystackCount, uint64_t* needle, uint64_t* haystack);
     
     ~LevensteinDamerauData();
     
-    void      zeroNeedle();
-    void      zeroHaystack();
-    void      zeroOperations();
+    void      free();
     
-    void      zeroDistances();
+    uint      needleWidth();
+    uint      haystackCount();
+    uint      operationsCount();
+    uint      operationWidth();
     
-    uint      getNeedleWidth();
-    uint      getHaystackSize();
-    uint      getOperationsSize();
-    uint      getOperationWidth();
+    void zeroDistances(cl_command_queue commandQueue);
+    void zeroOperations(cl_command_queue commandQueue);
     
-    uint64_t* getNeedle();
-    uint64_t* getHaystack();
-    uint64_t* getOperations();
+    void read(cl_command_queue commandQueue);
     
-     int64_t* getDistances();
+    uint64_t* operations();
+    int64_t* distances();
+    
+    cl_mem clNeedle();
+    cl_mem clHaystack();
+    cl_mem clOperations();
+    cl_mem clDistances();
 };
 
 }}
