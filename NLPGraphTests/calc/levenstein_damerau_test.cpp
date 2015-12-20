@@ -70,6 +70,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->operations(),4*3);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
+                bContext,
                 4,
                 1,
                 dataPtr->operations(),
@@ -95,6 +96,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         BOOST_CHECK(dataPtr->distances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
+                bContext,
                 4,
                 1,
                 dataPtr->operations(),
@@ -120,6 +122,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         BOOST_CHECK(dataPtr->distances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
+                bContext,
                 4,
                 1,
                 dataPtr->operations(),
@@ -145,6 +148,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         BOOST_CHECK(dataPtr->distances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
+                bContext,
                 4,
                 1,
                 dataPtr->operations(),
@@ -170,6 +174,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         BOOST_CHECK(dataPtr->distances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
+                bContext,
                 4,
                 1,
                 dataPtr->operations(),
@@ -195,6 +200,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         BOOST_CHECK(dataPtr->distances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
+                bContext,
                 4,
                 1,
                 dataPtr->operations(),
@@ -220,6 +226,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         BOOST_CHECK(dataPtr->distances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
+                bContext,
                 4,
                 1,
                 dataPtr->operations(),
@@ -245,6 +252,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         BOOST_CHECK(dataPtr->distances()[0] == 2);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
+                bContext,
                 4,
                 1,
                 dataPtr->operations(),
@@ -272,6 +280,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         BOOST_CHECK(dataPtr->distances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
+                bContext,
                 4,
                 1,
                 dataPtr->operations(),
@@ -299,6 +308,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         BOOST_CHECK(dataPtr->distances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
+                bContext,
                 4,
                 1,
                 dataPtr->operations(),
@@ -324,6 +334,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         BOOST_CHECK(dataPtr->distances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
+                bContext,
                 4,
                 1,
                 dataPtr->operations(),
@@ -349,6 +360,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         BOOST_CHECK(dataPtr->distances()[0] == 2);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
+                bContext,
                 4,
                 1,
                 dataPtr->operations(),
@@ -374,6 +386,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         BOOST_CHECK(dataPtr->distances()[0] == 2);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
+                bContext,
                 4,
                 1,
                 dataPtr->operations(),
@@ -430,6 +443,7 @@ BOOST_AUTO_TEST_CASE( stress_test_crosshooks_recreation_tests ) {
         LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->operations(),width*kLevensteinOperationsWidth);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
+                bContext,
                 width,
                 1,
                 dataPtr->operations(),
@@ -513,6 +527,7 @@ return;
         
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
+                bContext,
                 testWidth,
                 1,
                 dataPtr->operations(),

@@ -630,64 +630,34 @@ LevensteinDamerau::LevensteinDamerau(const boost::compute::context &context) {
 }
 int LevensteinDamerau::reconstruct(LevensteinDamerauReconstructDataPtr data) {
 
-    data->zeroResult();
-
-    uint64_t* haystack   = data->getHaystack();
-    uint64_t* operations = data->getOperations();
-    uint64_t* results    = data->getResult();
+    data->zeroResult(*m_commandQueue);
     
     int      result          = 0;
     
     OpenCLExceptionType except;
     except.msg = "";
+        
+    uint flags =   (clLogOn        ? CL_LOG_ON         : 0) 
+                 | (clLogErrorOnly ? CL_LOG_ERROR_ONLY : 0);
+                 
+    m_kernelRecons->set_arg(0,flags);
+    m_kernelRecons->set_arg(1,data->getNeedleWidth());
+    m_kernelRecons->set_arg(2,data->getOperationWidth());
+    m_kernelRecons->set_arg(3,data->clHaystack());
+    m_kernelRecons->set_arg(4,data->clOperations());
+    m_kernelRecons->set_arg(5,data->clResult());
     
-    cl_mem deviceOperationsBuf = 0;
-    cl_mem deviceHaystackBuf   = 0;
-    cl_mem resultsBuf          = 0;
+    m_commandQueue->enqueue_1d_range_kernel(*m_kernelRecons, 0, data->getHaystackCount(), 1);
     
-    try {
-        
-        OpenCL::alloc <int64_t>(*m_context, data->getHaystackSize(),    (int64_t **) &haystack,   
-                (cl_mem*)&deviceHaystackBuf,  (int)CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR);
-        OpenCL::alloc<uint64_t>(*m_context, data->getOperationsSize(), (uint64_t **) &operations, 
-                (cl_mem*)&deviceOperationsBuf,(int)CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR);
-        OpenCL::alloc <int64_t>(*m_context, data->getHaystackSize(),    (int64_t **) &results,   
-                (cl_mem*)&resultsBuf,         (int)CL_MEM_WRITE_ONLY|CL_MEM_COPY_HOST_PTR);
-        
-        uint flags =   (clLogOn        ? CL_LOG_ON         : 0) 
-                     | (clLogErrorOnly ? CL_LOG_ERROR_ONLY : 0);
-                     
-        m_kernelRecons->set_arg(0,flags);
-        m_kernelRecons->set_arg(1,data->getNeedleWidth());
-        m_kernelRecons->set_arg(2,data->getOperationWidth());
-        m_kernelRecons->set_arg(3,deviceHaystackBuf);
-        m_kernelRecons->set_arg(4,deviceOperationsBuf);
-        m_kernelRecons->set_arg(5,resultsBuf);
-        
-        m_commandQueue->enqueue_1d_range_kernel(*m_kernelRecons, 0, data->getHaystackCount(), 1);
-        
-        OpenCL::read<uint64_t>(*m_commandQueue, data->getHaystackSize(), data->getResult(), resultsBuf);
-        
-        if(clLogOn) {
-            LOG_I << "Run log:\n" << log;
-        }
-        
-        if(except.msg.length()>0) {
-            throw except;
-        }
-        
-        clReleaseMemObject (deviceOperationsBuf);
-        clReleaseMemObject (deviceHaystackBuf);
-        clReleaseMemObject (resultsBuf);
-
-    } catch(...) {
+    data->read(*m_commandQueue);
     
-        if(!deviceOperationsBuf) clReleaseMemObject (deviceOperationsBuf);
-        if(!deviceHaystackBuf)   clReleaseMemObject (deviceHaystackBuf);
-        if(!resultsBuf)          clReleaseMemObject (resultsBuf);
-        
-        throw;
-    }    
+    if(clLogOn) {
+        LOG_I << "Run log:\n" << log;
+    }
+    
+    if(except.msg.length()>0) {
+        throw except;
+    }  
     return result;
 }
 int LevensteinDamerau::calculate(LevensteinDamerauDataPtr data) {
