@@ -698,7 +698,6 @@ int LevensteinDamerau::calculate(LevensteinDamerauDataPtr data) {
         size_t gws[2] = {data->haystackCount(),data->needleCount()};
         size_t lws[2] = {1,1};
         m_commandQueue->enqueue_nd_range_kernel(*m_kernelCalc, 2, (size_t*)&gwo, (size_t*)&gws, (size_t*)&lws, boost::compute::wait_list());
-        m_commandQueue->enqueue_1d_range_kernel(*m_kernelCalc, 0, data->haystackCount(), 1);
         
         OpenCL::read<char>(*m_commandQueue, logLength, log, logBuf);
         data->read(*m_commandQueue);
