@@ -22,6 +22,7 @@ private:
 
     uint      m_needleWidth     = 0;
     uint      m_haystackCount   = 0;
+    uint      m_needleCount     = 0;
     uint      m_operationsCount = 0;
     
     cl_mem _clHaystack   = 0; // uint64_t
@@ -34,16 +35,17 @@ private:
     
 public:
 
-    LevensteinDamerauData(cl_context clContext, uint needleWidth, uint haystackCount, uint64_t* needle, uint64_t* haystack);
+    LevensteinDamerauData(cl_context clContext, uint needleWidth, uint needleCount, uint haystackCount, uint64_t* needle, uint64_t* haystack);
     
     ~LevensteinDamerauData();
     
-    void      free();
+    void free();
     
-    uint      needleWidth();
-    uint      haystackCount();
-    uint      operationsCount();
-    uint      operationWidth();
+    uint needleWidth();
+    uint haystackCount();
+    uint needleCount();
+    uint operationsCount();
+    uint operationWidth();
     
     void zeroDistances(cl_command_queue commandQueue);
     void zeroOperations(cl_command_queue commandQueue);

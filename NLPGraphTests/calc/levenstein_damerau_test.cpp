@@ -60,6 +60,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
             new LevensteinDamerauData(
                 bContext,
                 width, 
+                1,
                 haystackSize, 
                 (uint64_t*)&needle[0], 
                 (uint64_t*)&haystack[0]
@@ -88,7 +89,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,3,2,4};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            bContext, width, haystackSize, needle, haystack));
+            bContext, width, 1, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
@@ -114,7 +115,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {2,1,3,4};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            bContext, width, haystackSize, needle, haystack));
+            bContext, width, 1, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
@@ -140,7 +141,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,4,3};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            bContext, width, haystackSize, needle, haystack));
+            bContext, width, 1, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
@@ -166,7 +167,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,4,0};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            bContext, width, haystackSize, needle, haystack));
+            bContext, width, 1, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
@@ -192,7 +193,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {2,3,4,0};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            bContext, width, haystackSize, needle, haystack));
+            bContext, width, 1, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
@@ -218,7 +219,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,3,0};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            bContext, width, haystackSize, needle, haystack));
+            bContext, width, 1, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
@@ -244,7 +245,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,2,4};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            bContext, width, haystackSize, needle, haystack));
+            bContext, width, 1, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
@@ -272,7 +273,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,5,4};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            bContext, width, haystackSize, needle, haystack));
+            bContext, width, 1, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
@@ -300,7 +301,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {5,2,3,4};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            bContext, width, haystackSize, needle, haystack));
+            bContext, width, 1, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
@@ -326,7 +327,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,3,5};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            bContext, width, haystackSize, needle, haystack));
+            bContext, width, 1, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
@@ -352,7 +353,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {2,2,3,4};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            bContext, width, haystackSize, needle, haystack));
+            bContext, width, 1, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
@@ -378,7 +379,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,4,4};
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            bContext, width, haystackSize, needle, haystack));
+            bContext, width, 1, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
@@ -436,7 +437,7 @@ BOOST_AUTO_TEST_CASE( stress_test_crosshooks_recreation_tests ) {
         uint64_t *needle = (uint64_t*)&pairs[i];
         uint64_t *haystack = (uint64_t*)&pairs[i+1];
         LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            bContext, width, haystackSize, needle, haystack));
+            bContext, width, 1, haystackSize, needle, haystack));
         alg.calculate(dataPtr);
         LOG << "needle:" << NLPGraph::Util::String::str(needle,width);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
@@ -517,7 +518,7 @@ return;
         LOG << "haystacks:" << NLPGraph::Util::String::str(haystack,testWidth*testSize);
         timespec start = TimeHelper::getTimeStruct();
         LevensteinDamerauDataPtr dataPtr(new LevensteinDamerauData(
-            bContext, testWidth, testSize, needle, haystack));
+            bContext, testWidth, 1, testSize, needle, haystack));
         alg.calculate(dataPtr);
         timespec end = TimeHelper::getTimeStruct();
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),testSize);
@@ -580,7 +581,7 @@ return;
     
     timespec start = TimeHelper::getTimeStruct();
     LevensteinDamerauDataPtr dataPtr = LevensteinDamerauDataPtr(new LevensteinDamerauData(
-            bContext, testWidth, testSize, needle, haystack));
+            bContext, testWidth, 1, testSize, needle, haystack));
     alg.calculate(dataPtr);
     timespec end = TimeHelper::getTimeStruct();
     LOG << "time: " << (end.tv_nsec - start.tv_nsec);
