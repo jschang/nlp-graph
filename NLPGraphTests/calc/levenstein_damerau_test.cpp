@@ -69,6 +69,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
         LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->operations(),4*3);
+        BOOST_CHECK(dataPtr->distances()[0] == 0);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 bContext,
@@ -80,7 +81,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         alg.reconstruct(reconPtr);
         LOG << "haystack:" << NLPGraph::Util::String::str(haystack,4);
         LOG << "recreation:" << NLPGraph::Util::String::str(reconPtr->getResult(),4);
-        BOOST_CHECK(dataPtr->distances()[0] == 0);
+        BOOST_CHECK_EQUAL_COLLECTIONS(haystack,haystack+4,reconPtr->getResult(),reconPtr->getResult()+4);
     }
     { // transposition requires 1 edits
         LOG << "Testing single transposition - middle";
