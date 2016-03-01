@@ -6,4 +6,4 @@
 //
 //
 
-#include "smith_waterman.hpp"
+#include "smith_waterman.h"

@@ -251,7 +251,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
         LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->operations(),4*3);
-        BOOST_CHECK(dataPtr->distances()[0] == 2);
+        BOOST_CHECK(dataPtr->distances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 bContext,
@@ -263,8 +263,6 @@ BOOST_AUTO_TEST_CASE( calc_test )
         alg.reconstruct(reconPtr);
         LOG << "haystack:" << NLPGraph::Util::String::str(haystack,4);
         LOG << "recreation:" << NLPGraph::Util::String::str(reconPtr->getResult(),4);
-        // this is actually correct, there is only one operation: "substitution"
-        // 2015-08-16 - yeah, but 2 is easier...we'll use two for now: "repetition" and "deletion"
         BOOST_CHECK_EQUAL_COLLECTIONS(haystack,haystack+4,reconPtr->getResult(),reconPtr->getResult()+4);
     }
     { // single deletion - middle
@@ -359,7 +357,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
         LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->operations(),4*3);
-        BOOST_CHECK(dataPtr->distances()[0] == 2);
+        BOOST_CHECK(dataPtr->distances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 bContext,
@@ -385,7 +383,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         LOG << "needle:" << NLPGraph::Util::String::str(needle,4);
         LOG << "distances:" << NLPGraph::Util::String::str(dataPtr->distances(),1);
         LOG << "operations:" << NLPGraph::Util::String::str(dataPtr->operations(),4*3);
-        BOOST_CHECK(dataPtr->distances()[0] == 2);
+        BOOST_CHECK(dataPtr->distances()[0] == 1);
         LevensteinDamerauReconstructDataPtr reconPtr = LevensteinDamerauReconstructDataPtr(
             new LevensteinDamerauReconstructData(
                 bContext,
