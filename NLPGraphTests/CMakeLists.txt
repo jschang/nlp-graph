@@ -9,6 +9,7 @@ if (BUILD_NLPGRAPH_TESTS)
     add_executable (NLPGraphTests
         ./nlpgraph_tests.cpp
         ./nlpgraph_tests.h
+        ./calc/smith_waterman_test.cpp
         ./calc/levenstein_damerau_test.cpp
         ./calc/kohonen_som_test.cpp
         ./neural/network_test.cpp
@@ -21,7 +22,8 @@ if (BUILD_NLPGRAPH_TESTS)
         ./nlpgraph_tests.cpp
         ./nlpgraph_tests.h
     )
-    source_group(src\\calc FILES 
+    source_group(src\\calc FILES
+        ./calc/smith_waterman_test.cpp
         ./calc/levenstein_damerau_test.cpp
         ./calc/kohonen_som_test.cpp
     )

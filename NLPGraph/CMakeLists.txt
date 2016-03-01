@@ -19,10 +19,10 @@ if (BUILD_NLPGRAPH_LIB)
         ./calc/kohonen_som.cpp
         ./calc/kohonen_som.h
         ./calc/kohonen_som/kohonen_som_data.cpp
-        ./calc/kohonen_som/kohonen_som_sample_data.cpp
-        ./calc/kohonen_som/kohonen_som_result.cpp
         ./calc/kohonen_som/kohonen_som_data.h
+        ./calc/kohonen_som/kohonen_som_sample_data.cpp
         ./calc/kohonen_som/kohonen_som_sample_data.h
+        ./calc/kohonen_som/kohonen_som_result.cpp
         ./calc/kohonen_som/kohonen_som_result.h
         
         ./calc/levenstein_damerau.cpp
@@ -31,6 +31,11 @@ if (BUILD_NLPGRAPH_LIB)
         ./calc/levenstein_damerau/levenstein_damerau_data.h
         ./calc/levenstein_damerau/levenstein_damerau_reconstruct_data.cpp
         ./calc/levenstein_damerau/levenstein_damerau_reconstruct_data.h
+
+        ./calc/smith_waterman.cpp
+        ./calc/smith_waterman.h
+        ./calc/smith_waterman/smith_waterman_data.cpp
+        ./calc/smith_waterman/smith_waterman_data.h
 
         ./neural/neuron.cpp
         ./neural/neuron.h
@@ -97,6 +102,8 @@ if (BUILD_NLPGRAPH_LIB)
         ./calc/kohonen_som.h
         ./calc/levenstein_damerau.cpp
         ./calc/levenstein_damerau.h
+        ./calc/smith_waterman.cpp
+        ./calc/smith_waterman.h
     )
     source_group(src\\calc\\kohonen_som FILES
         ./calc/kohonen_som/kohonen_som_data.cpp
@@ -111,6 +118,10 @@ if (BUILD_NLPGRAPH_LIB)
         ./calc/levenstein_damerau/levenstein_damerau_data.h
         ./calc/levenstein_damerau/levenstein_damerau_reconstruct_data.cpp
         ./calc/levenstein_damerau/levenstein_damerau_reconstruct_data.h
+    )
+    source_group(src\\calc\\smith_waterman FILES
+        ./calc/smith_waterman/smith_waterman_data.cpp
+        ./calc/smith_waterman/smith_waterman_data.h
     )
     source_group(src\\neural FILES
         ./neural/neuron.cpp
