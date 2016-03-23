@@ -451,12 +451,12 @@ __kernel void calc_levenstein_damerau(
             else self.haystackLast = self.haystackCur;
             
             append_state(&self,0);
-            if(self.needleCur == self.haystackCur) {
+            if(self.needleCur == self.haystackCur) { // n:?A, h:?A
                 // these are all current matches
                 self.currentLocation = self.currentLocation | 1 << 3;
-                if(self.haystackCur == self.needleLast) {
+                if(self.haystackCur == self.needleLast) { // n:AA, h:?A
                     self.currentLocation = self.currentLocation | 1 << 2;
-                    if(self.needleCur == self.haystackLast) {
+                    if(self.needleCur == self.haystackLast) { // n:AA, h:AA
                         self.currentLocation = self.currentLocation | 1 << 1;
                         if(self.needleLast == self.haystackLast) { 
                             self.currentLocation = self.currentLocation | 1;
@@ -466,7 +466,7 @@ __kernel void calc_levenstein_damerau(
                             self.distancesOut[self.haystackRowIdx] = -1 * self.currentLocation;
                             return;
                         }
-                    } else {
+                    } else { // n:AA, h:AA
                         if(self.needleLast == self.haystackLast) { 
                             self.currentLocation = self.currentLocation | 1;
                             ac(&self,CL_LOG_TYPE_ERROR," - cmp_1101 - error: not logically possible\n");
@@ -477,15 +477,15 @@ __kernel void calc_levenstein_damerau(
                             // last would have incremented distanceTotal
                         }
                     }
-                } else {
-                    if(self.needleCur == self.haystackLast) { 
+                } else { // n:BA, h:?A
+                    if(self.needleCur == self.haystackLast) { // n:BA, h:AA
                         self.currentLocation = self.currentLocation | 1 << 1;
                         if(self.needleLast == self.haystackLast) { 
                             self.currentLocation = self.currentLocation | 1;
                             ac(&self,CL_LOG_TYPE_ERROR," - cmp_1011 - error: not logically possible\n");
                             self.distancesOut[self.haystackRowIdx] = -1 * self.currentLocation;
                             return;
-                        } else { 
+                        } else { // n:BA, h:AA
                             // 1010 - possible insertion
                             ac(&self,0," - cmp_1010 - previous was replacement, match restored; n:BA, h:AA\n");
                             if(is_last_op(&self,OP_INSERT) || is_last_op(&self,OP_REPEAT)) {
@@ -508,11 +508,11 @@ __kernel void calc_levenstein_damerau(
                         }
                     }
                 }
-            } else {
+            } else { // n:?A, h:?B
                 // these are all current match failures
-                if(self.haystackCur == self.needleLast) {
+                if(self.haystackCur == self.needleLast) { // n:BA, h:?B
                     self.currentLocation = self.currentLocation | 1 << 2;
-                    if(self.needleCur == self.haystackLast) {
+                    if(self.needleCur == self.haystackLast) { 
                         self.currentLocation = self.currentLocation | 1 << 1;
                         if(self.needleLast == self.haystackLast) {
                             self.currentLocation = self.currentLocation | 1;
@@ -559,10 +559,10 @@ __kernel void calc_levenstein_damerau(
                         if(self.needleLast == self.haystackLast) {
                             self.currentLocation = self.currentLocation | 1;
                             ac(&self,0," - cmp_0001 - break match, replacement;  n:AC, h:AB\n");
-                            add_op(&self,OP_INSERT,self.haystackCur);
+                            add_op(&self,OP_REPLACE,self.haystackCur);
                         } else {
                             ac(&self,0," - cmp_0000 - continue broken match, replacement; n:AB, h:CD\n");
-                            add_op(&self,OP_INSERT,self.haystackCur);
+                            add_op(&self,OP_REPLACE,self.haystackCur);
                         }
                     }
                 }

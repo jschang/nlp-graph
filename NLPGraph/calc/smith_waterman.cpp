@@ -6,6 +6,7 @@
 //
 //
 
+<<<<<<< HEAD
 #include "smith_waterman/smith_waterman_data.h"
 #include "smith_waterman.h"
 
@@ -140,3 +141,6 @@ int SmithWaterman::calculate(SmithWatermanDataPtr data) {
 }
 
 }}
+=======
+#include "smith_waterman.h"
+>>>>>>> e6989eae69bb8cd12f21dee52c6052f3dbfef28f
