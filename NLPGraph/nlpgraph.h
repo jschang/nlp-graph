@@ -37,9 +37,11 @@ namespace Calc {
     class KohonenSOMData;
     class KohonenSOMSampleData;
     class KohonenSOMResult;
+    class SmithWatermanData;
     typedef boost::shared_ptr<KohonenSOMData> KohonenSOMDataPtr;
     typedef boost::shared_ptr<KohonenSOMSampleData> KohonenSOMSampleDataPtr;
     typedef boost::shared_ptr<KohonenSOMResult> KohonenSOMResultPtr;
+    typedef boost::shared_ptr<SmithWatermanData> SmithWatermanDataPtr;
 };
 namespace Util {
     class OpenCL;
