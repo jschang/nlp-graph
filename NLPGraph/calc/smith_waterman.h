@@ -30,6 +30,7 @@ private:
 public:
     SmithWaterman(const boost::compute::context &context);
     ~SmithWaterman();
+    int calculate(SmithWatermanDataPtr data);
 };
     
 }}

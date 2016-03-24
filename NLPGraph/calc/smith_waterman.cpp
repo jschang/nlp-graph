@@ -106,15 +106,16 @@ int SmithWaterman::calculate(SmithWatermanDataPtr data) {
         m_kernelCalc->set_arg(parm++,data->referenceWidth());
         m_kernelCalc->set_arg(parm++,data->operationsWidth());
         m_kernelCalc->set_arg(parm++,data->candidatesCount());
+        m_kernelCalc->set_arg(parm++,data->uniqueCount());
         m_kernelCalc->set_arg(parm++,data->clReference());
         m_kernelCalc->set_arg(parm++,data->clCandidates());
         m_kernelCalc->set_arg(parm++,data->clCostMatrix());
         m_kernelCalc->set_arg(parm++,data->clDistsAndOps());
         
-        size_t gwo[2] = {0,0};
-        size_t gws[2] = {data->haystackCount(),data->needleCount()};
-        size_t lws[2] = {1,1};
-        m_commandQueue->enqueue_nd_range_kernel(*m_kernelCalc, 2, (size_t*)&gwo, (size_t*)&gws, (size_t*)&lws, boost::compute::wait_list());
+        size_t gwo[2] = {0};
+        size_t gws[2] = {data->candidatesCount()};
+        size_t lws[2] = {1};
+        m_commandQueue->enqueue_nd_range_kernel(*m_kernelCalc, 1, (size_t*)&gwo, (size_t*)&gws, (size_t*)&lws, boost::compute::wait_list());
         
         OpenCL::read<char>(*m_commandQueue, logLength, log, logBuf);
         data->read(*m_commandQueue);
@@ -141,6 +142,3 @@ int SmithWaterman::calculate(SmithWatermanDataPtr data) {
 }
 
 }}
-=======
-#include "smith_waterman.h"
->>>>>>> e6989eae69bb8cd12f21dee52c6052f3dbfef28f

@@ -17,6 +17,7 @@ private:
     uint   m_referenceWidth  = 0;
     uint   m_operationsWidth = 0;
     uint   m_candidatesCount = 0;
+    uint   m_uniqueCount     = 0;
     
     uint64_t* _reference   = 0;
     uint64_t* _candidates  = 0;
@@ -35,10 +36,11 @@ public:
     SmithWatermanData(cl_context context);
     ~SmithWatermanData();
     
-    void alloc();
+    void alloc(uint referenceWidth, uint operationsWidth, uint candidatesCount);
     void free();
     
     void read(cl_command_queue queue);
+    void write(cl_command_queue queue);
     
     void zeroReference(cl_command_queue commandQueue);
     void zeroCandidates(cl_command_queue commandQueue);
@@ -53,6 +55,7 @@ public:
     uint referenceWidth();
     uint operationsWidth();
     uint candidatesCount();
+    uint uniqueCount();
     
     cl_mem clReference();
     cl_mem clCandidates();
