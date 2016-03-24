@@ -21,12 +21,10 @@ private:
     
     uint64_t* _reference   = 0;
     uint64_t* _candidates  = 0;
-    uint64_t* _costMatrix  = 0;
-    uint64_t* _matrices    = 0;
-    uint64_t* _distsAndOps = 0;
     
     cl_mem _clReference   = 0;
     cl_mem _clCandidates  = 0;
+    
     cl_mem _clCostMatrix  = 0;
     cl_mem _clMatrices    = 0;
     cl_mem _clDistsAndOps = 0;
@@ -36,21 +34,20 @@ public:
     SmithWatermanData(cl_context context);
     ~SmithWatermanData();
     
-    void alloc(uint referenceWidth, uint operationsWidth, uint candidatesCount);
     void free();
     
-    void read(cl_command_queue queue);
-    void write(cl_command_queue queue);
+    void read(const cl_command_queue &queue);
+    void write(const cl_command_queue &queue);
     
-    void zeroReference(cl_command_queue commandQueue);
-    void zeroCandidates(cl_command_queue commandQueue);
-    void zeroCostMatrix(cl_command_queue commandQueue);
-    void zeroMatrices(cl_command_queue commandQueue);
-    void zeroDistsAndOps(cl_command_queue commandQueue);
+    void zeroReference(const cl_command_queue &commandQueue);
+    void zeroCandidates(const cl_command_queue &commandQueue);
+    void zeroMatrices(const cl_command_queue &commandQueue);
+    void zeroDistsAndOps(const cl_command_queue &commandQueue);
     
-    uint64_t* costMatrix(uint64_t* costMatrix);
-    uint64_t* matrices(uint64_t* matrices);
-    uint64_t* distsAndOps(uint64_t* distsAndOps);
+    void reference(const cl_command_queue &commandQueue, const uint64_t *in, const size_t width);
+    void candidates(const cl_command_queue &commandQueue, const uint64_t *in, const size_t count);
+    void matrices(const cl_command_queue &commandQueue, uint64_t **out);
+    void distsAndOps(const cl_command_queue &commandQueue, uint64_t **out);
     
     uint referenceWidth();
     uint operationsWidth();
@@ -59,9 +56,9 @@ public:
     
     cl_mem clReference();
     cl_mem clCandidates();
-    cl_mem clCostMatrix();
     cl_mem clMatrices();
     cl_mem clDistsAndOps();
+    cl_mem clCostMatrix();
 };
     
 }}

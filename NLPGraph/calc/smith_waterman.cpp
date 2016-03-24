@@ -6,7 +6,6 @@
 //
 //
 
-<<<<<<< HEAD
 #include "smith_waterman/smith_waterman_data.h"
 #include "smith_waterman.h"
 

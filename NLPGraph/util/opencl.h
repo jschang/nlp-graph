@@ -68,6 +68,7 @@ public:
     static cl_context contextWithDeviceInfo(OpenCLDeviceInfoType &deviceInfo);
     static boost::compute::program createAndBuildProgram(std::string src, boost::compute::context ctx);
     static void log(OpenCLDeviceInfo &thisDeviceInfo);
+    template<class T> static void fill(cl_command_queue q, size_t width, size_t offset, size_t count, T *ptr, cl_mem buf);
     template<class T> static void read(cl_command_queue q, size_t count, T *ptr, cl_mem buf);
     template<class T> static void write(cl_command_queue q, size_t count, T *ptr, cl_mem buf);
     template<class T> static void alloc(cl_context c, size_t count, T **ptr, cl_mem *buf, int clFlags);
@@ -76,6 +77,19 @@ public:
         const char *errinfo, const void *private_info, 
         size_t cb, void *user_data
     );
+};
+
+template<class T>
+void OpenCL::fill(cl_command_queue q, size_t width, size_t offset, size_t count, T *ptr, cl_mem buf) {
+
+    cl_int errcode = 0;
+    
+    errcode = clEnqueueFillBuffer(q, buf, ptr, sizeof(T)*width, sizeof(T)*offset, sizeof(T)*count, 0, NULL, NULL);
+    if(errcode!=CL_SUCCESS) {
+        OpenCLExceptionType except;
+        except.msg = "Unable to read buffer";
+        throw except;
+    }
 };
 
 template<class T>
