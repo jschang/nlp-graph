@@ -40,7 +40,7 @@ void SmithWatermanData::zeroMatrices(const cl_command_queue &commandQueue) {
 }
 void SmithWatermanData::zeroDistsAndOps(const cl_command_queue &commandQueue) {
     uint64_t zero = 0;
-    Util::OpenCL::fill(commandQueue, 1, 0, (m_operationsWidth+1) * m_candidatesCount, &zero, _clDistAndOps);
+    Util::OpenCL::fill(commandQueue, 1, 0, (m_operationsWidth+1) * m_candidatesCount, &zero, _clDistsAndOps);
 }
 
 uint SmithWatermanData::referenceWidth() {
