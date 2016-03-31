@@ -1,9 +1,12 @@
 #define BOOST_LOG_DYN_LINK
+
 #include <util/resource_pool.h>
 #include <dao/postgres/model_postgres.h>
 #include <nlpgraph.h>
 #include <boost/test/unit_test.hpp>
 #include "../../nlpgraph_tests.h"
+
+#if RUN_TEST_ALL == 1 || RUN_TEST_DAO_POSTGRES_MODEL == 1
 
 using namespace NLPGraph::Dao;
 using namespace NLPGraph::Dto;
@@ -15,11 +18,11 @@ struct Fixture {
     Fixture() {
         BOOST_TEST_MESSAGE("Fixture setup");
         connPool.reset(new ResourcePool<pqxx::connection*>());
-        connPool->addResource(new pqxx::connection("dbname=schang"));
-        connPool->addResource(new pqxx::connection("dbname=schang"));
-        connPool->addResource(new pqxx::connection("dbname=schang"));
-        connPool->addResource(new pqxx::connection("dbname=schang"));
-        connPool->addResource(new pqxx::connection("dbname=schang"));
+        connPool->addResource(new pqxx::connection(NLPGRAPH_TEST_DB_CONN_STRING));
+        connPool->addResource(new pqxx::connection(NLPGRAPH_TEST_DB_CONN_STRING));
+        connPool->addResource(new pqxx::connection(NLPGRAPH_TEST_DB_CONN_STRING));
+        connPool->addResource(new pqxx::connection(NLPGRAPH_TEST_DB_CONN_STRING));
+        connPool->addResource(new pqxx::connection(NLPGRAPH_TEST_DB_CONN_STRING));
         model.reset((Model*)new ModelPostgres(connPool,NLPGRAPH_TEST_SCHEMA));
     }
     ~Fixture() {
@@ -84,3 +87,5 @@ BOOST_AUTO_TEST_CASE( test_new_stuff )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+#endif

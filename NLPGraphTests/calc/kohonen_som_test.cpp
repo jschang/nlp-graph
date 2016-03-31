@@ -11,6 +11,8 @@
 #include <util/string.h>
 #include "../nlpgraph_tests.h"
 
+#if RUN_TEST_ALL == 1 || RUN_TEST_CALC_KOHONEN_SOM == 1
+
 #define LOG BOOST_LOG_SEV(logger,severity_level::normal) << __PRETTY_FUNCTION__ << " "
 
 using namespace NLPGraph::Dao;
@@ -114,3 +116,5 @@ BOOST_AUTO_TEST_CASE( calc_test )
 }
     
 BOOST_AUTO_TEST_SUITE_END()
+
+#endif

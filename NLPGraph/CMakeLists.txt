@@ -36,6 +36,10 @@ if (BUILD_NLPGRAPH_LIB)
         ./calc/smith_waterman.h
         ./calc/smith_waterman/smith_waterman_data.cpp
         ./calc/smith_waterman/smith_waterman_data.h
+        ./calc/smith_waterman/smith_waterman_util.cl.h
+        ./calc/smith_waterman/smith_waterman_cost.cl.h
+        ./calc/smith_waterman/smith_waterman_matrices.cl.h
+        ./calc/smith_waterman/smith_waterman_dists.cl.h
 
         ./neural/neuron.cpp
         ./neural/neuron.h
@@ -122,6 +126,10 @@ if (BUILD_NLPGRAPH_LIB)
     source_group(src\\calc\\smith_waterman FILES
         ./calc/smith_waterman/smith_waterman_data.cpp
         ./calc/smith_waterman/smith_waterman_data.h
+        ./calc/smith_waterman/smith_waterman_util.cl.h
+        ./calc/smith_waterman/smith_waterman_cost.cl.h
+        ./calc/smith_waterman/smith_waterman_matrices.cl.h
+        ./calc/smith_waterman/smith_waterman_dists.cl.h
     )
     source_group(src\\neural FILES
         ./neural/neuron.cpp

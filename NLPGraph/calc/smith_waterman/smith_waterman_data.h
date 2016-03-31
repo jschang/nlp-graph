@@ -25,27 +25,32 @@ private:
     cl_mem _clReference   = 0;
     cl_mem _clCandidates  = 0;
     
+    cl_mem _clUniques     = 0;
     cl_mem _clCostMatrix  = 0;
     cl_mem _clMatrices    = 0;
     cl_mem _clDistsAndOps = 0;
+    
+    std::map<uint64_t,uint64_t> m_uniques;
     
 public:
     
     SmithWatermanData(cl_context context);
     ~SmithWatermanData();
     
+    void reference(const cl_command_queue &commandQueue, const uint64_t *in, const size_t width);
+    void candidates(const cl_command_queue &commandQueue, const uint64_t *in, const size_t count);
+    
+    /**
+     * call after setting reference and candidates
+     */
+    void prepare();
+    
     void free();
-    
-    void read(const cl_command_queue &queue);
-    void write(const cl_command_queue &queue);
-    
     void zeroReference(const cl_command_queue &commandQueue);
     void zeroCandidates(const cl_command_queue &commandQueue);
     void zeroMatrices(const cl_command_queue &commandQueue);
     void zeroDistsAndOps(const cl_command_queue &commandQueue);
     
-    void reference(const cl_command_queue &commandQueue, const uint64_t *in, const size_t width);
-    void candidates(const cl_command_queue &commandQueue, const uint64_t *in, const size_t count);
     void matrices(const cl_command_queue &commandQueue, uint64_t **out);
     void distsAndOps(const cl_command_queue &commandQueue, uint64_t **out);
     
@@ -58,7 +63,18 @@ public:
     cl_mem clCandidates();
     cl_mem clMatrices();
     cl_mem clDistsAndOps();
+    /**
+     * This is the cost matrix.  Each edge is one of the unique set of members
+     * among all candidate and reference uint64_ts.  The edge members are identified
+     * by the contents of _clUnqiues.  Each value is a cost determined by how
+     * frequently the intersecting pair appears close to one another.
+     */
     cl_mem clCostMatrix();
+    /**
+     * This is a reference for the index along either edge of the cost matrix.
+     * Uniques are ordered ascending for lookup within the OpenCL functions.
+     */
+    cl_mem clUniques();
 };
     
 }}

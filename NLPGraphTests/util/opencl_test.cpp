@@ -1,9 +1,13 @@
 #define BOOST_LOG_DYN_LINK
+
 #include <util/logger.h>
 #include <util/opencl.h>
 #include <nlpgraph.h>
 #include <boost/compute.hpp>
 #include <boost/test/unit_test.hpp>
+#include "../nlpgraph_tests.h"
+
+#if RUN_TEST_ALL == 1 || RUN_TEST_UTIL_OPENCL == 1
 
 #define LOG BOOST_LOG_SEV(logger,NLPGraph::Util::severity_level::normal) << __PRETTY_FUNCTION__ << " "
 
@@ -23,3 +27,5 @@ BOOST_AUTO_TEST_CASE( do_stuff )
 }
 
 BOOST_AUTO_TEST_SUITE_END()
+
+#endif
