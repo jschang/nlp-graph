@@ -6,10 +6,11 @@
 //
 //
 
+#define BOOST_LOG_DYN_LINK
+
 #include "smith_waterman/smith_waterman_data.h"
 #include "smith_waterman.h"
 
-#define BOOST_LOG_DYN_LINK
 #include "../util/opencl.h"
 #include "../util/string.h"
 #include <boost/compute.hpp>
@@ -77,6 +78,9 @@ SmithWaterman::SmithWaterman(const boost::compute::context &context) {
         if(source!=0) delete source;
         throw;
     }
+}
+
+SmithWaterman::~SmithWaterman() {
 }
 
 int SmithWaterman::createCostMatrix(SmithWatermanDataPtr data) {

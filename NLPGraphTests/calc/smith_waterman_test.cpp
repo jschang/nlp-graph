@@ -43,8 +43,9 @@ BOOST_AUTO_TEST_CASE( calc_test )
     OpenCL::log(deviceInfo);
     
     // spin up a context
+    device bDevice = device(deviceInfo.id);
     context bContext = context(OpenCL::contextWithDeviceInfo(deviceInfo));    
-    
+    command_queue bCommandQueue = command_queue(bContext, bDevice);
     // fire up the calculator
     SmithWaterman alg(bContext);
     
@@ -58,8 +59,13 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,3,4};
+        //void reference(const cl_command_queue &commandQueue, const uint64_t *in, const size_t width);
+        //void candidates(const cl_command_queue &commandQueue, const uint64_t *in, const size_t count);
         SmithWatermanDataPtr dataPtr = SmithWatermanDataPtr(new SmithWatermanData(bContext));
-        alg.calculate(dataPtr);
+        dataPtr->reference(bCommandQueue, needle, 4);
+        dataPtr->candidates(bCommandQueue, haystack, 1);
+        dataPtr->prepare();
+        alg.createCostMatrix(dataPtr);
     }
 }
 

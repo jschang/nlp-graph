@@ -11,6 +11,7 @@ SmithWatermanData::SmithWatermanData(cl_context context) {
 }
 
 SmithWatermanData::~SmithWatermanData() {
+    this->free();
 }
 
 void SmithWatermanData::free() {

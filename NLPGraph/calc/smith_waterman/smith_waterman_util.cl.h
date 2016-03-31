@@ -12,11 +12,12 @@ typedef struct smith_waterman {
     __global ulong *candidates;
     __global ulong *costMatrix;
     __global ulong *distsAndOps;
-    __global ulong *uniques
+    __global ulong *uniques;
 } smith_waterman_type;
 
+uint costMatrix_indexOf(smith_waterman_type *self, ulong id);
 uint costMatrix_indexOf(smith_waterman_type *self, ulong id) {
-    uint startSearch = self->uniqueCount/2;
+    //uint startSearch = self->uniqueCount/2;
     
 }
 
