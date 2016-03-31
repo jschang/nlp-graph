@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         SmithWatermanDataPtr dataPtr = SmithWatermanDataPtr(new SmithWatermanData(bContext));
         dataPtr->reference(bCommandQueue, needle, 4);
         dataPtr->candidates(bCommandQueue, haystack, 1);
-        dataPtr->prepare();
+        dataPtr->prepare(bCommandQueue);
         alg.createCostMatrix(dataPtr);
     }
 }

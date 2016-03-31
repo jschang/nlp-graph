@@ -18,7 +18,7 @@ typedef struct smith_waterman {
 uint costMatrix_indexOf(smith_waterman_type *self, ulong id);
 uint costMatrix_indexOf(smith_waterman_type *self, ulong id) {
     //uint startSearch = self->uniqueCount/2;
-    
+    return 0;
 }
 
 );

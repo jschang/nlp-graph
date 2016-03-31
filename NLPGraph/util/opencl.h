@@ -134,7 +134,7 @@ void OpenCL::alloc(cl_context ctx, size_t count, T **ptr, cl_mem *buf, int clFla
     }
     
     if(buf && !*buf) {
-        *buf = clCreateBuffer(ctx,clFlags,sizeof(T)*count,*ptr,&errcode);
+        *buf = clCreateBuffer(ctx,clFlags,sizeof(T)*count,(ptr?*ptr:nullptr),&errcode);
         if(errcode!=CL_SUCCESS) {
             OpenCLExceptionType except;
             except.msg = "unable to allocate cl_mem object";

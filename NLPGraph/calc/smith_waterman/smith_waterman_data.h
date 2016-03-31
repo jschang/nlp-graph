@@ -43,7 +43,7 @@ public:
     /**
      * call after setting reference and candidates
      */
-    void prepare();
+    void prepare(const cl_command_queue &commandQueue);
     
     void free();
     void zeroReference(const cl_command_queue &commandQueue);
