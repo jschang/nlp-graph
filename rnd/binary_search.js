@@ -33,6 +33,10 @@ function testThese(uniques) {
     }
     console.log('testing for 8');
     console.log(uniques[binarySearch(uniques,8)]+' == 8');
+    console.log('testing for -1');
+    console.log(uniques[binarySearch(uniques,-1)]+' == -1');
+    console.log('testing for 100000');
+    console.log(uniques[binarySearch(uniques,-1)]+' == 100000');
 }
 testThese([1,4,7,10,34]);
 testThese([1,4,7,10,35, 46,69,102,345,400, 1023,1024]);

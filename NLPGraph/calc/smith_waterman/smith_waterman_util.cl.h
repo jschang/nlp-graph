@@ -8,6 +8,7 @@ typedef struct smith_waterman {
     uint opWidth;
     uint candCount;
     uint uniqueCount;
+    ulong costMatrixCoords[2];
     __constant ulong *reference;
     __global ulong *candidates;
     __global ulong *costMatrix;
@@ -15,34 +16,36 @@ typedef struct smith_waterman {
     __global ulong *uniques;
 } smith_waterman_type;
 
-uint costMatrix_indexOf(smith_waterman_type &self, ulong id);
+long costMatrix_indexOf(smith_waterman_type &self, ulong id);
 void costMatrix_getCoordsFor(smith_waterman_type &self, size_t offset, uint[] &thisCoords);
 
-uint costMatrix_indexOf(smith_waterman_type &self, ulong id) {
-    uint searchWidth = self.uniqueCount/2;
-    uint currentPos = self.uniqueCount/2;
-    while(searchWidth) {
+long costMatrix_indexOf(smith_waterman_type &self, ulong id) {
+    ulong searchWidth = self.uniqueCount/2;
+    ulong currentPos = (self.uniqueCount/2)-1;
+    while(searchWidth>0) {
         if(id < self.uniques[currentPos]) {
-            // the id, if it exists, is in the first half of this section
             searchWidth /= 2;
             currentPos -= searchWidth;
-        } else
+        }
         if(id > self.uniques[currentPos]) {
-            // the id, if it exists, is in the second half of this section
             searchWidth /= 2;
             currentPos += searchWidth;
-        } else {
+        }
+        if(id == self.uniques[currentPos]){
             return currentPos;
         }
+        if(searchWidth==1) {
+            return -1;
+        }
     }
-    return 0;
+    return -1;
 }
 
 void costMatrix_getCoordsFor(smith_waterman_type &self, size_t offset, uint[] &thisCoords) {
     // reversed so, processed as xy, then y
     ulong trim = offset, multi = 0;
     int i = 0, j = 0;
-    for(i = 2-1; i>=0; i--) {
+    for(i = 1; i>=0; i--) {
         multi = 1;
         for(j=i-1; j>=0; j--) {
             multi *= self.uniqueCount;
