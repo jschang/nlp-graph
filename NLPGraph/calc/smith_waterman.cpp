@@ -119,7 +119,7 @@ int SmithWaterman::createCostMatrix(SmithWatermanDataPtr data) {
         m_kernelCostMatrix->set_arg(parm++,data->clUniques());
         
         size_t gwo[2] = {0};
-        size_t gws[2] = {data->candidatesCount()};
+        size_t gws[2] = {data->uniqueCount()*data->uniqueCount()};
         size_t lws[2] = {1};
         m_commandQueue->enqueue_nd_range_kernel(*m_kernelCostMatrix, 1, (size_t*)&gwo, (size_t*)&gws, (size_t*)&lws, boost::compute::wait_list());
         
