@@ -24,10 +24,12 @@ __kernel void calc_smith_waterman_cost_matrix(
     self.uniqueCount = uniqueCount;
     self.candidates = candidates;
     self.costMatrix = costMatrix;
-    self.distAndOps = distAndOps;
+    self.distsAndOps = distsAndOps;
     self.uniques = uniques;
+    self.globalOffset = get_global_id(0);
     
-    costMatrix_getCoordsFor(self,get_global_id(0),self.costMatrixCoords);
+    costMatrix_getCoordsFor(&self,self.globalOffset,self.costMatrixCoords);
+    printf("offset %lu cost matrix coords: %lu, %lu\n",self.globalOffset,self.costMatrixCoords[0],self.costMatrixCoords[1]);
 }
 
 );
