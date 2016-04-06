@@ -51,7 +51,7 @@ public:
     void zeroMatrices(const cl_command_queue &commandQueue);
     void zeroDistsAndOps(const cl_command_queue &commandQueue);
     
-    void matrices(const cl_command_queue &commandQueue, uint64_t **out);
+    void matrices(const cl_command_queue &commandQueue, int64_t **out);
     void distsAndOps(const cl_command_queue &commandQueue, uint64_t **out);
     
     uint referenceWidth();

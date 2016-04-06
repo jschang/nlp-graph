@@ -80,7 +80,7 @@ void SmithWatermanData::candidates(const cl_command_queue &commandQueue, const u
 void SmithWatermanData::prepare(const cl_command_queue &commandQueue) {
     if(_clDistsAndOps!=0) { clReleaseMemObject(_clDistsAndOps); _clDistsAndOps = 0; }
     if   (_clMatrices!=0) { clReleaseMemObject(_clMatrices); _clMatrices = 0; }
-    Util::OpenCL::alloc <uint64_t>(m_context, m_candidatesCount * m_referenceWidth * m_referenceWidth,
+    Util::OpenCL::alloc <int64_t>(m_context, m_candidatesCount * m_referenceWidth * m_referenceWidth,
         0, &_clMatrices, (int)CL_MEM_READ_WRITE);
     this->zeroMatrices(commandQueue);
     Util::OpenCL::alloc<uint64_t>(m_context, (m_operationsWidth+1) * m_candidatesCount,
@@ -108,13 +108,17 @@ void SmithWatermanData::prepare(const cl_command_queue &commandQueue) {
         &zero, _clCostMatrix);
 }
 
-void SmithWatermanData::matrices(const cl_command_queue &commandQueue, uint64_t **out) {
-    *out = (uint64_t*) new uint64_t[m_candidatesCount * m_referenceWidth * m_referenceWidth];
-    Util::OpenCL::read<uint64_t>(commandQueue, m_candidatesCount * m_referenceWidth * m_referenceWidth,
+void SmithWatermanData::matrices(const cl_command_queue &commandQueue, int64_t **out) {
+    if(*out==0) {
+        *out = (int64_t*) new int64_t[m_candidatesCount * m_referenceWidth * m_referenceWidth];
+    }
+    Util::OpenCL::read<int64_t>(commandQueue, m_candidatesCount * m_referenceWidth * m_referenceWidth,
         *out, _clMatrices);
 }
 void SmithWatermanData::distsAndOps(const cl_command_queue &commandQueue, uint64_t **out) {
-    *out = (uint64_t*) new uint64_t[(m_operationsWidth+1) * m_candidatesCount];
+    if(*out==0) {
+        *out = (uint64_t*) new uint64_t[(m_operationsWidth+1) * m_candidatesCount];
+    }
     Util::OpenCL::read<uint64_t>(commandQueue, (m_operationsWidth+1) * m_candidatesCount,
         *out, _clDistsAndOps);
 }

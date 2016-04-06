@@ -114,6 +114,7 @@ int SmithWaterman::createCostMatrix(SmithWatermanDataPtr data) {
         m_kernelCostMatrix->set_arg(parm++,data->uniqueCount());
         m_kernelCostMatrix->set_arg(parm++,data->clReference());
         m_kernelCostMatrix->set_arg(parm++,data->clCandidates());
+        m_kernelCostMatrix->set_arg(parm++,data->clMatrices());
         m_kernelCostMatrix->set_arg(parm++,data->clCostMatrix());
         m_kernelCostMatrix->set_arg(parm++,data->clDistsAndOps());
         m_kernelCostMatrix->set_arg(parm++,data->clUniques());
@@ -180,6 +181,7 @@ int SmithWaterman::createMatrices(SmithWatermanDataPtr data) {
         m_kernelMatrices->set_arg(parm++,data->uniqueCount());
         m_kernelMatrices->set_arg(parm++,data->clReference());
         m_kernelMatrices->set_arg(parm++,data->clCandidates());
+        m_kernelMatrices->set_arg(parm++,data->clMatrices());
         m_kernelMatrices->set_arg(parm++,data->clCostMatrix());
         m_kernelMatrices->set_arg(parm++,data->clDistsAndOps());
         m_kernelMatrices->set_arg(parm++,data->clUniques());
@@ -243,6 +245,7 @@ int SmithWaterman::calculateDistances(SmithWatermanDataPtr data) {
         m_kernelDistances->set_arg(parm++,data->uniqueCount());
         m_kernelDistances->set_arg(parm++,data->clReference());
         m_kernelDistances->set_arg(parm++,data->clCandidates());
+        m_kernelDistances->set_arg(parm++,data->clMatrices());
         m_kernelDistances->set_arg(parm++,data->clCostMatrix());
         m_kernelDistances->set_arg(parm++,data->clDistsAndOps());
         m_kernelDistances->set_arg(parm++,data->clUniques());

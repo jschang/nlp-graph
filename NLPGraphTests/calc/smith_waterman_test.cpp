@@ -59,13 +59,15 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,3,4};
-        //void reference(const cl_command_queue &commandQueue, const uint64_t *in, const size_t width);
-        //void candidates(const cl_command_queue &commandQueue, const uint64_t *in, const size_t count);
+        int64_t matrices[16];
+        int64_t *mPtr = &matrices[0];
+        memset(matrices,0,sizeof(int64_t)*16);
         SmithWatermanDataPtr dataPtr = SmithWatermanDataPtr(new SmithWatermanData(bContext));
         dataPtr->reference(bCommandQueue, needle, 4);
         dataPtr->candidates(bCommandQueue, haystack, 1);
         dataPtr->prepare(bCommandQueue);
-        alg.createCostMatrix(dataPtr);
+        alg.createMatrices(dataPtr);
+        dataPtr->matrices(bCommandQueue,&mPtr);
     }
 }
 

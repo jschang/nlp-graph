@@ -12,7 +12,8 @@ typedef struct smith_waterman {
     ulong globalOffset;
     __constant ulong *reference;
     __global ulong *candidates;
-    __global ulong *costMatrix;
+    __global long *matrices;
+    __global long *costMatrix;
     __global ulong *distsAndOps;
     __global ulong *uniques;
 } smith_waterman_type;

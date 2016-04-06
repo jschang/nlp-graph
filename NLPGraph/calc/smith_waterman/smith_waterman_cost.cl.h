@@ -10,7 +10,8 @@ __kernel void calc_smith_waterman_cost_matrix(
         uint uniqueCount,
         __constant ulong *reference,
         __global ulong *candidates,
-        __global ulong *costMatrix,
+        __global long *matrices,
+        __global long *costMatrix,
         __global ulong *distsAndOps,
         __global ulong *uniques
 ) {
@@ -19,10 +20,13 @@ __kernel void calc_smith_waterman_cost_matrix(
     self.flags = flags;
     self.logOut = logOut;
     self.logLength = logLength;
+    self.refWidth = refWidth;
     self.opWidth = opWidth;
     self.candCount = candCount;
     self.uniqueCount = uniqueCount;
+    self.reference = reference;
     self.candidates = candidates;
+    self.matrices = matrices;
     self.costMatrix = costMatrix;
     self.distsAndOps = distsAndOps;
     self.uniques = uniques;

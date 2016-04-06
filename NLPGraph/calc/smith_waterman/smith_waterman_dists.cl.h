@@ -10,10 +10,28 @@ __kernel void calc_smith_waterman_distances(
         uint uniqueCount,
         __constant ulong *reference,
         __global ulong *candidates,
-        __global ulong *costMatrix,
+        __global long *matrices,
+        __global long *costMatrix,
         __global ulong *distsAndOps,
         __global ulong *uniques
 ) { 
+    smith_waterman_type self;
+    memset(&self,0,sizeof(smith_waterman_type));
+    self.flags = flags;
+    self.logOut = logOut;
+    self.logLength = logLength;
+    self.refWidth = refWidth;
+    self.opWidth = opWidth;
+    self.candCount = candCount;
+    self.uniqueCount = uniqueCount;
+    self.candidates = candidates;
+    self.matrices = matrices;
+    self.costMatrix = costMatrix;
+    self.distsAndOps = distsAndOps;
+    self.uniques = uniques;
+    self.globalOffset = get_global_id(0);
+    
+    //ulong startIdx = self.globalOffset * self.refWidth * self.refWidth;
 }
 
 );
