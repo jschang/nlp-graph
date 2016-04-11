@@ -57,7 +57,11 @@ __kernel void calc_smith_waterman_matrices(
         for(ulong row=0; row<self.refWidth; row++) {
         
             ulong refId = self.reference[row];
-            long maxSimilarity[4] = {0,0,0,0};
+            long maxSimilarity[4] = {
+                0,0, // max similarity score of prev in row and prev in col
+                0,   // current similarity score
+                0    // zero
+            };
             
             matrices_getMaxSimilarityScore(&self,startIdx,col,row,maxSimilarity);
             maxSimilarity[2] = matrices_getSimilaryScore(
@@ -67,6 +71,12 @@ __kernel void calc_smith_waterman_matrices(
                     refId, candId
                 );
             
+            long maxScore = -65355;
+            for(int i=0; i<4; i++) {
+                maxScore = maxScore < maxSimilarity[i] ? maxSimilarity[i] : maxScore;
+            }
+            
+            self.matrices[startIdx+(row*self.refWidth)+col] = maxScore;
         }
     }
 }
@@ -103,18 +113,14 @@ void matrices_getMaxSimilarityScore(
     maxes[0] = -65355; // col
     for(ulong c = 0; c<col; c++) {
         long cur = self->matrices[startMatrixOffset+(row*self->refWidth)+c];
-        if(cur>maxes[0]) {
-            maxes[0] = cur;
-        }
+        maxes[0] = cur > maxes[0] ? cur : maxes[0];
     }
     maxes[0] += -1; // W - gap-scoring scheme
     
     maxes[1] = -65355; // row
     for(ulong r = 0; r<row; r++) {
         long cur = self->matrices[startMatrixOffset+(r*self->refWidth)+col];
-        if(cur>maxes[1]) {
-            maxes[1] = cur;
-        }
+        maxes[1] = cur > maxes[1] ? cur : maxes[1];
     }
     maxes[1] += -1; // W - gap-scoring scheme
 }

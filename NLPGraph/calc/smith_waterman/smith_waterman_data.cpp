@@ -61,7 +61,7 @@ void SmithWatermanData::reference(const cl_command_queue &commandQueue, const ui
     if  (_reference!=0) { delete _reference; _reference = nullptr; }
     if(_clReference!=0) { clReleaseMemObject(_clReference); _clReference = 0; }
     m_referenceWidth = width;
-    m_operationsWidth = width * 2;
+    m_operationsWidth = width;
     _reference = (uint64_t*)malloc(sizeof(uint64_t)*width);
     memcpy(_reference,in,sizeof(uint64_t)*width);
     Util::OpenCL::alloc<uint64_t>(m_context, width,

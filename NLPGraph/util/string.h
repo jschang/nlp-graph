@@ -24,7 +24,9 @@ public:
     static std::string str(const T inArray[], const int len) {
         std::stringstream retStr;
         for(int i=0; i<len; i++) {
-            retStr << (T)inArray[i] << ",";
+            retStr << (T)inArray[i];
+            if(i!=len-1)
+                retStr << ",";
         }
         return retStr.str();
     }
@@ -34,7 +36,9 @@ public:
         std::stringstream retStr;
         for(int i=0; i<len; i++) {
             std::bitset<_Size> y((T)inArray[i]);
-            retStr << y << ",";
+            retStr << y;
+            if(i!=len-1)
+                retStr << ",";
         }
         return retStr.str();
     }

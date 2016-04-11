@@ -61,6 +61,8 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint64_t haystack[] = {1,2,3,4};
         int64_t matrices[16];
         int64_t *mPtr = &matrices[0];
+        uint64_t distsAndOps[5];
+        uint64_t *dPtr = &distsAndOps[0];
         memset(matrices,0,sizeof(int64_t)*16);
         SmithWatermanDataPtr dataPtr = SmithWatermanDataPtr(new SmithWatermanData(bContext));
         dataPtr->reference(bCommandQueue, needle, 4);
@@ -68,6 +70,38 @@ BOOST_AUTO_TEST_CASE( calc_test )
         dataPtr->prepare(bCommandQueue);
         alg.createMatrices(dataPtr);
         dataPtr->matrices(bCommandQueue,&mPtr);
+        LOG << "Matrix 1: " << String::str<int64_t>(&mPtr[0],4);
+        LOG << "Matrix 2: " << String::str<int64_t>(&mPtr[4],4);
+        LOG << "Matrix 3: " << String::str<int64_t>(&mPtr[8],4);
+        LOG << "Matrix 4: " << String::str<int64_t>(&mPtr[12],4);
+        alg.calculateDistances(dataPtr);
+        dataPtr->distsAndOps(bCommandQueue, &dPtr);
+        LOG << "DistAndOps: " << String::str<uint64_t>(&dPtr[0],5);
+    }
+    
+    { // perfect match
+        LOG << "Testing perfect match";
+        uint width=9;
+        uint haystackSize=1;
+        uint64_t needle[] = {1,2,3,4,5,6,7,8};
+        uint64_t haystack[] = {1,2,9,4,5,6,8,8};
+        int64_t matrices[width*width];
+        int64_t *mPtr = &matrices[0];
+        uint64_t distsAndOps[width+1];
+        uint64_t *dPtr = &distsAndOps[0];
+        memset(matrices,0,sizeof(int64_t)*width*width);
+        SmithWatermanDataPtr dataPtr = SmithWatermanDataPtr(new SmithWatermanData(bContext));
+        dataPtr->reference(bCommandQueue, needle, width);
+        dataPtr->candidates(bCommandQueue, haystack, haystackSize);
+        dataPtr->prepare(bCommandQueue);
+        alg.createMatrices(dataPtr);
+        dataPtr->matrices(bCommandQueue,&mPtr);
+        for(int i=0; i<(width*width); i+=width) {
+            LOG << "Matrix: " << String::str<int64_t>(&mPtr[i],width);
+        }
+        alg.calculateDistances(dataPtr);
+        dataPtr->distsAndOps(bCommandQueue, &dPtr);
+        LOG << "DistAndOps: " << String::str<uint64_t>(&dPtr[0],width+1);
     }
 }
 

@@ -19,7 +19,9 @@ typedef struct smith_waterman {
 } smith_waterman_type;
 
 long costMatrix_indexOf(smith_waterman_type *self, ulong id);
-void costMatrix_getCoordsFor(smith_waterman_type *self, size_t offset, ulong *thisCoords);
+
+ulong util_maxIdxLong(long *vals, ulong size);
+void util_getCoordsForOffset(smith_waterman_type *self, size_t offset, ulong *thisCoords);
 
 long costMatrix_indexOf(smith_waterman_type *self, ulong id) {
     ulong searchWidth = self->uniqueCount/2;
@@ -43,7 +45,19 @@ long costMatrix_indexOf(smith_waterman_type *self, ulong id) {
     return -1;
 }
 
-void costMatrix_getCoordsFor(smith_waterman_type *self, size_t offset, ulong *thisCoords) {
+ulong util_maxIdxLong(long *vals, ulong size) {
+    long max = vals[0];
+    long maxIdx = 0;
+    for(ulong i=0; i<size; i++) {
+        if(max < vals[i]) {
+            max = vals[i];
+            maxIdx = i;
+        }
+    }
+    return maxIdx;
+}
+
+void util_getCoordsForOffset(smith_waterman_type *self, size_t offset, ulong *thisCoords) {
     // reversed so, processed as xy, then y
     ulong trim = offset, multi = 0;
     int i = 0, j = 0;

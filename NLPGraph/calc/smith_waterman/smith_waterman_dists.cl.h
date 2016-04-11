@@ -31,7 +31,46 @@ __kernel void calc_smith_waterman_distances(
     self.uniques = uniques;
     self.globalOffset = get_global_id(0);
     
-    //ulong startIdx = self.globalOffset * self.refWidth * self.refWidth;
+    ulong matricesStartIdx = self.globalOffset * self.refWidth * self.refWidth;
+    ulong matricesLastIdx = (self.globalOffset+1) * self.refWidth * self.refWidth - 1;
+    ulong distanceIdx = (self.opWidth+1) * self.globalOffset;
+    ulong opsStartIdx = (self.opWidth+1) * self.globalOffset + 1;
+    ulong curCoords[2] = {0,0};
+    ulong maxValOffset = 0;
+    long maxVal = 0;
+    for(ulong i = matricesStartIdx; i<matricesLastIdx; i++) {
+        if(maxVal<self.matrices[i]) {
+            maxValOffset = i;
+            maxVal = self.matrices[i];
+        }
+    }
+    maxValOffset -= matricesStartIdx;
+    util_getCoordsForOffset(&self, maxValOffset, &curCoords[0]);
+    for(int c=curCoords[0]; c>0; ) {
+        for(int r=curCoords[1]; r>0; ) {
+            printf("curCoords: %lu, %lu\n",c,r);
+            long cands[3] = {0,0,0};
+            ulong curOpsIdx = opsStartIdx+(r*c);
+            cands[0] = self.matrices[matricesStartIdx+(((r-1)*self.refWidth)+(c-1))];
+            cands[1] = self.matrices[matricesStartIdx+(((r-1)*self.refWidth)+(c))];
+            cands[2] = self.matrices[matricesStartIdx+(((r)*self.refWidth)+(c-1))];
+            if(cands[1]>cands[0]) {
+                // upward, implying deletion
+                self.distsAndOps[distanceIdx]++;
+                c--;
+            }
+            if(cands[2]>cands[0]) {
+                // left, implying insertion
+                self.distsAndOps[distanceIdx]++;
+                r--;
+            }
+            self.distsAndOps[curOpsIdx] = util_maxIdxLong(cands,3);
+            if(self.distsAndOps[curOpsIdx]==0) {
+                c--;
+                r--;
+            }
+        }
+    }
 }
 
 );

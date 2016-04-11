@@ -32,7 +32,7 @@ __kernel void calc_smith_waterman_cost_matrix(
     self.uniques = uniques;
     self.globalOffset = get_global_id(0);
     
-    costMatrix_getCoordsFor(&self,self.globalOffset,self.costMatrixCoords);
+    util_getCoordsForOffset(&self,self.globalOffset,self.costMatrixCoords);
     printf("offset %lu cost matrix coords: %lu, %lu\n",self.globalOffset,self.costMatrixCoords[0],self.costMatrixCoords[1]);
 }
 
