@@ -120,17 +120,17 @@ install() {
     chkerr "Unable to create the 3rdparty tar ball folder"
 
     if [ ! -e 3rdparty/boost_1_58_0.tar.gz ]; then
-        curl -L -o 3rdparty/boost_1_58_0.tar.gz https://s3.amazonaws.com/jschang/arch/boost_1_58_0.tar.gz
+        curl -L -o 3rdparty/boost_1_58_0.tar.gz https://drive.google.com/host/0B2Z3o4nBu7dOZHd4T0VjNzRRajQ/boost_1_58_0.tar.gz
     fi
     chkmd5 3rdparty/boost_1_58_0.tar.gz 5a5d5614d9a07672e1ab2a250b5defc5
 
     if [ ! -e 3rdparty/compute-0.4.tar.gz ]; then
-        curl -L -o 3rdparty/compute-0.4.tar.gz https://s3.amazonaws.com/jschang/arch/compute-0.4.tar.gz
+        curl -L -o 3rdparty/compute-0.4.tar.gz https://drive.google.com/host/0B2Z3o4nBu7dOZHd4T0VjNzRRajQ/compute-0.4.tar.gz
     fi;
     chkmd5 3rdparty/compute-0.4.tar.gz 0d881bd8e8c1729559bc9b98d6b25a3c
 
     if [ ! -e 3rdparty/libpqxx-4.0.1.tar.gz ]; then
-        curl -L -o 3rdparty/libpqxx-4.0.1.tar.gz https://s3.amazonaws.com/jschang/arch/libpqxx-4.0.1.tar.gz
+        curl -L -o 3rdparty/libpqxx-4.0.1.tar.gz https://drive.google.com/host/0B2Z3o4nBu7dOZHd4T0VjNzRRajQ/libpqxx-4.0.1.tar.gz
     fi;
     chkmd5 3rdparty/libpqxx-4.0.1.tar.gz 6ea888b9ba85dd7cef1b182dc5f223a2
 
