@@ -124,20 +124,26 @@ void matrices_getMaxSimilarityScore(
     long *maxes
 ) {
     // get max previous in the row up to the current column
+    /*
     maxes[0] = -65355; // col
     for(ulong c = 0; c<col; c++) {
         long cur = self->matrices[startMatrixOffset+(row*(self->refWidth+1))+c];
         maxes[0] = cur > maxes[0] ? cur : maxes[0];
     }
     maxes[0] += -2; // W - gap-scoring scheme
+    */
+    maxes[0] = self->matrices[startMatrixOffset+(row*(self->refWidth+1))+(col-1)] - 2;
     
     // get max previous in the column up to the current row
+    /*
     maxes[1] = -65355; // row
     for(ulong r = 0; r<row; r++) {
         long cur = self->matrices[startMatrixOffset+(r*(self->refWidth+1))+col];
         maxes[1] = cur > maxes[1] ? cur : maxes[1];
     }
     maxes[1] += -2; // W - gap-scoring scheme
+    */
+    maxes[1] = self->matrices[startMatrixOffset+((row-1)*(self->refWidth+1))+(col)] - 2;
 }
 
 );

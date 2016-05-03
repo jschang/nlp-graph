@@ -64,12 +64,12 @@ __kernel void calc_smith_waterman_distances(
             cands[2] = self.matrices[matricesStartIdx+(((r)*widthPlusOne)+(c-1))];
             ulong idx = util_maxIdxLong(cands,3);
             if(idx==2) {
-                // upward, implying deletion
+                // left, implying insertion
                 dist++;
                 if(c!=0) c--;
             }
             if(idx==1) {
-                // left, implying insertion
+                // upward, implying deletion
                 dist++;
                 if(r!=0) r--;
             }
