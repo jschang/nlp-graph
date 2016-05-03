@@ -67,6 +67,8 @@ namespace Dto {
 }
 typedef struct NLPGraphException : boost::exception, std::exception {
     std::string msg;
+    NLPGraphException() {}
+    NLPGraphException(std::string msg) { this->msg = msg; }
     const char *what() const noexcept { return msg.c_str(); };
 } NLPGraphExceptionType;
 };

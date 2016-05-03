@@ -10,6 +10,7 @@ if (BUILD_NLPGRAPH_LIB)
         
         ./math/generator.h
         ./math/function_1d.h
+        ./math/function_1d.cpp
         
         ./math/function/tanh.h
         ./math/function/tanh.cpp
@@ -94,6 +95,7 @@ if (BUILD_NLPGRAPH_LIB)
     source_group(src\\math FILES
         ./math/generator.h
         ./math/function_1d.h
+        ./math/function_1d.cpp
     )
     source_group(src\\math\\function FILES
         ./math/function/tanh.h

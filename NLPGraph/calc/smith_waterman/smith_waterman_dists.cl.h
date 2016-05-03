@@ -30,47 +30,55 @@ __kernel void calc_smith_waterman_distances(
     self.distsAndOps = distsAndOps;
     self.uniques = uniques;
     self.globalOffset = get_global_id(0);
-    
-    ulong matricesStartIdx = self.globalOffset * self.refWidth * self.refWidth;
-    ulong matricesLastIdx = (self.globalOffset+1) * self.refWidth * self.refWidth - 1;
+    ulong widthPlusOne = self.refWidth + 1;
+    ulong matricesStartIdx = self.globalOffset * (widthPlusOne*widthPlusOne);
+    ulong matricesLastIdx = (self.globalOffset+1) * (widthPlusOne*widthPlusOne) - 1;
     ulong distanceIdx = (self.opWidth+1) * self.globalOffset;
-    ulong opsStartIdx = (self.opWidth+1) * self.globalOffset + 1;
+    //ulong opsStartIdx = (self.opWidth+1) * self.globalOffset + 1;
     ulong curCoords[2] = {0,0};
     ulong maxValOffset = 0;
     long maxVal = 0;
     for(ulong i = matricesStartIdx; i<matricesLastIdx; i++) {
-        if(maxVal<self.matrices[i]) {
+        // gte because i want to get as far out into the matrix as possible
+        // no pun intended
+        if(maxVal<=self.matrices[i]) {
             maxValOffset = i;
             maxVal = self.matrices[i];
         }
     }
     maxValOffset -= matricesStartIdx;
-    util_getCoordsForOffset(&self, maxValOffset, &curCoords[0]);
+    curCoords[0] = maxValOffset % widthPlusOne;
+    curCoords[1] = maxValOffset / widthPlusOne;
+    printf("max value: %lu, max value offset:%lu\n",maxVal,maxValOffset);
+    ulong dist = 0;
     for(int c=curCoords[0]; c>0; ) {
         for(int r=curCoords[1]; r>0; ) {
-            printf("curCoords: %lu, %lu\n",c,r);
+            ulong curVal = self.matrices[matricesStartIdx+(r*widthPlusOne)+c];
             long cands[3] = {0,0,0};
-            ulong curOpsIdx = opsStartIdx+(r*c);
-            cands[0] = self.matrices[matricesStartIdx+(((r-1)*self.refWidth)+(c-1))];
-            cands[1] = self.matrices[matricesStartIdx+(((r-1)*self.refWidth)+(c))];
-            cands[2] = self.matrices[matricesStartIdx+(((r)*self.refWidth)+(c-1))];
-            if(cands[1]>cands[0]) {
+            //ulong curOpsIdx = opsStartIdx+(r*c);
+            cands[0] = self.matrices[matricesStartIdx+(((r-1)*widthPlusOne)+(c-1))];
+            cands[1] = self.matrices[matricesStartIdx+(((r-1)*widthPlusOne)+(c))];
+            cands[2] = self.matrices[matricesStartIdx+(((r)*widthPlusOne)+(c-1))];
+            ulong idx = util_maxIdxLong(cands,3);
+            if(idx==2) {
                 // upward, implying deletion
-                self.distsAndOps[distanceIdx]++;
-                c--;
+                dist++;
+                if(c!=0) c--;
             }
-            if(cands[2]>cands[0]) {
+            if(idx==1) {
                 // left, implying insertion
-                self.distsAndOps[distanceIdx]++;
-                r--;
+                dist++;
+                if(r!=0) r--;
             }
-            self.distsAndOps[curOpsIdx] = util_maxIdxLong(cands,3);
-            if(self.distsAndOps[curOpsIdx]==0) {
-                c--;
-                r--;
+            if(idx==0) {
+                if(c!=0) c--;
+                if(r!=0) r--;
             }
+            printf("curCoords:%lu,%lu curVal:%lu op:%lu\n",c,r,curVal,idx);
         }
     }
+    self.distsAndOps[distanceIdx] = dist;
+    printf("total distance %lu",dist);
 }
 
 );

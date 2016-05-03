@@ -31,6 +31,19 @@ struct Fixture {
     }
 };
 
+void logMatrix(LoggerType logger, uint width, int64_t *mPtr, uint64_t needle[], uint64_t haystack[]) {
+    std::vector<uint64_t> columns(width+1);
+    for (int i = 0; i < (width+1); i++){
+        columns[i] = i;
+    }
+    LOG << "Column: " << "    " << String::str<uint64_t>(&columns[0],width+1);
+    LOG << "Needle: " << "    0," << String::str<uint64_t>(&needle[0],width);
+    long itTo = (width+1)*(width+1);
+    for(int i=0, j=0; i<itTo; i+=(width+1), j++) {
+        LOG << "Matrix: " << j << " " << (j>0?haystack[j-1]:0) << " " << String::str<int64_t>(&mPtr[i],(width+1));
+    }
+}
+
 BOOST_AUTO_TEST_SUITE( nlpgraph_calc_smith_waterman )
 
 BOOST_AUTO_TEST_CASE( calc_test )
@@ -59,46 +72,45 @@ BOOST_AUTO_TEST_CASE( calc_test )
         uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4};
         uint64_t haystack[] = {1,2,3,4};
-        int64_t matrices[16];
+        int64_t matrices[25];
         int64_t *mPtr = &matrices[0];
         uint64_t distsAndOps[5];
         uint64_t *dPtr = &distsAndOps[0];
-        memset(matrices,0,sizeof(int64_t)*16);
+        memset(matrices,0,sizeof(int64_t)*25);
+        // create the data structure
         SmithWatermanDataPtr dataPtr = SmithWatermanDataPtr(new SmithWatermanData(bContext));
         dataPtr->reference(bCommandQueue, needle, 4);
         dataPtr->candidates(bCommandQueue, haystack, 1);
         dataPtr->prepare(bCommandQueue);
+        // have the alg calculate the matrices
         alg.createMatrices(dataPtr);
         dataPtr->matrices(bCommandQueue,&mPtr);
-        LOG << "Matrix 1: " << String::str<int64_t>(&mPtr[0],4);
-        LOG << "Matrix 2: " << String::str<int64_t>(&mPtr[4],4);
-        LOG << "Matrix 3: " << String::str<int64_t>(&mPtr[8],4);
-        LOG << "Matrix 4: " << String::str<int64_t>(&mPtr[12],4);
+        logMatrix(logger,width,mPtr,needle,haystack);
+        // have the alg walk the matrices and determine distance and operations
         alg.calculateDistances(dataPtr);
         dataPtr->distsAndOps(bCommandQueue, &dPtr);
         LOG << "DistAndOps: " << String::str<uint64_t>(&dPtr[0],5);
     }
     
     { // perfect match
-        LOG << "Testing perfect match";
-        uint width=9;
+        LOG << "Testing partial match";
+        uint width=8;
         uint haystackSize=1;
         uint64_t needle[] = {1,2,3,4,5,6,7,8};
         uint64_t haystack[] = {1,2,9,4,5,6,8,8};
-        int64_t matrices[width*width];
+        size_t matrixSize = (width+1)*(width+1);
+        int64_t matrices[matrixSize];
         int64_t *mPtr = &matrices[0];
         uint64_t distsAndOps[width+1];
         uint64_t *dPtr = &distsAndOps[0];
-        memset(matrices,0,sizeof(int64_t)*width*width);
+        memset(matrices,0,sizeof(int64_t)*matrixSize);
         SmithWatermanDataPtr dataPtr = SmithWatermanDataPtr(new SmithWatermanData(bContext));
         dataPtr->reference(bCommandQueue, needle, width);
         dataPtr->candidates(bCommandQueue, haystack, haystackSize);
         dataPtr->prepare(bCommandQueue);
         alg.createMatrices(dataPtr);
         dataPtr->matrices(bCommandQueue,&mPtr);
-        for(int i=0; i<(width*width); i+=width) {
-            LOG << "Matrix: " << String::str<int64_t>(&mPtr[i],width);
-        }
+        logMatrix(logger,width,mPtr,needle,haystack);
         alg.calculateDistances(dataPtr);
         dataPtr->distsAndOps(bCommandQueue, &dPtr);
         LOG << "DistAndOps: " << String::str<uint64_t>(&dPtr[0],width+1);

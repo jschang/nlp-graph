@@ -35,7 +35,7 @@ void SmithWatermanData::zeroCandidates(const cl_command_queue &commandQueue) {
 }
 void SmithWatermanData::zeroMatrices(const cl_command_queue &commandQueue) {
     uint64_t zero = 0;
-    Util::OpenCL::fill(commandQueue, 1, 0, m_candidatesCount * m_referenceWidth * m_referenceWidth,
+    Util::OpenCL::fill(commandQueue, 1, 0, m_candidatesCount * (m_referenceWidth+1) * (m_referenceWidth+1),
         &zero, _clMatrices);
 }
 void SmithWatermanData::zeroDistsAndOps(const cl_command_queue &commandQueue) {
@@ -68,8 +68,9 @@ void SmithWatermanData::reference(const cl_command_queue &commandQueue, const ui
         &_reference, &_clReference, (int)CL_MEM_READ_ONLY|CL_MEM_COPY_HOST_PTR);
 }
 void SmithWatermanData::candidates(const cl_command_queue &commandQueue, const uint64_t *in, const size_t count) {
-    if   (_candidates!=0) { delete _candidates; _candidates = nullptr; }
-    if (_clCandidates!=0) { clReleaseMemObject(_clCandidates); _clCandidates = 0; }
+    if (!m_referenceWidth) { throw NLPGraphException(std::string("SmithWatermanData::reference(...) must be called prior to this method.")); }
+    if   (_candidates!=0)  { delete _candidates; _candidates = nullptr; }
+    if (_clCandidates!=0)  { clReleaseMemObject(_clCandidates); _clCandidates = 0; }
     m_candidatesCount = count;
     _candidates = (uint64_t*)malloc(sizeof(uint64_t)*count*m_referenceWidth);
     memcpy(_candidates,in,sizeof(uint64_t)*count*m_referenceWidth);
@@ -78,9 +79,12 @@ void SmithWatermanData::candidates(const cl_command_queue &commandQueue, const u
 }
 
 void SmithWatermanData::prepare(const cl_command_queue &commandQueue) {
+    if(!m_referenceWidth)  throw NLPGraphException(std::string("SmithWatermanData::reference(...) must be called prior to this method."));
+    if(!m_candidatesCount) throw NLPGraphException(std::string("SmithWatermanData::candidates(...) must be called prior to this method."));
     if(_clDistsAndOps!=0) { clReleaseMemObject(_clDistsAndOps); _clDistsAndOps = 0; }
     if   (_clMatrices!=0) { clReleaseMemObject(_clMatrices); _clMatrices = 0; }
-    Util::OpenCL::alloc <int64_t>(m_context, m_candidatesCount * m_referenceWidth * m_referenceWidth,
+    // add one to account for the 0 row and col in the matrix.  wasteful, but we'll optimize after we get it working right.
+    Util::OpenCL::alloc <int64_t>(m_context, m_candidatesCount * (m_referenceWidth+1) * (m_referenceWidth+1),
         0, &_clMatrices, (int)CL_MEM_READ_WRITE);
     this->zeroMatrices(commandQueue);
     Util::OpenCL::alloc<uint64_t>(m_context, (m_operationsWidth+1) * m_candidatesCount,
@@ -110,9 +114,9 @@ void SmithWatermanData::prepare(const cl_command_queue &commandQueue) {
 
 void SmithWatermanData::matrices(const cl_command_queue &commandQueue, int64_t **out) {
     if(*out==0) {
-        *out = (int64_t*) new int64_t[m_candidatesCount * m_referenceWidth * m_referenceWidth];
+        *out = (int64_t*) new int64_t[m_candidatesCount * (m_referenceWidth+1) * (m_referenceWidth+1)];
     }
-    Util::OpenCL::read<int64_t>(commandQueue, m_candidatesCount * m_referenceWidth * m_referenceWidth,
+    Util::OpenCL::read<int64_t>(commandQueue, m_candidatesCount * (m_referenceWidth+1) * (m_referenceWidth+1),
         *out, _clMatrices);
 }
 void SmithWatermanData::distsAndOps(const cl_command_queue &commandQueue, uint64_t **out) {
