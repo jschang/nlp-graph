@@ -32,13 +32,15 @@ __kernel void calc_smith_waterman_distances(
     self.globalOffset = get_global_id(0);
     ulong widthPlusOne = self.refWidth + 1;
     ulong matricesStartIdx = self.globalOffset * (widthPlusOne*widthPlusOne);
-    ulong matricesLastIdx = (self.globalOffset+1) * (widthPlusOne*widthPlusOne) - 1;
+    ulong matricesLastIdx = (self.globalOffset+1) * (widthPlusOne*widthPlusOne);
     ulong distanceIdx = (self.opWidth+1) * self.globalOffset;
     //ulong opsStartIdx = (self.opWidth+1) * self.globalOffset + 1;
     ulong curCoords[2] = {0,0};
     ulong maxValOffset = 0;
     long maxVal = 0;
+    printf("matrix start:%lu end:%lu\n",matricesStartIdx,matricesLastIdx);
     for(ulong i = matricesStartIdx; i<matricesLastIdx; i++) {
+        //printf("o:%lu, c:%lu, r:%lu, v:%lu\n",i,i%widthPlusOne,i/widthPlusOne,self.matrices[i]);
         // gte because i want to get as far out into the matrix as possible
         // no pun intended
         if(maxVal<=self.matrices[i]) {
@@ -49,11 +51,12 @@ __kernel void calc_smith_waterman_distances(
     maxValOffset -= matricesStartIdx;
     curCoords[0] = maxValOffset % widthPlusOne;
     curCoords[1] = maxValOffset / widthPlusOne;
-    printf("max value: %lu, max value offset:%lu\n",maxVal,maxValOffset);
+    printf("max value: %lu, max value offset:%lu, c:%lu, r:%lu\n",maxVal,maxValOffset,curCoords[0],curCoords[1]);
     ulong dist = 0;
     for(int c=curCoords[0]; c>0; ) {
         for(int r=curCoords[1]; r>0; ) {
             ulong curVal = self.matrices[matricesStartIdx+(r*widthPlusOne)+c];
+            printf("curCoords:%lu,%lu curVal:%lu op:%lu ",c,r,curVal);
             long cands[3] = {0,0,0};
             //ulong curOpsIdx = opsStartIdx+(r*c);
             cands[0] = self.matrices[matricesStartIdx+(((r-1)*widthPlusOne)+(c-1))];
@@ -74,7 +77,7 @@ __kernel void calc_smith_waterman_distances(
                 if(c!=0) c--;
                 if(r!=0) r--;
             }
-            printf("curCoords:%lu,%lu curVal:%lu op:%lu\n",c,r,curVal,idx);
+            printf("op:%lu\n",idx);
         }
     }
     self.distsAndOps[distanceIdx] = dist;

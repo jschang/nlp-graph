@@ -69,9 +69,10 @@ __kernel void calc_smith_waterman_matrices(
             // get the current column candidate id
             ulong refId = self.reference[col-1];
             long maxSimilarity[4] = {
-                0,0, // max similarity score of prev in row and prev in col
-                0,   // current similarity score
-                0    // zero
+                0, // max for col prev in row (c,0->r)
+                0, // max for row prev in col (0->c,r)
+                0, // current similarity score
+                0  // zero
             };
                         
             matrices_getMaxSimilarityScore(&self,startIdx,col,row,maxSimilarity);
@@ -89,6 +90,7 @@ __kernel void calc_smith_waterman_matrices(
                             : maxScore;
             }
             
+            printf("c:%lu,r:%lu ref:%lu, cand:%lu [%li,%li,%li,%li]\n",col,row,refId,candId,maxSimilarity[0],maxSimilarity[1],maxSimilarity[2],maxSimilarity[3]);
             self.matrices[startIdx+(row*widthPlusOne)+col] = maxScore;
         }
     }
@@ -108,9 +110,11 @@ long matrices_getSimilaryScore(
     ulong colId, ulong rowId // ref and cand respectively
 ) {
     // add the final score for the last two
-    return self->matrices[startMatrixOffset+((row-1)*(self->refWidth+1))+(col-1)]
+    ulong prev = self->matrices[startMatrixOffset+((row-1)*(self->refWidth+1))+(col-1)];
     // to the similarity function for these two
-               + matrices_similarityFunction(self,colId,rowId);
+    long sim = matrices_similarityFunction(self,colId,rowId);
+    printf("c:%lu,r:%lu prev:%lu, sim:%li\n",col,row,prev,sim);
+    return prev + sim;
 }
 
 void matrices_getMaxSimilarityScore(
@@ -125,7 +129,7 @@ void matrices_getMaxSimilarityScore(
         long cur = self->matrices[startMatrixOffset+(row*(self->refWidth+1))+c];
         maxes[0] = cur > maxes[0] ? cur : maxes[0];
     }
-    maxes[0] += -1; // W - gap-scoring scheme
+    maxes[0] += -2; // W - gap-scoring scheme
     
     // get max previous in the column up to the current row
     maxes[1] = -65355; // row
@@ -133,7 +137,7 @@ void matrices_getMaxSimilarityScore(
         long cur = self->matrices[startMatrixOffset+(r*(self->refWidth+1))+col];
         maxes[1] = cur > maxes[1] ? cur : maxes[1];
     }
-    maxes[1] += -1; // W - gap-scoring scheme
+    maxes[1] += -2; // W - gap-scoring scheme
 }
 
 );
