@@ -40,7 +40,7 @@ void SmithWatermanData::zeroMatrices(const cl_command_queue &commandQueue) {
 }
 void SmithWatermanData::zeroDistsAndOps(const cl_command_queue &commandQueue) {
     uint64_t zero = 0;
-    Util::OpenCL::fill(commandQueue, 1, 0, (m_operationsWidth+1) * m_candidatesCount,
+    Util::OpenCL::fill(commandQueue, 1, 0, (m_operationsWidth) * m_candidatesCount,
         &zero, _clDistsAndOps);
 }
 
@@ -61,7 +61,9 @@ void SmithWatermanData::reference(const cl_command_queue &commandQueue, const ui
     if  (_reference!=0) { delete _reference; _reference = nullptr; }
     if(_clReference!=0) { clReleaseMemObject(_clReference); _clReference = 0; }
     m_referenceWidth = width;
-    m_operationsWidth = width;
+    // should be the most steps we can take through the matrix,
+    // plus an additional 3 for the edit distance and starting coords
+    m_operationsWidth = (width * 2) + 3;
     _reference = (uint64_t*)malloc(sizeof(uint64_t)*width);
     memcpy(_reference,in,sizeof(uint64_t)*width);
     Util::OpenCL::alloc<uint64_t>(m_context, width,
@@ -87,7 +89,7 @@ void SmithWatermanData::prepare(const cl_command_queue &commandQueue) {
     Util::OpenCL::alloc <int64_t>(m_context, m_candidatesCount * (m_referenceWidth+1) * (m_referenceWidth+1),
         0, &_clMatrices, (int)CL_MEM_READ_WRITE);
     this->zeroMatrices(commandQueue);
-    Util::OpenCL::alloc<uint64_t>(m_context, (m_operationsWidth+1) * m_candidatesCount,
+    Util::OpenCL::alloc<uint64_t>(m_context, (m_operationsWidth) * m_candidatesCount,
         0, &_clDistsAndOps, (int)CL_MEM_READ_WRITE);
     this->zeroDistsAndOps(commandQueue);
     for(uint64_t i=0; i < m_referenceWidth; i++) {
@@ -121,9 +123,9 @@ void SmithWatermanData::matrices(const cl_command_queue &commandQueue, int64_t *
 }
 void SmithWatermanData::distsAndOps(const cl_command_queue &commandQueue, uint64_t **out) {
     if(*out==0) {
-        *out = (uint64_t*) new uint64_t[(m_operationsWidth+1) * m_candidatesCount];
+        *out = (uint64_t*) new uint64_t[(m_operationsWidth) * m_candidatesCount];
     }
-    Util::OpenCL::read<uint64_t>(commandQueue, (m_operationsWidth+1) * m_candidatesCount,
+    Util::OpenCL::read<uint64_t>(commandQueue, (m_operationsWidth) * m_candidatesCount,
         *out, _clDistsAndOps);
 }
 

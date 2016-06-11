@@ -96,7 +96,7 @@ BOOST_AUTO_TEST_CASE( calc_test )
         LOG << "Testing partial match";
         uint width=8;
         uint haystackSize=1;
-        uint64_t needle[] = {1,2,3,4,5,6,7,8};
+        uint64_t needle[]   = {1,2,3,4,5,6,7,8};
         uint64_t haystack[] = {1,2,9,4,5,6,8,8};
         size_t matrixSize = (width+1)*(width+1);
         int64_t matrices[matrixSize];
@@ -114,6 +114,36 @@ BOOST_AUTO_TEST_CASE( calc_test )
         alg.calculateDistances(dataPtr);
         dataPtr->distsAndOps(bCommandQueue, &dPtr);
         LOG << "DistAndOps: " << String::str<uint64_t>(&dPtr[0],width+1);
+    }
+    
+    { // mangled shit
+        LOG << "Testing mangled shit";
+        
+        uint width=8;
+        uint haystackSize=1;
+        uint64_t needle[]   = {1,2,3,4,5,6,7,8};
+        uint64_t haystack[] = {4,5,9,6,8,8,1,2};
+        size_t matrixSize = (width+1)*(width+1);
+        int64_t matrices[matrixSize];
+        int64_t *mPtr = &matrices[0];
+        uint64_t distsAndOps[width*2+3];
+        uint64_t *dPtr = &distsAndOps[0];
+        
+        memset(matrices,0,sizeof(int64_t)*matrixSize);
+        
+        SmithWatermanDataPtr dataPtr = SmithWatermanDataPtr(new SmithWatermanData(bContext));
+        dataPtr->reference(bCommandQueue, needle, width);
+        dataPtr->candidates(bCommandQueue, haystack, haystackSize);
+        dataPtr->prepare(bCommandQueue);
+        
+        alg.createMatrices(dataPtr);
+        dataPtr->matrices(bCommandQueue,&mPtr);
+        
+        logMatrix(logger,width,mPtr,needle,haystack);
+        
+        alg.calculateDistances(dataPtr);
+        dataPtr->distsAndOps(bCommandQueue, &dPtr);
+        LOG << "DistAndOps: " << String::str<uint64_t>(&dPtr[0],dataPtr->operationsWidth());
     }
 }
 

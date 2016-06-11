@@ -34,7 +34,7 @@ __kernel void calc_smith_waterman_distances(
     ulong matricesStartIdx = self.globalOffset * (widthPlusOne*widthPlusOne);
     ulong matricesLastIdx = (self.globalOffset+1) * (widthPlusOne*widthPlusOne);
     ulong distanceIdx = (self.opWidth+1) * self.globalOffset;
-    //ulong opsStartIdx = (self.opWidth+1) * self.globalOffset + 1;
+    ulong opsStartIdx = distanceIdx + 3;
     ulong curCoords[2] = {0,0};
     ulong maxValOffset = 0;
     long maxVal = 0;
@@ -53,10 +53,12 @@ __kernel void calc_smith_waterman_distances(
     curCoords[1] = maxValOffset / widthPlusOne;
     printf("max value: %lu, max value offset:%lu, c:%lu, r:%lu\n",maxVal,maxValOffset,curCoords[0],curCoords[1]);
     ulong dist = 0;
+    self.distsAndOps[distanceIdx+1] = curCoords[0];
+    self.distsAndOps[distanceIdx+2] = curCoords[1];
     for(int c=curCoords[0]; c>0; ) {
         for(int r=curCoords[1]; r>0; ) {
             ulong curVal = self.matrices[matricesStartIdx+(r*widthPlusOne)+c];
-            printf("curCoords:%lu,%lu curVal:%lu op:%lu ",c,r,curVal);
+            printf("curCoords:%lu,%lu curVal:%lu ",c,r,curVal);
             long cands[3] = {0,0,0};
             //ulong curOpsIdx = opsStartIdx+(r*c);
             cands[0] = self.matrices[matricesStartIdx+(((r-1)*widthPlusOne)+(c-1))];
@@ -78,8 +80,10 @@ __kernel void calc_smith_waterman_distances(
                 if(r!=0) r--;
             }
             printf("op:%lu\n",idx);
+            self.distsAndOps[opsStartIdx++] = idx+2;
         }
     }
+    self.distsAndOps[opsStartIdx++] = 1;
     self.distsAndOps[distanceIdx] = dist;
     printf("total distance %lu",dist);
 }
